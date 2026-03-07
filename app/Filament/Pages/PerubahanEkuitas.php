@@ -51,6 +51,7 @@ class PerubahanEkuitas extends Page implements HasForms
         foreach ($ekuitasAccounts as $akun) {
             $saldoAwal = DB::table('jurnal_detail as jd')
                 ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->where('jh.status', 'posted')
                 ->where('jd.coa_id', $akun->id)
                 ->when($this->dari, fn ($q) => $q->whereDate('jh.tanggal', '<', $this->dari))
                 ->selectRaw('COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0) as saldo')
@@ -58,6 +59,7 @@ class PerubahanEkuitas extends Page implements HasForms
 
             $mutasi = DB::table('jurnal_detail as jd')
                 ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->where('jh.status', 'posted')
                 ->where('jd.coa_id', $akun->id)
                 ->when($this->dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $this->dari))
                 ->when($this->sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $this->sampai))
@@ -87,6 +89,7 @@ class PerubahanEkuitas extends Page implements HasForms
         $labaRugi = DB::table('jurnal_detail as jd')
             ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
             ->join('coa', 'jd.coa_id', '=', 'coa.id')
+            ->where('jh.status', 'posted')
             ->whereIn('coa.tipe', ['Revenue', 'Expense'])
             ->when($this->dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $this->dari))
             ->when($this->sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $this->sampai))

@@ -37,6 +37,13 @@ class JurnalKasTable
                 \Filament\Tables\Columns\TextColumn::make('deskripsi')
                     ->limit(30)
                     ->searchable(),
+                \Filament\Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'posted' => 'success',
+                        'unposted' => 'warning',
+                        default => 'gray',
+                    }),
                 \Filament\Tables\Columns\ImageColumn::make('bukti_transaksi')
                     ->label('Bukti')
                     ->circular(),
@@ -49,6 +56,32 @@ class JurnalKasTable
                     ]),
             ])
             ->actions([
+                \Filament\Actions\Action::make('post')
+                    ->label('Post')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (\App\Models\JurnalKas $record) => $record->status !== 'posted')
+                    ->action(function (\App\Models\JurnalKas $record) {
+                        $record->update(['status' => 'posted']);
+                        \App\Models\JurnalHeader::where('referensi_type', \App\Models\JurnalKas::class)
+                            ->where('referensi_id', $record->id)
+                            ->update(['status' => 'posted']);
+                        \Filament\Notifications\Notification::make()->title('Kas berhasil di-post')->success()->send();
+                    }),
+                \Filament\Actions\Action::make('unpost')
+                    ->label('Unpost')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (\App\Models\JurnalKas $record) => $record->status === 'posted')
+                    ->action(function (\App\Models\JurnalKas $record) {
+                        $record->update(['status' => 'unposted']);
+                        \App\Models\JurnalHeader::where('referensi_type', \App\Models\JurnalKas::class)
+                            ->where('referensi_id', $record->id)
+                            ->update(['status' => 'unposted']);
+                        \Filament\Notifications\Notification::make()->title('Kas di-unpost')->warning()->send();
+                    }),
                 \Filament\Actions\ViewAction::make(),
                 \Filament\Actions\EditAction::make(),
                 \Filament\Actions\DeleteAction::make(),

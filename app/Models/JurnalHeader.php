@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JurnalHeader extends Model
 {
-    use TenantTrait;
+    use TenantTrait, \Spatie\Activitylog\Traits\LogsActivity;
+
+    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    {
+        return \Spatie\Activitylog\LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $table = 'jurnal_header';
 
@@ -21,6 +29,8 @@ class JurnalHeader extends Model
         'referensi_type',
         'referensi_id',
         'deskripsi',
+        'status',
+        'bukti_transaksi',
     ];
 
     protected $casts = [

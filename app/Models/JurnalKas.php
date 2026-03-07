@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class JurnalKas extends Model
 {
-    use TenantTrait;
+    use TenantTrait, \Spatie\Activitylog\Traits\LogsActivity;
+
+    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    {
+        return \Spatie\Activitylog\LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $table = 'jurnal_kas';
 
@@ -22,6 +30,7 @@ class JurnalKas extends Model
         'nominal',
         'deskripsi',
         'bukti_transaksi',
+        'status',
     ];
 
     protected $casts = [
@@ -57,6 +66,8 @@ class JurnalKas extends Model
         $jurnalHeader->deskripsi = $this->deskripsi ?: "Jurnal Kas: {$this->tipe}";
         $jurnalHeader->referensi_type = self::class;
         $jurnalHeader->referensi_id = $this->id;
+        $jurnalHeader->status = $this->status ?? 'draft';
+        $jurnalHeader->bukti_transaksi = $this->bukti_transaksi;
         $jurnalHeader->save();
 
         // Details

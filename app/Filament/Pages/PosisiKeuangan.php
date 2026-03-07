@@ -51,6 +51,7 @@ class PosisiKeuangan extends Page implements HasForms
             ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
             ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
             ->whereIn('coa.tipe', ['Asset', 'Liability', 'Equity'])
+            ->where('jh.status', 'posted')
             ->when($this->sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $this->sampai))
             ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
             ->orderBy('coa.kode_akun')

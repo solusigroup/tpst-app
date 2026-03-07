@@ -51,6 +51,7 @@ class ArusKas extends Page implements HasForms
         $operasi = DB::table('jurnal_detail as jd')
             ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
             ->join('coa', 'jd.coa_id', '=', 'coa.id')
+            ->where('jh.status', 'posted')
             ->whereIn('jd.coa_id', $kasAccounts)
             ->when($this->dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $this->dari))
             ->when($this->sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $this->sampai))
@@ -70,6 +71,7 @@ class ArusKas extends Page implements HasForms
         // Calculate beginning and ending cash balance
         $saldoAwal = DB::table('jurnal_detail as jd')
             ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+            ->where('jh.status', 'posted')
             ->whereIn('jd.coa_id', $kasAccounts)
             ->when($this->dari, fn ($q) => $q->whereDate('jh.tanggal', '<', $this->dari))
             ->selectRaw('COALESCE(SUM(jd.debit), 0) - COALESCE(SUM(jd.kredit), 0) as saldo')

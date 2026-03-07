@@ -27,6 +27,11 @@ class JurnalResource extends Resource
                     ->placeholder('Otomatis')
                     ->readonly(),
                 Forms\Components\Textarea::make('deskripsi')->rows(3),
+                Forms\Components\FileUpload::make('bukti_transaksi')
+                    ->label('Bukti Transaksi')
+                    ->directory('jurnal-bukti')
+                    ->image()
+                    ->maxSize(2048),
             ]),
             \Filament\Schemas\Components\Section::make('Detail Jurnal')->schema([
                 Forms\Components\Repeater::make('jurnalDetails')
@@ -51,8 +56,44 @@ class JurnalResource extends Resource
                 Tables\Columns\TextColumn::make('tanggal')->date(),
                 Tables\Columns\TextColumn::make('nomor_referensi')->searchable(),
                 Tables\Columns\TextColumn::make('deskripsi')->limit(50),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'posted' => 'success',
+                        'unposted' => 'warning',
+                        default => 'gray',
+                    }),
+                Tables\Columns\ImageColumn::make('bukti_transaksi')
+                    ->label('Bukti')
+                    ->circular(),
             ])
             ->actions([
+                \Filament\Actions\Action::make('post')
+                    ->label('Post')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (JurnalHeader $record) => $record->status !== 'posted')
+                    ->action(function (JurnalHeader $record) {
+                        $record->update(['status' => 'posted']);
+                        if ($record->referensi_type === \App\Models\JurnalKas::class) {
+                            $record->referensi->update(['status' => 'posted']);
+                        }
+                        \Filament\Notifications\Notification::make()->title('Jurnal berhasil di-post')->success()->send();
+                    }),
+                \Filament\Actions\Action::make('unpost')
+                    ->label('Unpost')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (JurnalHeader $record) => $record->status === 'posted')
+                    ->action(function (JurnalHeader $record) {
+                        $record->update(['status' => 'unposted']);
+                        if ($record->referensi_type === \App\Models\JurnalKas::class) {
+                            $record->referensi->update(['status' => 'unposted']);
+                        }
+                        \Filament\Notifications\Notification::make()->title('Jurnal di-unpost')->warning()->send();
+                    }),
                 \Filament\Actions\ViewAction::make(),
                 \Filament\Actions\EditAction::make(),
                 \Filament\Actions\DeleteAction::make(),

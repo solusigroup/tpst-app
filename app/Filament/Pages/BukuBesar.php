@@ -36,6 +36,7 @@ class BukuBesar extends Page implements HasTable
                 JurnalDetail::query()
                     ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
                     ->join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                    ->where('jurnal_header.status', 'posted')
                     ->select([
                         'jurnal_detail.*',
                         'jurnal_header.tanggal',
