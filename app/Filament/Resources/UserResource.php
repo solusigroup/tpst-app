@@ -16,6 +16,8 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $label = 'Users';
+    protected static string | \UnitEnum | null $navigationGroup = 'Administrasi';
+    protected static ?int $navigationSort = 10;
 
     /**
      * Check if current user can access this resource.
@@ -49,7 +51,7 @@ class UserResource extends Resource
     public static function form(Schema $form): Schema
     {
         return $form->schema([
-            Forms\Components\Section::make('User Information')->schema([
+            \Filament\Schemas\Components\Section::make('User Information')->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
@@ -62,7 +64,7 @@ class UserResource extends Resource
                     ->required()
                     ->unique(User::class, 'email', ignoreRecord: true),
             ]),
-            Forms\Components\Section::make('Security & Role')->schema([
+            \Filament\Schemas\Components\Section::make('Security & Role')->schema([
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->revealable()
@@ -109,6 +111,23 @@ class UserResource extends Resource
                     'timbangan' => 'Timbangan',
                     'keuangan' => 'Keuangan',
                 ]),
+            ])
+            ->actions([
+                \Filament\Actions\ViewAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => \App\Filament\Resources\UserResource\Pages\ManageUsers::route('/'),
+        ];
     }
 }

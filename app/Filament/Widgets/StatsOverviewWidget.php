@@ -24,7 +24,7 @@ class StatsOverviewWidget extends BaseWidget
 
             Stat::make('Pendapatan Tipping Hari Ini', $this->formatCurrency($this->getPendapatanTippingHariIni()))
                 ->description('Total biaya tipping hari ini')
-                ->descriptionIcon('heroicon-m-banknote')
+                ->descriptionIcon('heroicon-m-banknotes')
                 ->color('info'),
 
             Stat::make('Total Penjualan Bulan Ini', $this->formatCurrency($this->getPenjualanBulanIni()))

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('tenant_id')->after('id')->constrained('tenants')->cascadeOnDelete();
-            $table->enum('role', ['admin', 'timbangan', 'keuangan'])->default('admin')->after('email_verified_at');
+            $table->foreignId('tenant_id')->nullable()->after('id')->constrained('tenants')->nullOnDelete();
+            $table->enum('role', ['admin', 'timbangan', 'keuangan', 'superuser'])->default('admin')->after('email_verified_at');
             $table->index('tenant_id');
         });
     }

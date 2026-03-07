@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('coa', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
-            $table->string('kode_akun')->unique(); // e.g., 1100, 2100, etc.
+            $table->string('kode_akun'); // e.g., 1100, 2100, etc.
+            $table->unique(['tenant_id', 'kode_akun']);
             $table->string('nama_akun');
             $table->enum('tipe', ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense']);
             $table->timestamps();

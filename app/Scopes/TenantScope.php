@@ -13,6 +13,11 @@ class TenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
+        // Prevent infinite loop: do not apply tenant scope when querying the User model itself
+        if ($model instanceof \App\Models\User) {
+            return;
+        }
+
         if (auth()->check()) {
             $builder->where($model->getTable() . '.tenant_id', '=', auth()->user()->tenant_id);
         }

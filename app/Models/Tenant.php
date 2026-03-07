@@ -10,6 +10,14 @@ class Tenant extends Model
     protected $fillable = [
         'name',
         'domain',
+        'address',
+        'email',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+        'director_name',
+        'manager_name',
+        'finance_name',
     ];
 
     /**

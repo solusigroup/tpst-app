@@ -13,16 +13,22 @@ class JurnalResource extends Resource
 {
     protected static ?string $model = JurnalHeader::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-duplicate';
+    protected static ?string $navigationLabel = 'Jurnal';
+    protected static ?string $label = 'Jurnal';
+    protected static ?string $pluralLabel = 'Jurnal';
 
     public static function form(Schema $form): Schema
     {
         return $form->schema([
-            Forms\Components\Section::make('Informasi Jurnal')->schema([
-                Forms\Components\DatePickerInput::make('tanggal')->required(),
-                Forms\Components\TextInput::make('nomor_referensi'),
+            \Filament\Schemas\Components\Section::make('Informasi Jurnal')->schema([
+                Forms\Components\DatePicker::make('tanggal')->required(),
+                Forms\Components\TextInput::make('nomor_referensi')
+                    ->label('Nomor Referensi')
+                    ->placeholder('Otomatis')
+                    ->readonly(),
                 Forms\Components\Textarea::make('deskripsi')->rows(3),
             ]),
-            Forms\Components\Section::make('Detail Jurnal')->schema([
+            \Filament\Schemas\Components\Section::make('Detail Jurnal')->schema([
                 Forms\Components\Repeater::make('jurnalDetails')
                     ->relationship('jurnalDetails')
                     ->schema([
@@ -45,6 +51,23 @@ class JurnalResource extends Resource
                 Tables\Columns\TextColumn::make('tanggal')->date(),
                 Tables\Columns\TextColumn::make('nomor_referensi')->searchable(),
                 Tables\Columns\TextColumn::make('deskripsi')->limit(50),
+            ])
+            ->actions([
+                \Filament\Actions\ViewAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => \App\Filament\Resources\JurnalResource\Pages\ManageJurnals::route('/'),
+        ];
     }
 }

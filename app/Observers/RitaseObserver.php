@@ -55,7 +55,8 @@ class RitaseObserver
                 $jurnalHeader = JurnalHeader::create([
                     'tenant_id' => $ritase->tenant_id,
                     'tanggal' => $ritase->waktu_masuk->toDateString(),
-                    'nomor_referensi' => 'TIP-' . $ritase->nomor_tiket,
+                    'referensi_type' => Ritase::class,
+                    'referensi_id' => $ritase->id,
                     'deskripsi' => "Biaya Tipping untuk ritase {$ritase->nomor_tiket} dari {$ritase->klien->nama_klien}",
                 ]);
 

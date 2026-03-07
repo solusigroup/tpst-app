@@ -12,6 +12,8 @@ class Penjualan extends Model
 {
     use TenantTrait;
 
+    protected $table = 'penjualan';
+
     protected $fillable = [
         'tenant_id',
         'klien_id',
@@ -60,8 +62,8 @@ class Penjualan extends Model
     /**
      * Get associated jurnal headers.
      */
-    public function jurnalHeaders(): HasMany
+    public function jurnalHeaders()
     {
-        return $this->hasMany(JurnalHeader::class, 'nomor_referensi', 'id');
+        return $this->morphMany(JurnalHeader::class, 'referensi');
     }
 }

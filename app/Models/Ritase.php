@@ -18,6 +18,7 @@ class Ritase extends Model
         'tenant_id',
         'armada_id',
         'klien_id',
+        'invoice_id',
         'nomor_tiket',
         'waktu_masuk',
         'waktu_keluar',
@@ -37,6 +38,7 @@ class Ritase extends Model
         'berat_netto' => 'decimal:2',
         'biaya_tipping' => 'decimal:2',
         'status' => 'string',
+        'invoice_id' => 'integer',
     ];
 
     /**
@@ -45,6 +47,27 @@ class Ritase extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new TenantScope());
+
+        static::creating(function (Ritase $ritase) {
+            if (empty($ritase->nomor_tiket)) {
+                $prefix = 'RT-' . now()->format('Ym') . '-';
+                
+                // Get the last ticket number for this month
+                $lastRitase = self::withoutGlobalScope(TenantScope::class)
+                    ->where('tenant_id', $ritase->tenant_id)
+                    ->where('nomor_tiket', 'like', $prefix . '%')
+                    ->orderBy('nomor_tiket', 'desc')
+                    ->first();
+                
+                $nextSequence = 1;
+                if ($lastRitase) {
+                    $lastSequence = (int) substr($lastRitase->nomor_tiket, -4);
+                    $nextSequence = $lastSequence + 1;
+                }
+                
+                $ritase->nomor_tiket = $prefix . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
+            }
+        });
 
         static::saving(function (Ritase $ritase) {
             $ritase->berat_netto = ($ritase->berat_bruto ?? 0) - ($ritase->berat_tarra ?? 0);
@@ -76,10 +99,18 @@ class Ritase extends Model
     }
 
     /**
+     * Get the invoice this ritase belongs to.
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    /**
      * Get associated jurnal headers.
      */
-    public function jurnalHeaders(): HasMany
+    public function jurnalHeaders()
     {
-        return $this->hasMany(JurnalHeader::class, 'nomor_referensi', 'nomor_tiket');
+        return $this->morphMany(JurnalHeader::class, 'referensi');
     }
 }

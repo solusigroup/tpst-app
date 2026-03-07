@@ -50,7 +50,8 @@ class PenjualanObserver
                 $jurnalHeader = JurnalHeader::create([
                     'tenant_id' => $penjualan->tenant_id,
                     'tanggal' => $penjualan->tanggal,
-                    'nomor_referensi' => 'SAL-' . $penjualan->id,
+                    'referensi_type' => Penjualan::class,
+                    'referensi_id' => $penjualan->id,
                     'deskripsi' => "Penjualan {$penjualan->jenis_produk} seberat {$penjualan->berat_kg}kg kepada {$penjualan->klien->nama_klien}",
                 ]);
 

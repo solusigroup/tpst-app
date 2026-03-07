@@ -12,6 +12,8 @@ class Armada extends Model
 {
     use TenantTrait;
 
+    protected $table = 'armada';
+
     protected $fillable = [
         'tenant_id',
         'klien_id',

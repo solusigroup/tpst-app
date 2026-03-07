@@ -12,6 +12,9 @@ use Filament\Tables\Table;
 class KlienResource extends Resource
 {
     protected static ?string $model = Klien::class;
+    protected static ?string $navigationLabel = 'Klien';
+    protected static ?string $label = 'Klien';
+    protected static ?string $pluralLabel = 'Klien';
 
     public static function form(Schema $form): Schema
     {
@@ -48,6 +51,23 @@ class KlienResource extends Resource
                     'Swasta' => 'Swasta',
                     'Offtaker' => 'Offtaker',
                 ]),
+            ])
+            ->actions([
+                \Filament\Actions\ViewAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => \App\Filament\Resources\KlienResource\Pages\ManageKliens::route('/'),
+        ];
     }
 }

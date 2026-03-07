@@ -12,6 +12,8 @@ class Klien extends Model
 {
     use TenantTrait;
 
+    protected $table = 'klien';
+
     protected $fillable = [
         'tenant_id',
         'nama_klien',
@@ -62,5 +64,13 @@ class Klien extends Model
     public function penjualan(): HasMany
     {
         return $this->hasMany(Penjualan::class);
+    }
+
+    /**
+     * Get all invoices for this klien.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 }

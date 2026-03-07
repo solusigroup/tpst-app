@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
+
 use App\Models\Penjualan;
 use App\Models\Ritase;
 use App\Observers\PenjualanObserver;
@@ -26,5 +28,10 @@ class AppServiceProvider extends ServiceProvider
         // Register Eloquent Observers for automatic accounting
         Ritase::observe(RitaseObserver::class);
         Penjualan::observe(PenjualanObserver::class);
+
+        // Force HTTPS in production (Fixes issues with Cloudflare Flexible SSL)
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
 }

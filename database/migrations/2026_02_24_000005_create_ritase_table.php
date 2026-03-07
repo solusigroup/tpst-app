@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignId('armada_id')->constrained('armada')->cascadeOnDelete();
             $table->foreignId('klien_id')->constrained('klien')->cascadeOnDelete();
-            $table->string('nomor_tiket')->unique();
+            $table->string('nomor_tiket');
+            $table->unique(['tenant_id', 'nomor_tiket']);
             $table->dateTime('waktu_masuk');
             $table->dateTime('waktu_keluar')->nullable();
             $table->decimal('berat_bruto', 12, 2)->nullable(); // in kg
