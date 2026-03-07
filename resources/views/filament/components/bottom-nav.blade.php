@@ -1,41 +1,151 @@
-<div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 dark:bg-gray-900 dark:border-gray-800 md:hidden pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-    <div class="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
-        <a href="{{ route('filament.admin.pages.dashboard') }}" class="inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 {{ request()->routeIs('filament.admin.pages.dashboard') ? 'text-primary-600 dark:text-primary-500 font-bold' : 'text-gray-500 dark:text-gray-400' }}">
+<div class="custom-bottom-nav">
+    <div class="nav-container">
+        <a href="{{ route('filament.admin.pages.dashboard') }}" class="nav-item {{ request()->routeIs('filament.admin.pages.dashboard') ? 'active' : '' }}">
             <x-heroicon-o-home style="width: 24px; height: 24px; margin-bottom: 2px" />
-            <span class="text-[10px] truncate w-full text-center">Home</span>
+            <span>Home</span>
         </a>
-        <a href="{{ route('filament.admin.resources.ritases.index') }}" class="inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 {{ request()->routeIs('filament.admin.resources.ritases.*') ? 'text-primary-600 dark:text-primary-500 font-bold' : 'text-gray-500 dark:text-gray-400' }}">
+        <a href="{{ route('filament.admin.resources.ritases.index') }}" class="nav-item {{ request()->routeIs('filament.admin.resources.ritases.*') ? 'active' : '' }}">
             <x-heroicon-o-truck style="width: 24px; height: 24px; margin-bottom: 2px" />
-            <span class="text-[10px] truncate w-full text-center">Ritase</span>
+            <span>Ritase</span>
         </a>
-        <!-- Add "+" Button in the Middle for Jurnal Kas -->
-        <div class="relative flex items-center justify-center px-1 h-full">
-            <a href="{{ route('filament.admin.resources.jurnal-kas.create') }}" class="absolute -top-5 flex items-center justify-center w-12 h-12 bg-primary-600 dark:bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-700 dark:hover:bg-primary-600 ring-4 ring-white dark:ring-gray-900 transition-transform hover:scale-105 active:scale-95">
+        
+        <!-- Center Action Button -->
+        <div class="nav-center-item">
+            <a href="{{ route('filament.admin.resources.jurnal-kas.create') }}" class="fab-button">
                 <x-heroicon-o-plus style="width: 28px; height: 28px;" />
             </a>
-            <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-7 truncate w-full text-center">Kas Baru</span>
+            <span>Kas Baru</span>
         </div>
-        <a href="{{ route('filament.admin.resources.jurnals.index') }}" class="inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 {{ request()->routeIs('filament.admin.resources.jurnals.*') ? 'text-primary-600 dark:text-primary-500 font-bold' : 'text-gray-500 dark:text-gray-400' }}">
+
+        <a href="{{ route('filament.admin.resources.jurnals.index') }}" class="nav-item {{ request()->routeIs('filament.admin.resources.jurnals.*') ? 'active' : '' }}">
             <x-heroicon-o-document-duplicate style="width: 24px; height: 24px; margin-bottom: 2px" />
-            <span class="text-[10px] truncate w-full text-center">Jurnal Umum</span>
+            <span>Jurnal Umum</span>
         </a>
-        <a href="{{ route('filament.admin.pages.laporan-laba-rugi') }}" class="inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 {{ request()->routeIs('filament.admin.pages.*') && !request()->routeIs('filament.admin.pages.dashboard') ? 'text-primary-600 dark:text-primary-500 font-bold' : 'text-gray-500 dark:text-gray-400' }}">
+        <a href="{{ route('filament.admin.pages.laporan-laba-rugi') }}" class="nav-item {{ request()->routeIs('filament.admin.pages.*') && !request()->routeIs('filament.admin.pages.dashboard') ? 'active' : '' }}">
             <x-heroicon-o-chart-bar style="width: 24px; height: 24px; margin-bottom: 2px" />
-            <span class="text-[10px] truncate w-full text-center">Laporan</span>
+            <span>Laporan</span>
         </a>
     </div>
 </div>
 
 <style>
-    /* Add padding to the bottom of the main content on mobile so the bottom bar does not overlap content */
+    /* Only show custom bottom nav on mobile screens (max-width: 768px) */
+    .custom-bottom-nav {
+        display: none;
+    }
+
     @media (max-width: 768px) {
-        .fi-layout > main, body > main, main.fi-main {
-            padding-bottom: 5rem !important;
+        .custom-bottom-nav {
+            display: block;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            background-color: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            z-index: 50;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Dark mode support */
+        :is(.dark .custom-bottom-nav) {
+            background-color: #111827;
+            border-color: #1f2937;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            height: 100%;
+            max-width: 32rem; /* 512px */
+            margin: 0 auto;
+        }
+
+        .nav-item, .nav-center-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-decoration: none;
+            padding: 0 4px;
+            color: #6b7280; /* text-gray-500 */
+        }
+
+        :is(.dark .nav-item), :is(.dark .nav-center-item) {
+            color: #9ca3af; /* text-gray-400 */
+        }
+
+        .nav-item:hover {
+            background-color: #f9fafb;
+        }
+
+        :is(.dark .nav-item:hover) {
+            background-color: #1f2937;
+        }
+
+        .nav-item.active {
+            color: #d97706; /* primary color / amber-600 */
+            font-weight: 700;
+        }
+
+        :is(.dark .nav-item.active) {
+            color: #f59e0b; /* amber-500 */
+        }
+
+        .nav-item span, .nav-center-item span {
+            font-size: 10px;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Centered Floating Action Button */
+        .nav-center-item {
+            position: relative;
+        }
+
+        .nav-center-item span {
+            margin-top: 28px;
+        }
+
+        .fab-button {
+            position: absolute;
+            top: -24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            background-color: #d97706; /* primary / amber */
+            color: #ffffff;
+            border-radius: 9999px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 4px solid #ffffff;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        :is(.dark .fab-button) {
+            border-color: #111827;
+        }
+
+        .fab-button:hover {
+            background-color: #b45309;
+            transform: scale(1.05);
         }
         
-        /* Attempt to fix some bottom action overlaps in Filament */
-        .fi-page-actions {
-            padding-bottom: 2rem !important;
+        .fab-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Prevent content from hiding behind bottom nav */
+        .fi-layout > main, body > main, main.fi-main {
+            padding-bottom: 5rem !important;
         }
     }
 </style>
