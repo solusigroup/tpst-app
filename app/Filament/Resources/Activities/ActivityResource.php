@@ -22,7 +22,7 @@ class ActivityResource extends Resource
     
     protected static ?string $navigationLabel = 'Audit Trail';
     protected static ?string $pluralLabel = 'Audit Trail';
-    protected static ?string $navigationGroup = 'Administrasi';
+    protected static \UnitEnum|string|null $navigationGroup = 'Administrasi';
 
     protected static ?string $recordTitleAttribute = 'description';
 
