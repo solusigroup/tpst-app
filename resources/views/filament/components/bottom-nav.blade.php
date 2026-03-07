@@ -19,7 +19,7 @@
             <x-heroicon-o-document-duplicate class="w-6 h-6 mb-1"/>
             <span class="text-[10px] truncate w-full text-center">Jurnal Umum</span>
         </a>
-        <a href="{{ route('filament.admin.pages.laba-rugi') }}" class="inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 {{ request()->routeIs('filament.admin.pages.*') && !request()->routeIs('filament.admin.pages.dashboard') ? 'text-primary-600 dark:text-primary-500 font-bold' : 'text-gray-500 dark:text-gray-400' }}">
+        <a href="{{ route('filament.admin.pages.laporan-laba-rugi') }}" class="inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 {{ request()->routeIs('filament.admin.pages.*') && !request()->routeIs('filament.admin.pages.dashboard') ? 'text-primary-600 dark:text-primary-500 font-bold' : 'text-gray-500 dark:text-gray-400' }}">
             <x-heroicon-o-chart-bar class="w-6 h-6 mb-1"/>
             <span class="text-[10px] truncate w-full text-center">Laporan</span>
         </a>
