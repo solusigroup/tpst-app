@@ -26,6 +26,11 @@ class ActivityResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'description';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin']);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ActivityForm::configure($schema);

@@ -26,6 +26,11 @@ class CompanySettings extends Page implements HasForms
 
     public ?array $data = [];
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin']);
+    }
+
     public function mount(): void
     {
         $tenant = auth()->user()->tenant;

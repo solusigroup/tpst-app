@@ -11,7 +11,7 @@ use Filament\Tables\Contracts\HasTable;
 
 class LaporanPenjualan extends Page implements HasTable
 {
-    use InteractsWithTable;
+    use InteractsWithTable, \BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?string $navigationLabel = 'Laporan Penjualan';

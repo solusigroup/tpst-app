@@ -19,34 +19,7 @@ class UserResource extends Resource
     protected static string | \UnitEnum | null $navigationGroup = 'Administrasi';
     protected static ?int $navigationSort = 10;
 
-    /**
-     * Check if current user can access this resource.
-     * Only superusers can access user management.
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->check() && auth()->user()->role === 'superuser';
-    }
-
-    public static function canCreate(): bool
-    {
-        return static::canAccess();
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return static::canAccess();
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return static::canAccess();
-    }
-
-    public static function canViewAny(): bool
-    {
-        return static::canAccess();
-    }
+    // Policies for this resource are managed by Filament Shield
 
     public static function form(Schema $form): Schema
     {
@@ -70,14 +43,11 @@ class UserResource extends Resource
                     ->revealable()
                     ->required(fn(string $context) => $context === 'create')
                     ->nullable(),
-                Forms\Components\Select::make('role')
-                    ->options([
-                        'superuser' => 'Superuser (Full Access)',
-                        'admin' => 'Admin',
-                        'timbangan' => 'Timbangan (Weighing)',
-                        'keuangan' => 'Keuangan (Finance)',
-                    ])
-                    ->required(),
+                Forms\Components\Select::make('roles')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable(),
                 Forms\Components\Select::make('tenant_id')
                     ->relationship('tenant', 'name')
                     ->nullable()
@@ -93,33 +63,32 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('username')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
-                Tables\Columns\TextColumn::make('role')
+                Tables\Columns\TextColumn::make('roles.name')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'superuser' => 'danger',
-                        'admin' => 'info',
-                        'timbangan' => 'warning',
-                        'keuangan' => 'success',
-                    }),
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('tenant.name'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role')->options([
-                    'superuser' => 'Superuser',
-                    'admin' => 'Admin',
-                    'timbangan' => 'Timbangan',
-                    'keuangan' => 'Keuangan',
-                ]),
+                Tables\Filters\SelectFilter::make('roles')
+                    ->relationship('roles', 'name'),
             ])
             ->actions([
                 \Filament\Actions\ViewAction::make(),
                 \Filament\Actions\EditAction::make(),
-                \Filament\Actions\DeleteAction::make(),
+                \Filament\Actions\DeleteAction::make()
+                    ->hidden(fn (User $record): bool => $record->hasRole('super_admin')),
             ])
             ->bulkActions([
                 \Filament\Actions\BulkActionGroup::make([
-                    \Filament\Actions\DeleteBulkAction::make(),
+                    \Filament\Actions\DeleteBulkAction::make()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $records->each(function (User $record) {
+                                if (!$record->hasRole('super_admin')) {
+                                    $record->delete();
+                                }
+                            });
+                        }),
                 ]),
             ]);
     }

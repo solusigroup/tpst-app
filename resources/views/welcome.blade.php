@@ -795,9 +795,7 @@
                     </button>
                 </form>
 
-                <div class="login-link-section" style="margin-top: 1.75rem; text-align: center; font-size: 0.9rem; color: var(--text-secondary);">
-                    Belum punya akun? <a href="{{ route('register') }}" style="color: var(--accent-primary); text-decoration: none; font-weight: 600; transition: color 0.3s ease;">Daftar di sini</a>
-                </div>
+
 
                 <div class="login-footer">
                     &copy; {{ date('Y') }} <a href="https://simpleakunting.id">SimpleAkunting</a>. All rights reserved.

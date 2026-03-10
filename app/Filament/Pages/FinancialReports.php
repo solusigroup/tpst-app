@@ -12,7 +12,7 @@ use Filament\Actions\Action;
 
 class FinancialReports extends Page implements HasForms
 {
-    use InteractsWithForms;
+    use InteractsWithForms, \BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationLabel = 'Laporan Keuangan';
