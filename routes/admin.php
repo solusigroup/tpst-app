@@ -23,6 +23,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/test500', function() {
         return response()->json(['status' => 'OK', 'message' => 'The code was successfully pulled!']);
     });
+    Route::get('/test500-controller', [\App\Http\Controllers\Admin\Test500Controller::class, 'index']);
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional
