@@ -32,7 +32,7 @@ class KlienController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => collect($e->getTrace())->take(5)->map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''))->toArray(),
-            ], 500);
+            ], 200);
         }
     }
 
