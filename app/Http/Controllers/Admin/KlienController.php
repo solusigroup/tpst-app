@@ -24,7 +24,8 @@ class KlienController extends Controller
 
             $kliens = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
 
-            return view('admin.klien.index', compact('kliens'));
+            $view = view('admin.klien.index', compact('kliens'))->render();
+            return response($view);
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage(),
