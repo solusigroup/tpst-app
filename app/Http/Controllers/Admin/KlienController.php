@@ -11,19 +11,28 @@ class KlienController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('view_klien');
-        $query = Klien::query();
+        try {
+            Gate::authorize('view_klien');
+            $query = Klien::query();
 
-        if ($request->filled('search')) {
-            $query->where('nama_klien', 'like', '%' . $request->search . '%');
+            if ($request->filled('search')) {
+                $query->where('nama_klien', 'like', '%' . $request->search . '%');
+            }
+            if ($request->filled('jenis')) {
+                $query->where('jenis', $request->jenis);
+            }
+
+            $kliens = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
+
+            return view('admin.klien.index', compact('kliens'));
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => collect($e->getTrace())->take(5)->map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''))->toArray(),
+            ], 500);
         }
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
-
-        $kliens = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
-
-        return view('admin.klien.index', compact('kliens'));
     }
 
     public function create()
