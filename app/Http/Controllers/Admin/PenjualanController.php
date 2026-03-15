@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Penjualan;
 use App\Models\Klien;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class PenjualanController extends Controller
 {
@@ -43,6 +44,15 @@ class PenjualanController extends Controller
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
 
+        $tenantId = auth()->user()->tenant_id;
+        if (!$tenantId) {
+            $firstTenant = \App\Models\Tenant::first();
+            if ($firstTenant) {
+                $tenantId = $firstTenant->id;
+            }
+        }
+        $validated['tenant_id'] = $tenantId;
+
         Penjualan::create($validated);
 
         return redirect()->route('admin.penjualan.index')->with('success', 'Penjualan berhasil ditambahkan.');
@@ -68,6 +78,17 @@ class PenjualanController extends Controller
         ]);
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
+
+        if (empty($penjualan->tenant_id)) {
+            $tenantId = auth()->user()->tenant_id;
+            if (!$tenantId) {
+                $firstTenant = \App\Models\Tenant::first();
+                if ($firstTenant) {
+                    $tenantId = $firstTenant->id;
+                }
+            }
+            $validated['tenant_id'] = $tenantId;
+        }
 
         $penjualan->update($validated);
 
