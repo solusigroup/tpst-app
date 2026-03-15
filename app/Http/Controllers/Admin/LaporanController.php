@@ -48,8 +48,19 @@ class LaporanController extends Controller
         $totalPendapatan = $pendapatan->sum('saldo');
         $totalBeban = $beban->sum('saldo');
         $labaRugiBersih = $totalPendapatan - $totalBeban;
+        $data = compact('pendapatan', 'beban', 'totalPendapatan', 'totalBeban', 'labaRugiBersih', 'dari', 'sampai');
 
-        return view('admin.laporan.laba-rugi', compact('pendapatan', 'beban', 'totalPendapatan', 'totalBeban', 'labaRugiBersih', 'dari', 'sampai'));
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.laba-rugi-export', $data);
+            return $pdf->download('Laba_Rugi_' . $dari . '_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.laba-rugi-export', $data), 
+                'Laba_Rugi_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.laba-rugi', $data);
     }
 
     public function neracaSaldo(Request $request)
@@ -77,8 +88,19 @@ class LaporanController extends Controller
 
         $totalDebit = $rows->sum('total_debit');
         $totalKredit = $rows->sum('total_kredit');
+        $data = compact('rows', 'totalDebit', 'totalKredit', 'dari', 'sampai');
 
-        return view('admin.laporan.neraca-saldo', compact('rows', 'totalDebit', 'totalKredit', 'dari', 'sampai'));
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.neraca-saldo-export', $data);
+            return $pdf->download('Neraca_Saldo_' . $dari . '_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.neraca-saldo-export', $data), 
+                'Neraca_Saldo_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.neraca-saldo', $data);
     }
 
     public function posisiKeuangan(Request $request)
@@ -120,12 +142,24 @@ class LaporanController extends Controller
         $totalEkuitas = $ekuitas->sum('saldo');
         $totalLiabilitasEkuitas = $totalLiabilitas + $totalEkuitas;
 
-        return view('admin.laporan.posisi-keuangan', compact(
+        $data = compact(
             'asetLancar', 'asetTidakLancar', 'liabilitasJP', 'liabilitasJPj', 'ekuitas',
             'totalAsetLancar', 'totalAsetTidakLancar', 'totalAset',
             'totalLiabilitasJP', 'totalLiabilitasJPj', 'totalLiabilitas',
             'totalEkuitas', 'totalLiabilitasEkuitas', 'sampai'
-        ));
+        );
+
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.posisi-keuangan-export', $data);
+            return $pdf->download('Posisi_Keuangan_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.posisi-keuangan-export', $data), 
+                'Posisi_Keuangan_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.posisi-keuangan', $data);
     }
 
     public function arusKas(Request $request)
@@ -169,8 +203,19 @@ class LaporanController extends Controller
             ->value('saldo') ?? 0;
 
         $saldoAkhir = $saldoAwal + $totalKasBersih;
+        $data = compact('operasi', 'totalKasMasuk', 'totalKasKeluar', 'totalKasBersih', 'saldoAwal', 'saldoAkhir', 'dari', 'sampai');
 
-        return view('admin.laporan.arus-kas', compact('operasi', 'totalKasMasuk', 'totalKasKeluar', 'totalKasBersih', 'saldoAwal', 'saldoAkhir', 'dari', 'sampai'));
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.arus-kas-export', $data);
+            return $pdf->download('Arus_Kas_' . $dari . '_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.arus-kas-export', $data), 
+                'Arus_Kas_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.arus-kas', $data);
     }
 
     public function perubahanEkuitas(Request $request)
@@ -223,8 +268,19 @@ class LaporanController extends Controller
             ->value('laba_rugi') ?? 0;
 
         $totalSaldoAkhir += $labaRugi;
+        $data = compact('rows', 'labaRugi', 'totalSaldoAwal', 'totalPenambahan', 'totalPengurangan', 'totalSaldoAkhir', 'dari', 'sampai');
 
-        return view('admin.laporan.perubahan-ekuitas', compact('rows', 'labaRugi', 'totalSaldoAwal', 'totalPenambahan', 'totalPengurangan', 'totalSaldoAkhir', 'dari', 'sampai'));
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.perubahan-ekuitas-export', $data);
+            return $pdf->download('Perubahan_Ekuitas_' . $dari . '_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.perubahan-ekuitas-export', $data), 
+                'Perubahan_Ekuitas_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.perubahan-ekuitas', $data);
     }
 
     public function bukuBesar(Request $request)
@@ -249,9 +305,24 @@ class LaporanController extends Controller
             ])
             ->orderByDesc('jurnal_header.tanggal');
 
-        $rows = $query->paginate(20)->withQueryString();
         $coas = Coa::orderBy('kode_akun')->get();
 
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId');
+            
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.buku-besar-export', $data);
+                return $pdf->download('Buku_Besar_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.buku-besar-export', $data), 
+                    'Buku_Besar_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId'));
     }
 
@@ -259,7 +330,7 @@ class LaporanController extends Controller
 
     public function laporanRitase(Request $request)
     {
-        Gate::authorize('view_laporan_ritase');
+        Gate::authorize('view_laporan_operasional');
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -283,7 +354,7 @@ class LaporanController extends Controller
 
     public function laporanPenjualan(Request $request)
     {
-        Gate::authorize('view_laporan_penjualan');
+        Gate::authorize('view_laporan_operasional');
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -301,7 +372,7 @@ class LaporanController extends Controller
 
     public function laporanHasilPilahan(Request $request)
     {
-        Gate::authorize('view_laporan_hasil_pilahan');
+        Gate::authorize('view_laporan_operasional');
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));

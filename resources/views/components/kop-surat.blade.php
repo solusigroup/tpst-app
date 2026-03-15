@@ -2,15 +2,15 @@
 @php
     $tenant = $tenant ?? auth()->user()->tenant;
 @endphp
-<div class="mb-8 border-b-2 border-slate-900 pb-6 text-center">
-    <h1 class="text-3xl font-black uppercase tracking-tighter text-slate-900">
+<div class="mb-4 border-bottom border-dark pb-3 text-center">
+    <h1 class="display-6 fw-bold text-uppercase text-dark mb-1" style="letter-spacing: -1px;">
         {{ !empty($tenant->name) ? $tenant->name : 'PT Tatabumi Adilimbah' }}
     </h1>
-    <p class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+    <p class="small text-secondary fw-medium mb-0" style="line-height: 1.6;">
         {{ $tenant->address ?? '' }}<br>
         @if($tenant->email) Email: {{ $tenant->email }} @endif
         @if($tenant->bank_name) 
-            <span class="mx-2 text-slate-300">|</span> 
+            <span class="mx-2 text-black-50 fw-light">|</span> 
             Bank: {{ $tenant->bank_name }} - {{ $tenant->bank_account_number }} 
             ({{ $tenant->bank_account_name }})
         @endif

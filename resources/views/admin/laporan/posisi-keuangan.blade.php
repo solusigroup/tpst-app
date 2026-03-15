@@ -6,7 +6,22 @@
     <x-kop-surat />
 </div>
 
-<div class="page-header d-print-none"><div><h1>Laporan Posisi Keuangan</h1></div><button class="btn btn-outline-secondary" onclick="window.print()"><i class="cil-print me-1"></i> Print</button></div>
+<div class="page-header d-print-none flex-wrap d-flex justify-content-between align-items-center">
+    <div><h1 class="mb-0">Laporan Posisi Keuangan</h1></div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="window.print()"><i class="cil-print me-1"></i> Print</button>
+        <form action="{{ url()->current() }}" method="GET" class="d-inline">
+            <input type="hidden" name="sampai" value="{{ request('sampai', $sampai) }}">
+            <input type="hidden" name="export" value="pdf">
+            <button type="submit" class="btn btn-outline-danger"><i class="cil-file me-1"></i> PDF</button>
+        </form>
+        <form action="{{ url()->current() }}" method="GET" class="d-inline">
+            <input type="hidden" name="sampai" value="{{ request('sampai', $sampai) }}">
+            <input type="hidden" name="export" value="excel">
+            <button type="submit" class="btn btn-outline-success"><i class="cil-spreadsheet me-1"></i> Excel</button>
+        </form>
+    </div>
+</div>
 
 <div class="card mb-4"><div class="card-body py-3">
     <form method="GET" class="row g-2 align-items-end">
