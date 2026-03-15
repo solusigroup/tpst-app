@@ -48,10 +48,9 @@ class DatabaseSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'admin@tpst.test'],
+            ['username' => 'admin'],
             [
                 'name' => 'Admin User',
-                'username' => 'admin',
                 'email' => 'admin@tpst.test',
                 'password' => Hash::make('password123'),
                 'role' => 'admin',

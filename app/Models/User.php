@@ -9,11 +9,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-class User extends Authenticatable implements \Filament\Models\Contracts\FilamentUser
+class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TenantTrait, HasRoles;
+    use HasFactory, Notifiable, TenantTrait, \Spatie\Activitylog\Traits\LogsActivity, \Spatie\Permission\Traits\HasRoles;
+
+    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    {
+        return \Spatie\Activitylog\LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -69,18 +76,6 @@ class User extends Authenticatable implements \Filament\Models\Contracts\Filamen
     public function isSuperAdmin(): bool
     {
         return $this->is_super_admin === true;
-    }
-
-    /**
-     * Determine if the user can access a Filament panel.
-     */
-    public function canAccessPanel(\Filament\Panel $panel): bool
-    {
-        if ($panel->getId() === 'central') {
-            return $this->isSuperAdmin();
-        }
-
-        return true;
     }
 
     /**

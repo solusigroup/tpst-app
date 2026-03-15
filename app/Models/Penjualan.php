@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Penjualan extends Model
 {
-    use TenantTrait;
+    use TenantTrait, \Spatie\Activitylog\Traits\LogsActivity;
+
+    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    {
+        return \Spatie\Activitylog\LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $table = 'penjualan';
 

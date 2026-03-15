@@ -1,0 +1,121 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\JurnalKas;
+use App\Models\Coa;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
+
+class JurnalKasController extends Controller
+{
+    public function index(Request $request)
+    {
+        Gate::authorize('view_jurnal_kas');
+        $query = JurnalKas::with('coaLawan');
+
+        if ($request->filled('search')) {
+            $query->where('deskripsi', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('jenis')) {
+            $query->where('tipe', $request->jenis == 'masuk' ? 'Penerimaan' : 'Pengeluaran');
+        }
+
+        $jurnalKas = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+
+        return view('admin.jurnal-kas.index', compact('jurnalKas'));
+    }
+
+    public function create()
+    {
+        Gate::authorize('create_jurnal_kas');
+        $coas = Coa::orderBy('kode_akun')->get();
+        return view('admin.jurnal-kas.form', compact('coas'));
+    }
+
+    public function store(Request $request)
+    {
+        Gate::authorize('create_jurnal_kas');
+
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'jenis' => 'required|in:masuk,keluar',
+            'coa_id' => 'required|exists:coa,id',
+            'jumlah' => 'required|numeric|min:0',
+            'deskripsi' => 'nullable|string',
+            'bukti_transaksi' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        ]);
+
+        $data = $validated;
+        unset($data['coa_id']);
+        $data['coa_lawan_id'] = $validated['coa_id'];
+        
+        $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+        $data['coa_kas_id'] = $kas ? $kas->id : 1;
+        $data['nominal'] = $validated['jumlah'];
+        $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
+
+        if ($request->hasFile('bukti_transaksi')) {
+            $path = $request->file('bukti_transaksi')->store('uploads/jurnal_kas', 'public');
+            $data['bukti_transaksi'] = $path;
+        }
+
+        JurnalKas::create($data);
+
+        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil ditambahkan.');
+    }
+
+    public function edit(JurnalKas $jurnalKas)
+    {
+        Gate::authorize('update_jurnal_kas');
+        $coas = Coa::orderBy('kode_akun')->get();
+        return view('admin.jurnal-kas.form', compact('jurnalKas', 'coas'));
+    }
+
+    public function update(Request $request, JurnalKas $jurnalKas)
+    {
+        Gate::authorize('update_jurnal_kas');
+
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'jenis' => 'required|in:masuk,keluar',
+            'coa_id' => 'required|exists:coa,id',
+            'jumlah' => 'required|numeric|min:0',
+            'deskripsi' => 'nullable|string',
+            'bukti_transaksi' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        ]);
+
+        $data = $validated;
+        unset($data['coa_id']);
+        $data['coa_lawan_id'] = $validated['coa_id'];
+        
+        $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+        $data['coa_kas_id'] = $kas ? $kas->id : 1;
+        $data['nominal'] = $validated['jumlah'];
+        $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
+
+        if ($request->hasFile('bukti_transaksi')) {
+            if ($jurnalKas->bukti_transaksi) {
+                Storage::disk('public')->delete($jurnalKas->bukti_transaksi);
+            }
+            $path = $request->file('bukti_transaksi')->store('uploads/jurnal_kas', 'public');
+            $data['bukti_transaksi'] = $path;
+        }
+
+        $jurnalKas->update($data);
+
+        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil diperbarui.');
+    }
+
+    public function destroy(JurnalKas $jurnalKas)
+    {
+        Gate::authorize('delete_jurnal_kas');
+        if ($jurnalKas->bukti_transaksi) {
+            Storage::disk('public')->delete($jurnalKas->bukti_transaksi);
+        }
+        $jurnalKas->delete();
+        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil dihapus.');
+    }
+}

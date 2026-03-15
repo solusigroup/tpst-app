@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ritase extends Model
 {
-    use TenantTrait;
+    use TenantTrait, \Spatie\Activitylog\Traits\LogsActivity;
+
+    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    {
+        return \Spatie\Activitylog\LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $table = 'ritase';
 
