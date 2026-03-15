@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('view_users');
-        $query = User::with(['tenant']);
+        $query = User::with(['tenant', 'roles']);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {

@@ -24,7 +24,14 @@
                         <td><strong>{{ $user->name }}</strong></td>
                         <td>{{ $user->username }}</td>
                         <td>{{ $user->email }}</td>
-                        <td><span class="badge bg-primary me-1">{{ ucfirst($user->role) }}</span></td>
+                        <td>
+                            @foreach($user->roles as $role)
+                                <span class="badge bg-primary me-1">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
+                            @endforeach
+                            @if($user->roles->isEmpty())
+                                <span class="badge bg-secondary me-1">Belum ada role</span>
+                            @endif
+                        </td>
                         <td>{{ $user->tenant->name ?? '-' }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
