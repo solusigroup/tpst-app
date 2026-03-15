@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard
+    Route::get('/test500', function() {
+        return response()->json(['status' => 'OK', 'message' => 'The code was successfully pulled!']);
+    });
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional
