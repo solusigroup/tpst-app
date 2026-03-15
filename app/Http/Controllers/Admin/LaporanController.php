@@ -19,6 +19,7 @@ class LaporanController extends Controller
 
     public function labaRugi(Request $request)
     {
+        try {
         Gate::authorize('view_laporan_keuangan');
         
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
@@ -61,6 +62,14 @@ class LaporanController extends Controller
         }
 
         return view('admin.laporan.laba-rugi', $data);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => collect($e->getTrace())->take(5)->map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''))->toArray(),
+            ], 500);
+        }
     }
 
     public function neracaSaldo(Request $request)
