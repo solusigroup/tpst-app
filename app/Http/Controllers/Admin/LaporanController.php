@@ -396,6 +396,50 @@ class LaporanController extends Controller
         $rows = $query->paginate(20)->withQueryString();
         $totals = (clone $query)->reorder()->selectRaw('SUM(tonase) as total_tonase, COUNT(*) as total_rows')->first();
 
-        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'totals'));
+        // Stock Summary Logic
+        $pilahanAgg = HasilPilahan::selectRaw('kategori, jenis, SUM(tonase) as gross_tonase')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
+            ->groupBy('kategori', 'jenis')
+            ->get();
+
+        $penjualanAgg = DB::table('penjualan')
+            ->selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->groupBy('jenis_produk')
+            ->get()
+            ->keyBy('jenis_produk');
+
+        $stokSummary = [];
+        $totalPilahanAll = 0;
+        $totalTerjualAll = 0;
+        $totalSisaAll = 0;
+
+        foreach ($pilahanAgg as $item) {
+            $jual = isset($penjualanAgg[$item->jenis]) ? $penjualanAgg[$item->jenis]->total_keluar : 0;
+            $sisa = $item->gross_tonase - $jual;
+            
+            $stokSummary[] = (object)[
+                'kategori' => $item->kategori,
+                'jenis' => $item->jenis,
+                'total_pilahan' => $item->gross_tonase,
+                'total_terjual' => $jual,
+                'sisa_stok' => $sisa
+            ];
+
+            $totalPilahanAll += $item->gross_tonase;
+            $totalTerjualAll += $jual;
+            $totalSisaAll += $sisa;
+        }
+
+        $summaryTotals = (object)[
+            'total_pilahan' => $totalPilahanAll,
+            'total_terjual' => $totalTerjualAll,
+            'sisa_stok' => $totalSisaAll
+        ];
+
+        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'totals', 'stokSummary', 'summaryTotals'));
     }
 }

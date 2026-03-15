@@ -23,6 +23,56 @@
     </form>
 </div></div>
 
+{{-- Stock Summary Section --}}
+<div class="card mb-4" id="printable-summary">
+    <div class="card-header bg-light fw-bold">
+        <i class="cil-bar-chart me-1"></i> Ringkasan Stok Pilahan
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Jenis</th>
+                        <th class="text-end">Total Pilahan</th>
+                        <th class="text-end">Terjual</th>
+                        <th class="text-end">Sisa Stok</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($stokSummary as $stok)
+                    <tr>
+                        <td>
+                            @php $catColors = ['Organik'=>'success','Anorganik'=>'info','B3'=>'danger','Residu'=>'warning']; @endphp
+                            <span class="badge bg-{{ $catColors[$stok->kategori] ?? 'secondary' }}">{{ $stok->kategori }}</span>
+                        </td>
+                        <td class="fw-medium">{{ $stok->jenis }}</td>
+                        <td class="text-end text-primary">{{ number_format($stok->total_pilahan, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-danger">{{ number_format($stok->total_terjual, 2, ',', '.') }} kg</td>
+                        <td class="text-end fw-bold {{ $stok->sisa_stok > 0 ? 'text-success' : 'text-body-secondary' }}">{{ number_format($stok->sisa_stok, 2, ',', '.') }} kg</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="text-center py-4 text-body-secondary">Data ringkasan stok belum tersedia untuk filter ini.</td></tr>
+                    @endforelse
+                </tbody>
+                @if(count($stokSummary) > 0)
+                <tfoot class="border-top border-2 fw-bold bg-light">
+                    <tr>
+                        <td colspan="2" class="text-end">TOTAL KESELURUHAN</td>
+                        <td class="text-end text-primary">{{ number_format($summaryTotals->total_pilahan, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-danger">{{ number_format($summaryTotals->total_terjual, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-success">{{ number_format($summaryTotals->sisa_stok, 2, ',', '.') }} kg</td>
+                    </tr>
+                </tfoot>
+                @endif
+            </table>
+        </div>
+    </div>
+</div>
+
+<h5 class="mb-3">Riwayat Log Harian</h5>
+
 <div class="card" id="printable">
     <div class="card-body p-0">
         <div class="table-responsive">
