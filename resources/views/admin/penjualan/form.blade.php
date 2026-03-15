@@ -27,12 +27,19 @@
             </div>
             <div class="col-12">
                 <label class="form-label">Jenis Produk <span class="text-danger">*</span></label>
-                <input type="text" name="jenis_produk" class="form-control @error('jenis_produk') is-invalid @enderror" value="{{ old('jenis_produk', $penjualan->jenis_produk ?? '') }}" required>
+                <select name="jenis_produk" id="jenis_produk" class="form-select @error('jenis_produk') is-invalid @enderror" required onchange="updateMaxStock()">
+                    <option value="" data-stock="0">-- Pilih Jenis Pilahan --</option>
+                    @foreach($stokPilahan as $jenis => $sisaStok)
+                        <option value="{{ $jenis }}" data-stock="{{ $sisaStok }}" {{ old('jenis_produk', $penjualan->jenis_produk ?? '') == $jenis ? 'selected' : '' }}>
+                            {{ $jenis }} (Stok: {{ $sisaStok }} kg)
+                        </option>
+                    @endforeach
+                </select>
                 @error('jenis_produk') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-4">
-                <label class="form-label">Berat (kg) <span class="text-danger">*</span></label>
-                <input type="number" step="0.01" name="berat_kg" id="berat_kg" class="form-control @error('berat_kg') is-invalid @enderror" value="{{ old('berat_kg', $penjualan->berat_kg ?? '') }}" required oninput="calcTotal()">
+                <label class="form-label">Berat (kg) <span class="text-danger">*</span> <span id="max_stock_label" class="badge bg-secondary ms-2" style="display:none;"></span></label>
+                <input type="number" step="0.01" name="berat_kg" id="berat_kg" class="form-control @error('berat_kg') is-invalid @enderror" value="{{ old('berat_kg', $penjualan->berat_kg ?? '') }}" required oninput="calcTotal(); checkStock()">
                 @error('berat_kg') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-4">
@@ -61,5 +68,41 @@ function calcTotal() {
     const total = berat * harga;
     document.getElementById('total_harga_display').value = 'Rp ' + total.toLocaleString('id-ID');
 }
+
+let maxStock = 0;
+
+function updateMaxStock() {
+    const select = document.getElementById('jenis_produk');
+    const selectedOption = select.options[select.selectedIndex];
+    maxStock = parseFloat(selectedOption.getAttribute('data-stock')) || 0;
+    
+    const label = document.getElementById('max_stock_label');
+    if (select.value) {
+        label.textContent = 'Maksimal: ' + maxStock + ' kg';
+        label.style.display = 'inline-block';
+    } else {
+        label.style.display = 'none';
+    }
+    
+    document.getElementById('berat_kg').max = maxStock;
+    checkStock();
+}
+
+function checkStock() {
+    const input = document.getElementById('berat_kg');
+    const val = parseFloat(input.value) || 0;
+    
+    if (document.getElementById('jenis_produk').value && val > maxStock) {
+        input.classList.add('is-invalid');
+        input.setCustomValidity('Stok tidak mencukupi! Maksimal ' + maxStock + ' kg');
+    } else {
+        input.classList.remove('is-invalid');
+        input.setCustomValidity('');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateMaxStock();
+});
 </script>
 @endpush

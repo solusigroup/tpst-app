@@ -5,11 +5,41 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Penjualan;
 use App\Models\Klien;
+use App\Models\HasilPilahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class PenjualanController extends Controller
 {
+    private function calculateAvailableStock(?int $excludePenjualanId = null): array
+    {
+        $hasilPilahan = HasilPilahan::selectRaw('jenis, SUM(tonase) as total_masuk')
+            ->groupBy('jenis')
+            ->get()
+            ->keyBy('jenis');
+
+        $penjualanQuery = Penjualan::selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
+            ->groupBy('jenis_produk');
+            
+        if ($excludePenjualanId) {
+            $penjualanQuery->where('id', '!=', $excludePenjualanId);
+        }
+        
+        $penjualan = $penjualanQuery->get()->keyBy('jenis_produk');
+
+        $stok = [];
+        foreach ($hasilPilahan as $jenis => $data) {
+            $masuk = $data->total_masuk;
+            $keluar = isset($penjualan[$jenis]) ? $penjualan[$jenis]->total_keluar : 0;
+            $sisa = $masuk - $keluar;
+            
+            if ($sisa > 0 || ($excludePenjualanId && isset($penjualan[$jenis]))) {
+                $stok[$jenis] = $sisa;
+            }
+        }
+
+        return $stok;
+    }
     public function index(Request $request)
     {
         $query = Penjualan::with('klien');
@@ -27,7 +57,8 @@ class PenjualanController extends Controller
     {
         Gate::authorize('create_penjualan');
         $kliens = Klien::orderBy('nama_klien')->get();
-        return view('admin.penjualan.form', compact('kliens'));
+        $stokPilahan = $this->calculateAvailableStock();
+        return view('admin.penjualan.form', compact('kliens', 'stokPilahan'));
     }
 
     public function store(Request $request)
@@ -41,6 +72,14 @@ class PenjualanController extends Controller
             'berat_kg' => 'required|numeric|min:0',
             'harga_satuan' => 'required|numeric|min:0',
         ]);
+
+        $stokTersedia = $this->calculateAvailableStock();
+        $jenis = $request->jenis_produk;
+        $maxStok = $stokTersedia[$jenis] ?? 0;
+
+        if ($request->berat_kg > $maxStok) {
+            return back()->withErrors(['berat_kg' => "Stok {$jenis} tidak mencukupi. Maksimal: {$maxStok} kg"])->withInput();
+        }
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
 
@@ -62,7 +101,8 @@ class PenjualanController extends Controller
     {
         Gate::authorize('update_penjualan');
         $kliens = Klien::orderBy('nama_klien')->get();
-        return view('admin.penjualan.form', compact('penjualan', 'kliens'));
+        $stokPilahan = $this->calculateAvailableStock($penjualan->id);
+        return view('admin.penjualan.form', compact('penjualan', 'kliens', 'stokPilahan'));
     }
 
     public function update(Request $request, Penjualan $penjualan)
@@ -76,6 +116,14 @@ class PenjualanController extends Controller
             'berat_kg' => 'required|numeric|min:0',
             'harga_satuan' => 'required|numeric|min:0',
         ]);
+
+        $stokTersedia = $this->calculateAvailableStock($penjualan->id);
+        $jenis = $request->jenis_produk;
+        $maxStok = $stokTersedia[$jenis] ?? 0;
+
+        if ($request->berat_kg > $maxStok) {
+            return back()->withErrors(['berat_kg' => "Stok {$jenis} tidak mencukupi. Maksimal: {$maxStok} kg"])->withInput();
+        }
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
 
