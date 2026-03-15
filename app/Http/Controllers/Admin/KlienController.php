@@ -44,18 +44,27 @@ class KlienController extends Controller
 
     public function store(Request $request)
     {
-        Gate::authorize('create_klien');
-        
-        $validated = $request->validate([
-            'nama_klien' => 'required|string|max:255',
-            'jenis' => 'required|in:DLH,Swasta,Offtaker',
-            'kontak' => 'nullable|string',
-            'alamat' => 'nullable|string',
-        ]);
+        try {
+            Gate::authorize('create_klien');
+            
+            $validated = $request->validate([
+                'nama_klien' => 'required|string|max:255',
+                'jenis' => 'required|in:DLH,Swasta,Offtaker',
+                'kontak' => 'nullable|string',
+                'alamat' => 'nullable|string',
+            ]);
 
-        Klien::create($validated);
+            Klien::create($validated);
 
-        return redirect()->route('admin.klien.index')->with('success', 'Klien berhasil ditambahkan.');
+            return redirect()->route('admin.klien.index')->with('success', 'Klien berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => collect($e->getTrace())->take(5)->map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''))->toArray(),
+            ], 200);
+        }
     }
 
     public function edit(Klien $klien)
