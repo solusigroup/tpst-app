@@ -14,7 +14,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        Gate::authorize('view_dashboard');
+
         $today = Carbon::today();
         $monthStart = Carbon::now()->startOfMonth();
         $monthEnd = Carbon::now()->endOfMonth();

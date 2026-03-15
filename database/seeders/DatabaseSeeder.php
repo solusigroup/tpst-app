@@ -17,8 +17,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Jalankan seeder Role dan Permission terlebih dahulu
+        $this->call(RolePermissionSeeder::class);
+
         // Create default superuser
-        User::firstOrCreate(
+        $su = User::firstOrCreate(
             ['email' => 'su@superuser.com'],
             [
                 'name' => 'Wawan',
@@ -30,6 +33,8 @@ class DatabaseSeeder extends Seeder
                 'tenant_id' => null,
             ]
         );
+        // Penting: Assign Role Spatie agar fitur authorization tidak kena 403
+        $su->assignRole('super_admin');
 
         // Create default test tenant and users
         $tenant = Tenant::firstOrCreate(
@@ -47,7 +52,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        User::firstOrCreate(
+        $admin = User::firstOrCreate(
             ['username' => 'admin'],
             [
                 'name' => 'Admin User',
@@ -57,5 +62,7 @@ class DatabaseSeeder extends Seeder
                 'tenant_id' => $tenant->id,
             ]
         );
+        // Assign Role Spatie 'manajemen' ke admin default
+        $admin->assignRole('manajemen');
     }
 }
