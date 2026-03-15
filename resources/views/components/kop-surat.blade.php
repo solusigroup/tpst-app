@@ -8,7 +8,7 @@
     </h1>
     <p class="small text-secondary fw-medium mb-0" style="line-height: 1.6;">
         {{ $tenant?->address ?? '' }}<br>
-        @if($tenant?->email) Email: {{ $tenant->email }} @endif
+        @if($tenant?->email) Email: {{ $tenant?->email }} @endif
         @if($tenant?->bank_name) 
             <span class="mx-2 text-black-50 fw-light">|</span> 
             Bank: {{ $tenant?->bank_name }} - {{ $tenant?->bank_account_number }} 

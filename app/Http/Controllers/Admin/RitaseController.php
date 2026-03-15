@@ -51,6 +51,15 @@ class RitaseController extends Controller
 
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
 
+        $tenantId = auth()->user()->tenant_id;
+        if (!$tenantId) {
+            $firstTenant = \App\Models\Tenant::first();
+            if ($firstTenant) {
+                $tenantId = $firstTenant->id;
+            }
+        }
+        $validated['tenant_id'] = $tenantId;
+
         Ritase::create($validated);
 
         return redirect()->route('admin.ritase.index')->with('success', 'Ritase berhasil ditambahkan.');
@@ -81,6 +90,17 @@ class RitaseController extends Controller
         ]);
 
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
+
+        if (empty($ritase->tenant_id)) {
+            $tenantId = auth()->user()->tenant_id;
+            if (!$tenantId) {
+                $firstTenant = \App\Models\Tenant::first();
+                if ($firstTenant) {
+                    $tenantId = $firstTenant->id;
+                }
+            }
+            $validated['tenant_id'] = $tenantId;
+        }
 
         $ritase->update($validated);
 

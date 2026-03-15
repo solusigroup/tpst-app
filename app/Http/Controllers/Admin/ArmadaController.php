@@ -41,6 +41,15 @@ class ArmadaController extends Controller
             'kapasitas_maksimal' => 'required|numeric|min:0',
         ]);
 
+        $tenantId = auth()->user()->tenant_id;
+        if (!$tenantId) {
+            $firstTenant = \App\Models\Tenant::first();
+            if ($firstTenant) {
+                $tenantId = $firstTenant->id;
+            }
+        }
+        $validated['tenant_id'] = $tenantId;
+
         Armada::create($validated);
 
         return redirect()->route('admin.armada.index')->with('success', 'Armada berhasil ditambahkan.');
@@ -62,6 +71,17 @@ class ArmadaController extends Controller
             'plat_nomor' => 'required|string|unique:armada,plat_nomor,' . $armada->id,
             'kapasitas_maksimal' => 'required|numeric|min:0',
         ]);
+
+        if (empty($armada->tenant_id)) {
+            $tenantId = auth()->user()->tenant_id;
+            if (!$tenantId) {
+                $firstTenant = \App\Models\Tenant::first();
+                if ($firstTenant) {
+                    $tenantId = $firstTenant->id;
+                }
+            }
+            $validated['tenant_id'] = $tenantId;
+        }
 
         $armada->update($validated);
 

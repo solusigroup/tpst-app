@@ -46,10 +46,10 @@
         @php
             $tenant = auth()->user() ? auth()->user()->tenant : null;
         @endphp
-        <h1 class="header-title">{{ !empty($tenant?->name) ? $tenant->name : 'PT Tatabumi Adilimbah' }}</h1>
+        <h1 class="header-title">{{ !empty($tenant?->name) ? $tenant?->name : 'PT Tatabumi Adilimbah' }}</h1>
         <p class="header-subtitle">
             {{ $tenant?->address ?? '' }}<br>
-            @if(!empty($tenant?->email)) Email: {{ $tenant->email }} @endif
+            @if(!empty($tenant?->email)) Email: {{ $tenant?->email }} @endif
             @if(!empty($tenant?->bank_name)) 
                 | Bank: {{ $tenant?->bank_name }} - {{ $tenant?->bank_account_number }} ({{ $tenant?->bank_account_name }})
             @endif

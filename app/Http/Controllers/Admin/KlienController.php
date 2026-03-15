@@ -54,6 +54,16 @@ class KlienController extends Controller
                 'alamat' => 'nullable|string',
             ]);
 
+            $tenantId = auth()->user()->tenant_id;
+            if (!$tenantId) {
+                // If the user has no tenant (Superadmin), default to the first tenant to prevent 1048 constraint violation
+                $firstTenant = \App\Models\Tenant::first();
+                if ($firstTenant) {
+                    $tenantId = $firstTenant->id;
+                }
+            }
+            $validated['tenant_id'] = $tenantId;
+
             Klien::create($validated);
 
             return redirect()->route('admin.klien.index')->with('success', 'Klien berhasil ditambahkan.');
@@ -83,6 +93,17 @@ class KlienController extends Controller
             'kontak' => 'nullable|string',
             'alamat' => 'nullable|string',
         ]);
+
+        if (empty($klien->tenant_id)) {
+            $tenantId = auth()->user()->tenant_id;
+            if (!$tenantId) {
+                $firstTenant = \App\Models\Tenant::first();
+                if ($firstTenant) {
+                    $tenantId = $firstTenant->id;
+                }
+            }
+            $validated['tenant_id'] = $tenantId;
+        }
 
         $klien->update($validated);
 
