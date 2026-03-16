@@ -58,6 +58,27 @@ class JurnalController extends Controller
             $buktiPath = $request->file('bukti_transaksi')->store('jurnal-bukti', 'public');
         }
 
+        // Validasi ketersediaan saldo untuk akun Kas & Bank (awalan '11') di sisi Kredit
+        $kasCredits = collect($validated['details'])
+            ->filter(fn($d) => isset($d['kredit']) && $d['kredit'] > 0)
+            ->groupBy('coa_id')
+            ->map(fn($group) => $group->sum('kredit'));
+
+        foreach ($kasCredits as $coaId => $kreditInput) {
+            $coa = Coa::find($coaId);
+            if ($coa && str_starts_with($coa->kode_akun, '11')) { // 11 adalah Kas & Bank
+                $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('debit');
+                $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('kredit');
+                $saldoAwal = $saldoDebit - $saldoKredit;
+
+                if ($kreditInput > $saldoAwal) {
+                    return back()->withInput()->withErrors([
+                        'details' => 'Saldo akun ' . $coa->nama_akun . ' (' . $coa->kode_akun . ') tidak mencukupi. Sisa saldo saat ini: Rp ' . number_format($saldoAwal, 0, ',', '.')
+                    ]);
+                }
+            }
+        }
+
         $jurnal = JurnalHeader::create([
             'tanggal' => $validated['tanggal'],
             'deskripsi' => $validated['deskripsi'] ?? null,
@@ -105,6 +126,37 @@ class JurnalController extends Controller
 
         if ($request->hasFile('bukti_transaksi')) {
             $data['bukti_transaksi'] = $request->file('bukti_transaksi')->store('jurnal-bukti', 'public');
+        }
+
+        // Validasi ketersediaan saldo untuk akun Kas & Bank (awalan '11') di sisi Kredit
+        $kasCredits = collect($validated['details'])
+            ->filter(fn($d) => isset($d['kredit']) && $d['kredit'] > 0)
+            ->groupBy('coa_id')
+            ->map(fn($group) => $group->sum('kredit'));
+
+        foreach ($kasCredits as $coaId => $kreditInput) {
+            $coa = Coa::find($coaId);
+            if ($coa && str_starts_with($coa->kode_akun, '11')) { // 11 adalah Kas & Bank
+                $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('debit');
+                $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('kredit');
+                $saldoAwal = $saldoDebit - $saldoKredit;
+
+                // Kembalikan saldo sebelum direvisi eksisting
+                $jurnalExistingCredit = \App\Models\JurnalDetail::where('jurnal_header_id', $jurnal->id)
+                    ->where('coa_id', $coaId)
+                    ->sum('kredit');
+                $jurnalExistingDebit = \App\Models\JurnalDetail::where('jurnal_header_id', $jurnal->id)
+                    ->where('coa_id', $coaId)
+                    ->sum('debit');
+                
+                $saldoRestore = $saldoAwal + $jurnalExistingCredit - $jurnalExistingDebit;
+
+                if ($kreditInput > $saldoRestore) {
+                    return back()->withInput()->withErrors([
+                        'details' => 'Saldo akun ' . $coa->nama_akun . ' (' . $coa->kode_akun . ') tidak mencukupi. Sisa saldo saat ini: Rp ' . number_format($saldoRestore, 0, ',', '.')
+                    ]);
+                }
+            }
         }
 
         $jurnal->update($data);
