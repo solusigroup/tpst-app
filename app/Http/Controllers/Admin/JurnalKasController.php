@@ -31,7 +31,7 @@ class JurnalKasController extends Controller
     public function create()
     {
         Gate::authorize('create_jurnal_kas');
-        $coas = Coa::orderBy('kode_akun')->get();
+        $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
         return view('admin.jurnal-kas.form', compact('coas'));
     }
 
@@ -45,7 +45,7 @@ class JurnalKasController extends Controller
             'coa_id' => 'required|exists:coa,id',
             'jumlah' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
-            'bukti_transaksi' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_transaksi' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         $data = $validated;
@@ -56,6 +56,16 @@ class JurnalKasController extends Controller
         $data['coa_kas_id'] = $kas ? $kas->id : 1;
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
+
+        if ($data['tipe'] === 'Pengeluaran' && $kas) {
+            $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('debit');
+            $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('kredit');
+            $saldoKas = $saldoDebit - $saldoKredit;
+
+            if ($data['nominal'] > $saldoKas) {
+                return back()->withInput()->withErrors(['jumlah' => 'Saldo Kas tidak mencukupi untuk pengeluaran ini. Sisa saldo saat ini: Rp ' . number_format($saldoKas, 0, ',', '.')]);
+            }
+        }
 
         if ($request->hasFile('bukti_transaksi')) {
             $path = $request->file('bukti_transaksi')->store('uploads/jurnal_kas', 'public');
@@ -70,7 +80,7 @@ class JurnalKasController extends Controller
     public function edit(JurnalKas $jurnalKas)
     {
         Gate::authorize('update_jurnal_kas');
-        $coas = Coa::orderBy('kode_akun')->get();
+        $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
         return view('admin.jurnal-kas.form', compact('jurnalKas', 'coas'));
     }
 
@@ -84,7 +94,7 @@ class JurnalKasController extends Controller
             'coa_id' => 'required|exists:coa,id',
             'jumlah' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
-            'bukti_transaksi' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_transaksi' => ($jurnalKas->bukti_transaksi ? 'nullable' : 'required') . '|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         $data = $validated;
@@ -95,6 +105,23 @@ class JurnalKasController extends Controller
         $data['coa_kas_id'] = $kas ? $kas->id : 1;
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
+
+        if ($data['tipe'] === 'Pengeluaran' && $kas) {
+            $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('debit');
+            $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('kredit');
+            $saldoKas = $saldoDebit - $saldoKredit;
+            
+            // Mengembalikan efek dari mutasi sebelumnya ke saldo awal
+            if ($jurnalKas->tipe === 'Pengeluaran') {
+                $saldoKas += $jurnalKas->nominal;
+            } else {
+                $saldoKas -= $jurnalKas->nominal;
+            }
+
+            if ($data['nominal'] > $saldoKas) {
+                return back()->withInput()->withErrors(['jumlah' => 'Saldo Kas tidak mencukupi untuk pengeluaran ini. Sisa saldo saat ini: Rp ' . number_format($saldoKas, 0, ',', '.')]);
+            }
+        }
 
         if ($request->hasFile('bukti_transaksi')) {
             if ($jurnalKas->bukti_transaksi) {

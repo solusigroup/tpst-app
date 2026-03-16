@@ -44,8 +44,8 @@
                 <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $jurnalKas->deskripsi ?? '') }}</textarea>
             </div>
             <div class="col-12">
-                <label class="form-label">Bukti Transaksi (Opsional)</label>
-                <input type="file" name="bukti_transaksi" class="form-control @error('bukti_transaksi') is-invalid @enderror" accept=".jpg,.jpeg,.png,.pdf">
+                <label class="form-label">Bukti Transaksi <span class="text-danger">*</span></label>
+                <input type="file" name="bukti_transaksi" class="form-control @error('bukti_transaksi') is-invalid @enderror" accept=".jpg,.jpeg,.png,.pdf" {{ isset($jurnalKas) && $jurnalKas->bukti_transaksi ? '' : 'required' }}>
                 <div class="form-text">Format: JPG, PNG, PDF. Maks: 2MB. Bisa ambil dari Kamera Pustaka/Galeri.</div>
                 @error('bukti_transaksi') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 
