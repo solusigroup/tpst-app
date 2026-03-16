@@ -22,6 +22,7 @@ class RoleController extends Controller
     public function create()
     {
         Gate::authorize('view_users');
+        abort_if(!auth()->user()->hasRole('super_admin'), 403, 'Akses ditolak. Hanya Super Admin yang diizinkan mengelola role.');
 
         $permissions = Permission::all()->groupBy(function($perm) {
             return explode('_', $perm->name, 2)[1] ?? 'other'; // Grupping based on suffix, e.g. "klien" from "view_klien"
@@ -33,6 +34,7 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('view_users');
+        abort_if(!auth()->user()->hasRole('super_admin'), 403, 'Akses ditolak. Hanya Super Admin yang diizinkan mengelola role.');
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
@@ -52,6 +54,7 @@ class RoleController extends Controller
     public function edit(Role $role)
     {
         Gate::authorize('view_users');
+        abort_if(!auth()->user()->hasRole('super_admin'), 403, 'Akses ditolak. Hanya Super Admin yang diizinkan mengelola role.');
 
         if ($role->name === 'super_admin') {
             return redirect()->route('admin.roles.index')->with('error', 'Role Super Admin tidak dapat diubah.');
@@ -70,6 +73,7 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         Gate::authorize('view_users');
+        abort_if(!auth()->user()->hasRole('super_admin'), 403, 'Akses ditolak. Hanya Super Admin yang diizinkan mengelola role.');
 
         if ($role->name === 'super_admin') {
             return redirect()->route('admin.roles.index')->with('error', 'Role Super Admin tidak dapat diubah.');
@@ -97,6 +101,7 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         Gate::authorize('view_users');
+        abort_if(!auth()->user()->hasRole('super_admin'), 403, 'Akses ditolak. Hanya Super Admin yang diizinkan mengelola role.');
 
         if ($role->name === 'super_admin') {
             return redirect()->route('admin.roles.index')->with('error', 'Role Super Admin tidak dapat dihapus.');

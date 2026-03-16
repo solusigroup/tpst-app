@@ -16,11 +16,13 @@
                     </ol>
                 </nav>
             </div>
+            @if(auth()->user()->hasRole('super_admin'))
             <div>
                 <a href="{{ route('admin.roles.create') }}" class="btn btn-primary">
                     <i class="cil-plus me-1"></i> Tambah Role
                 </a>
             </div>
+            @endif
         </div>
     </div>
 </div>
@@ -35,7 +37,9 @@
                             <tr>
                                 <th>Nama Role</th>
                                 <th>Total Izin (Permissions)</th>
+                                @if(auth()->user()->hasRole('super_admin'))
                                 <th class="text-end">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -50,6 +54,7 @@
                                 <td>
                                     <span class="badge bg-info text-dark">{{ $role->permissions->count() }} Izin</span>
                                 </td>
+                                @if(auth()->user()->hasRole('super_admin'))
                                 <td class="text-end">
                                     <div class="btn-group">
                                         <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-sm btn-outline-primary" title="Edit">
@@ -66,6 +71,7 @@
                                         @endif
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                             @empty
                             <tr>
