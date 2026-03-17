@@ -18,7 +18,7 @@ class TenantScope implements Scope
             return;
         }
 
-        if (auth()->check()) {
+        if (auth()->check() && !auth()->user()->isSuperAdmin()) {
             $builder->where($model->getTable() . '.tenant_id', '=', auth()->user()->tenant_id);
         }
     }
