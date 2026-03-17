@@ -14,8 +14,10 @@ class WageCalculationController extends Controller
 {
     public function index(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $query = WageCalculation::where('tenant_id', $tenantId);
+        $query = WageCalculation::query();
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
@@ -33,9 +35,11 @@ class WageCalculationController extends Controller
             ->orderBy('week_start', 'desc')
             ->paginate(20);
 
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)
-            ->orderBy('name')
-            ->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
 
         return view('admin.hrd.wage-calculation.index', compact('wages', 'users'));
     }
@@ -70,13 +74,16 @@ class WageCalculationController extends Controller
         if ($validated['user_id'] ?? null) {
             $users = User::role('karyawan')->where('id', $validated['user_id'])->get();
         } else {
-            $users = User::role('karyawan')->where('tenant_id', $tenantId)
-                ->get();
+            $usersQuery = User::role('karyawan');
+            if (!auth()->user()->isSuperAdmin()) {
+                $usersQuery->where('tenant_id', $tenantId);
+            }
+            $users = $usersQuery->get();
         }
 
         $count = 0;
         foreach ($users as $user) {
-            WageCalculation::calculateForEmployee($user->id, $weekStart, $tenantId);
+            WageCalculation::calculateForEmployee($user->id, $weekStart, $user->tenant_id);
             $count++;
         }
 
@@ -111,8 +118,10 @@ class WageCalculationController extends Controller
 
     public function exportRekap(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $query = WageCalculation::where('tenant_id', $tenantId);
+        $query = WageCalculation::query();
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);

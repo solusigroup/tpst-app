@@ -12,8 +12,10 @@ class EmployeeOutputController extends Controller
 {
     public function index(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $query = EmployeeOutput::where('tenant_id', $tenantId);
+        $query = EmployeeOutput::query();
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
@@ -35,11 +37,16 @@ class EmployeeOutputController extends Controller
             ->orderBy('output_date', 'desc')
             ->paginate(20);
 
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
-        $categories = WasteCategory::where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
+        $categoriesQuery = WasteCategory::where('is_active', true);
+        if (!auth()->user()->isSuperAdmin()) {
+            $categoriesQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $categories = $categoriesQuery->orderBy('name')->get();
 
         return view('admin.hrd.output.index', compact('outputs', 'users', 'categories'));
     }
@@ -47,11 +54,16 @@ class EmployeeOutputController extends Controller
     public function create()
     {
         $tenantId = auth()->user()->tenant_id;
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
-        $categories = WasteCategory::where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
+        $categoriesQuery = WasteCategory::where('is_active', true);
+        if (!auth()->user()->isSuperAdmin()) {
+            $categoriesQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $categories = $categoriesQuery->orderBy('name')->get();
 
         return view('admin.hrd.output.create', compact('users', 'categories'));
     }
@@ -79,11 +91,16 @@ class EmployeeOutputController extends Controller
     {
         $this->authorize('update', $output);
         $tenantId = auth()->user()->tenant_id;
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
-        $categories = WasteCategory::where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
+        $categoriesQuery = WasteCategory::where('is_active', true);
+        if (!auth()->user()->isSuperAdmin()) {
+            $categoriesQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $categories = $categoriesQuery->orderBy('name')->get();
 
         return view('admin.hrd.output.edit', compact('output', 'users', 'categories'));
     }

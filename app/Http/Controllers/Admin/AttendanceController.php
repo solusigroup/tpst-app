@@ -11,8 +11,10 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $query = Attendance::where('tenant_id', $tenantId);
+        $query = Attendance::query();
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
@@ -34,7 +36,11 @@ class AttendanceController extends Controller
             ->orderBy('attendance_date', 'desc')
             ->paginate(20);
 
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
 
         return view('admin.hrd.attendance.index', compact('attendances', 'users'));
     }
@@ -42,7 +48,11 @@ class AttendanceController extends Controller
     public function create()
     {
         $tenantId = auth()->user()->tenant_id;
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
         return view('admin.hrd.attendance.create', compact('users'));
     }
 
@@ -69,7 +79,11 @@ class AttendanceController extends Controller
     {
         $this->authorize('edit', $attendance);
         $tenantId = auth()->user()->tenant_id;
-        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
+        $usersQuery = User::role('karyawan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $usersQuery->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
         return view('admin.hrd.attendance.edit', compact('attendance', 'users'));
     }
 
