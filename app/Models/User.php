@@ -35,6 +35,11 @@ class User extends Authenticatable
         'password',
         'role',
         'is_super_admin',
+        'address',
+        'position',
+        'ktp_number',
+        'photo',
+        'salary_type',
     ];
 
     /**

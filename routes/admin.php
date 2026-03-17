@@ -15,6 +15,12 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\CompanySettingsController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\EmployeeOutputController;
+use App\Http\Controllers\Admin\WasteCategoryController;
+use App\Http\Controllers\Admin\WageRateController;
+use App\Http\Controllers\Admin\WageCalculationController;
+use App\Http\Controllers\Admin\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -66,5 +72,28 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('ritase', [LaporanController::class, 'laporanRitase'])->name('ritase');
         Route::get('penjualan', [LaporanController::class, 'laporanPenjualan'])->name('penjualan');
         Route::get('hasil-pilahan', [LaporanController::class, 'laporanHasilPilahan'])->name('hasil-pilahan');
+    });
+
+    // HRD
+    Route::prefix('hrd')->name('hrd.')->group(function () {
+        Route::resource('attendance', AttendanceController::class);
+        Route::post('attendance/{user}/check-in', [AttendanceController::class, 'quickCheckIn'])->name('attendance.check-in');
+        Route::post('attendance/{user}/check-out', [AttendanceController::class, 'quickCheckOut'])->name('attendance.check-out');
+        
+        Route::resource('output', EmployeeOutputController::class);
+        
+        Route::resource('waste-category', WasteCategoryController::class);
+        
+        Route::resource('wage-rate', WageRateController::class);
+        
+        Route::get('wage-calculation/export-rekap', [WageCalculationController::class, 'exportRekap'])->name('wage-calculation.export-rekap');
+        Route::post('wage-calculation/calculate', [WageCalculationController::class, 'calculate'])->name('wage-calculation.calculate');
+        
+        Route::resource('wage-calculation', WageCalculationController::class)->only(['index', 'show']);
+        
+        Route::resource('employee', EmployeeController::class);
+        Route::match(['post', 'patch'], 'wage-calculation/{wageCalculation}/approve', [WageCalculationController::class, 'approve'])->name('wage-calculation.approve');
+        Route::match(['post', 'patch'], 'wage-calculation/{wageCalculation}/pay', [WageCalculationController::class, 'pay'])->name('wage-calculation.pay');
+        Route::get('wage-calculation/{wageCalculation}/export-slip', [WageCalculationController::class, 'exportSlip'])->name('wage-calculation.export-slip');
     });
 });

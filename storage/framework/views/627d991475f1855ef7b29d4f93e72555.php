@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="TPST App - Sistem Informasi Tempat Pengolahan Sampah Terpadu">
-    <title>{{ config('app.name', 'TPST App') }} — Login</title>
+    <title><?php echo e(config('app.name', 'TPST App')); ?> — Login</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -714,29 +714,29 @@
                     <p>Masuk ke akun Anda untuk melanjutkan</p>
                 </div>
 
-                @if ($errors->any())
+                <?php if($errors->any()): ?>
                     <div class="alert alert-error">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
                             <line x1="15" y1="9" x2="9" y2="15"/>
                             <line x1="9" y1="9" x2="15" y2="15"/>
                         </svg>
-                        <span>{{ $errors->first() }}</span>
+                        <span><?php echo e($errors->first()); ?></span>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @if (session('status'))
+                <?php if(session('status')): ?>
                     <div class="alert alert-success">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
                             <polyline points="22 4 12 14.01 9 11.01"/>
                         </svg>
-                        <span>{{ session('status') }}</span>
+                        <span><?php echo e(session('status')); ?></span>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                <form method="POST" action="{{ route('login.submit') }}" id="loginForm">
-                    @csrf
+                <form method="POST" action="<?php echo e(route('login.submit')); ?>" id="loginForm">
+                    <?php echo csrf_field(); ?>
 
                     <div class="form-group">
                         <label class="form-label" for="login">Email / Username</label>
@@ -747,7 +747,7 @@
                                 name="login"
                                 class="form-input"
                                 placeholder="Masukkan email atau username"
-                                value="{{ old('login') }}"
+                                value="<?php echo e(old('login')); ?>"
                                 required
                                 autofocus
                             >
@@ -787,7 +787,7 @@
                             <input type="checkbox" name="remember" id="remember">
                             <span class="checkbox-label">Ingat Saya</span>
                         </label>
-                        <a href="{{ route('password.request') }}" class="forgot-link">Lupa Password?</a>
+                        <a href="<?php echo e(route('password.request')); ?>" class="forgot-link">Lupa Password?</a>
                     </div>
 
                     <button type="submit" class="btn-submit" id="submitBtn">
@@ -798,7 +798,7 @@
 
 
                 <div class="login-footer">
-                    &copy; {{ date('Y') }} <a href="https://simpleakunting.biz.id/SolusiConsult.html">SimpleAkunting by Kurniawan with ❤️</a>. All rights reserved.
+                    &copy; <?php echo e(date('Y')); ?> <a href="https://simpleakunting.biz.id/SolusiConsult.html">SimpleAkunting by Kurniawan with ❤️</a>. All rights reserved.
                 </div>
             </div>
         </div>
@@ -830,3 +830,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\PROJECT_HERD\tpst-app\resources\views/welcome.blade.php ENDPATH**/ ?>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Slip Gaji</title>
+    <style>
+        body { font-family: sans-serif; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header h2 { margin: 0; padding: 0; }
+        .info-table { width: 100%; margin-bottom: 20px; border: none; }
+        .info-table td { padding: 4px 0; border: none; }
+        table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        table.data-table th, table.data-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+        table.data-table th { background-color: #f2f2f2; }
+        .text-end { text-align: right; }
+        .text-center { text-align: center; }
+        .total-box { border: 1px solid #000; padding: 10px; text-align: right; font-size: 14px; font-weight: bold; background-color: #f9f9f9; }
+        .footer { margin-top: 50px; width: 100%; clear: both; }
+        .signature-box { float: right; width: 200px; text-align: center; }
+        .signature-line { margin-top: 60px; border-bottom: 1px solid #000; width: 100%; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>SLIP GAJI KARYAWAN</h2>
+</div>
+
+<table class="info-table">
+    <tr>
+        <td width="150"><strong>Nama Karyawan</strong></td>
+        <td>: <?php echo e($wageCalculation->user->name ?? '-'); ?></td>
+    </tr>
+    <tr>
+        <td><strong>Jabatan / Peran</strong></td>
+        <td>: <?php echo e($wageCalculation->user->position ?? 'Karyawan Pemilah'); ?></td>
+    </tr>
+    <tr>
+        <td><strong>Periode Gaji</strong></td>
+        <td>: <?php echo e(\Carbon\Carbon::parse($wageCalculation->week_start)->format('d/m/Y')); ?> s/d <?php echo e(\Carbon\Carbon::parse($wageCalculation->week_end)->format('d/m/Y')); ?></td>
+    </tr>
+    <tr>
+        <td><strong>Status Pembayaran</strong></td>
+        <td>: 
+            <?php if($wageCalculation->status == 'pending'): ?> Belum Dibayar (Pending)
+            <?php elseif($wageCalculation->status == 'approved'): ?> Belum Dibayar (Disetujui)
+            <?php elseif($wageCalculation->status == 'paid'): ?> Lunas Dibayar (Tgl: <?php echo e(\Carbon\Carbon::parse($wageCalculation->paid_date)->format('d/m/Y')); ?>)
+            <?php endif; ?>
+        </td>
+    </tr>
+</table>
+
+<h4>Rincian Hasil Output:</h4>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th width="50" class="text-center">No</th>
+            <th>Tanggal Output</th>
+            <th>Kategori Sampah</th>
+            <th class="text-end">Kuantitas</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $__empty_1 = true; $__currentLoopData = $outputs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $out): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+        <tr>
+            <td class="text-center"><?php echo e($index + 1); ?></td>
+            <td><?php echo e(\Carbon\Carbon::parse($out->output_date)->format('d/m/Y')); ?></td>
+            <td><?php echo e($out->wasteCategory->name ?? '-'); ?></td>
+            <td class="text-end"><?php echo e(number_format($out->quantity, 2, ',', '.')); ?> <?php echo e($out->unit); ?></td>
+        </tr>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+        <tr>
+            <td colspan="4" class="text-center">Tidak ada catatan output pada periode ini.</td>
+        </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+
+<div class="total-box">
+    Total Keseluruhan Output: <?php echo e(number_format($wageCalculation->total_output, 2, ',', '.')); ?> kg<br><br>
+    TOTAL UPAH DITERIMA: Rp <?php echo e(number_format($wageCalculation->total_wage, 0, ',', '.')); ?>
+
+</div>
+
+<div class="footer">
+    <div class="signature-box">
+        Penerima / Karyawan<br>
+        <div class="signature-line"></div>
+        <?php echo e($wageCalculation->user->name ?? '-'); ?>
+
+    </div>
+</div>
+
+</body>
+</html>
+<?php /**PATH D:\PROJECT_HERD\tpst-app\resources\views/admin/hrd/wage-calculation/pdf-slip.blade.php ENDPATH**/ ?>

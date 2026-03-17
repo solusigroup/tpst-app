@@ -36,6 +36,14 @@ class RolePermissionSeeder extends Seeder
             'view_laporan_keuangan',
             'view_laporan_operasional',
             
+            // HRD
+            'view_attendance', 'create_attendance', 'update_attendance', 'delete_attendance',
+            'view_employee_output', 'create_employee_output', 'update_employee_output', 'delete_employee_output',
+            'view_waste_category', 'create_waste_category', 'update_waste_category', 'delete_waste_category',
+            'view_wage_rate', 'create_wage_rate', 'update_wage_rate', 'delete_wage_rate',
+            'view_wage_calculation', 'create_wage_calculation', 'update_wage_calculation', 'delete_wage_calculation',
+            'view_employee', 'create_employee', 'update_employee', 'delete_employee',
+            
             // Administrasi
             'view_users', 'create_users', 'update_users', 'delete_users',
             'view_company_settings', 'update_company_settings',
@@ -68,6 +76,14 @@ class RolePermissionSeeder extends Seeder
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_laporan_keuangan', 'view_laporan_operasional',
+            
+            // HRD
+            'view_attendance', 'create_attendance', 'update_attendance', 'delete_attendance',
+            'view_employee_output', 'create_employee_output', 'update_employee_output', 'delete_employee_output',
+            'view_waste_category', 'create_waste_category', 'update_waste_category', 'delete_waste_category',
+            'view_wage_rate', 'create_wage_rate', 'update_wage_rate', 'delete_wage_rate',
+            'view_wage_calculation', 'create_wage_calculation', 'update_wage_calculation', 'delete_wage_calculation',
+            'view_employee', 'create_employee', 'update_employee', 'delete_employee',
             // no users, company_settings, etc
         ]);
 
@@ -79,6 +95,10 @@ class RolePermissionSeeder extends Seeder
             'view_penjualan', 'create_penjualan', 'update_penjualan', 'delete_penjualan',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_laporan_keuangan', 'view_laporan_operasional',
+            
+            // HRD untuk Keuangan
+            'view_wage_rate', 'create_wage_rate', 'update_wage_rate', 'delete_wage_rate',
+            'view_wage_calculation', 'create_wage_calculation', 'update_wage_calculation', 'delete_wage_calculation',
         ]);
 
         // 4. Operator / Petugas Role
@@ -93,6 +113,17 @@ class RolePermissionSeeder extends Seeder
         $ritaseOnly = Role::firstOrCreate(['name' => 'ritase_only']);
         $ritaseOnly->givePermissionTo([
             'view_ritase',
+        ]);
+
+        // 6. HRD Role
+        $hrd = Role::firstOrCreate(['name' => 'hrd']);
+        $hrd->givePermissionTo([
+            'view_attendance', 'create_attendance', 'update_attendance', 'delete_attendance',
+            'view_employee_output', 'create_employee_output', 'update_employee_output', 'delete_employee_output',
+            'view_waste_category', 'create_waste_category', 'update_waste_category', 'delete_waste_category',
+            'view_wage_rate', 'create_wage_rate', 'update_wage_rate', 'delete_wage_rate',
+            'view_wage_calculation', 'create_wage_calculation', 'update_wage_calculation', 'delete_wage_calculation',
+            'view_employee', 'create_employee', 'update_employee', 'delete_employee',
         ]);
         
         $this->command->info('Roles and Permissions created successfully.');

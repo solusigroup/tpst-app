@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') - {{ config('app.name', 'TPST App') }}</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('title', 'Admin'); ?> - <?php echo e(config('app.name', 'TPST App')); ?></title>
 
     <script>
         (function() {
@@ -20,13 +20,13 @@
         })();
     </script>
 
-    {{-- CoreUI CSS --}}
+    
     <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.3.1/dist/css/coreui.min.css" rel="stylesheet">
-    {{-- CoreUI Icons --}}
+    
     <link href="https://cdn.jsdelivr.net/npm/@coreui/icons@3.0.1/css/all.min.css" rel="stylesheet">
-    {{-- Google Fonts --}}
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    {{-- Chart.js --}}
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
     <style>
@@ -245,7 +245,7 @@
             }
         }
     </style>
-    @stack('styles')
+    <?php echo $__env->yieldPushContent('styles'); ?>
 </head>
 <body>
     <div class="sidebar sidebar-dark sidebar-fixed" id="sidebar">
@@ -256,236 +256,236 @@
             <span class="sidebar-brand-narrow fw-bold">TP</span>
         </div>
         <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
-            {{-- Dashboard --}}
+            
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('admin.dashboard')); ?>">
                     <i class="nav-icon cil-speedometer"></i> Dashboard
                 </a>
             </li>
 
-            {{-- Operasional --}}
-            @canany(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan'])
+            
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan'])): ?>
             <li class="nav-title">Operasional</li>
-            @endcan
-            @can('view_ritase')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_ritase')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.ritase.*') ? 'active' : '' }}" href="{{ route('admin.ritase.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.ritase.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.ritase.index')); ?>">
                     <i class="nav-icon cil-truck"></i> Ritase
                 </a>
             </li>
-            @endcan
-            @can('view_klien')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_klien')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.klien.*') ? 'active' : '' }}" href="{{ route('admin.klien.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.klien.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.klien.index')); ?>">
                     <i class="nav-icon cil-people"></i> Klien
                 </a>
             </li>
-            @endcan
-            @can('view_armada')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_armada')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.armada.*') ? 'active' : '' }}" href="{{ route('admin.armada.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.armada.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.armada.index')); ?>">
                     <i class="nav-icon cil-car-alt"></i> Armada
                 </a>
             </li>
-            @endcan
-            @can('view_hasil_pilahan')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_hasil_pilahan')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hasil-pilahan.*') ? 'active' : '' }}" href="{{ route('admin.hasil-pilahan.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hasil-pilahan.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hasil-pilahan.index')); ?>">
                     <i class="nav-icon cil-filter"></i> Hasil Pilahan
                 </a>
             </li>
-            @endcan
-            @can('view_penjualan')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_penjualan')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.penjualan.*') ? 'active' : '' }}" href="{{ route('admin.penjualan.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.penjualan.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.penjualan.index')); ?>">
                     <i class="nav-icon cil-cart"></i> Penjualan
                 </a>
             </li>
-            @endcan
+            <?php endif; ?>
 
-            {{-- Keuangan --}}
-            @canany(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice'])
+            
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice'])): ?>
             <li class="nav-title">Keuangan</li>
-            @endcan
-            @can('view_coa')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_coa')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.coa.*') ? 'active' : '' }}" href="{{ route('admin.coa.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.coa.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.coa.index')); ?>">
                     <i class="nav-icon cil-book"></i> Chart of Account
                 </a>
             </li>
-            @endcan
-            @can('view_jurnal')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_jurnal')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}" href="{{ route('admin.jurnal.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.jurnal.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.jurnal.index')); ?>">
                     <i class="nav-icon cil-file"></i> Jurnal
                 </a>
             </li>
-            @endcan
-            @can('view_jurnal_kas')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_jurnal_kas')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.jurnal-kas.*') ? 'active' : '' }}" href="{{ route('admin.jurnal-kas.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.jurnal-kas.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.jurnal-kas.index')); ?>">
                     <i class="nav-icon cil-money"></i> Jurnal Kas
                 </a>
             </li>
-            @endcan
-            @can('view_invoice')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_invoice')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.invoice.*') ? 'active' : '' }}" href="{{ route('admin.invoice.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.invoice.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.invoice.index')); ?>">
                     <i class="nav-icon cil-description"></i> Invoice
                 </a>
             </li>
-            @endcan
+            <?php endif; ?>
 
-            {{-- Laporan --}}
-            @canany(['view_laporan_keuangan', 'view_laporan_operasional'])
+            
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_keuangan', 'view_laporan_operasional'])): ?>
             <li class="nav-title">Laporan</li>
-            @endcan
-            @can('view_laporan_keuangan')
-            <li class="nav-group {{ request()->routeIs('admin.laporan.*') ? 'show' : '' }}">
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_keuangan')): ?>
+            <li class="nav-group <?php echo e(request()->routeIs('admin.laporan.*') ? 'show' : ''); ?>">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-chart"></i> Laporan Keuangan
                 </a>
                 <ul class="nav-group-items compact">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.laba-rugi') ? 'active' : '' }}" href="{{ route('admin.laporan.laba-rugi') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laba Rugi</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.laba-rugi') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.laba-rugi')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laba Rugi</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.neraca-saldo') ? 'active' : '' }}" href="{{ route('admin.laporan.neraca-saldo') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Neraca Saldo</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.neraca-saldo') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.neraca-saldo')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Neraca Saldo</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.posisi-keuangan') ? 'active' : '' }}" href="{{ route('admin.laporan.posisi-keuangan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Posisi Keuangan</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.posisi-keuangan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.posisi-keuangan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Posisi Keuangan</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.arus-kas') ? 'active' : '' }}" href="{{ route('admin.laporan.arus-kas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Arus Kas</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.arus-kas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.arus-kas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Arus Kas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.perubahan-ekuitas') ? 'active' : '' }}" href="{{ route('admin.laporan.perubahan-ekuitas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perubahan Ekuitas</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.perubahan-ekuitas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.perubahan-ekuitas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perubahan Ekuitas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.buku-besar') ? 'active' : '' }}" href="{{ route('admin.laporan.buku-besar') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.buku-besar') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.buku-besar')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
                     </li>
                 </ul>
             </li>
-            @endcan
-            @can('view_laporan_operasional')
-            <li class="nav-group {{ request()->routeIs('admin.laporan-operasional.*') ? 'show' : '' }}">
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_operasional')): ?>
+            <li class="nav-group <?php echo e(request()->routeIs('admin.laporan-operasional.*') ? 'show' : ''); ?>">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-clipboard"></i> Laporan Operasional
                 </a>
                 <ul class="nav-group-items compact">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.hasil-pilahan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.hasil-pilahan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
                     </li>
                 </ul>
             </li>
-            @endcan
+            <?php endif; ?>
 
-            {{-- HRD (Sumber Daya Manusia) --}}
-            @hasanyrole('manajemen|hrd|keuangan|super_admin')
+            
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'manajemen|hrd|keuangan|super_admin')): ?>
             <li class="nav-title">S D M</li>
             
-            @hasanyrole('manajemen|hrd|super_admin')
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'manajemen|hrd|super_admin')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.employee.*') ? 'active' : '' }}" href="{{ route('admin.hrd.employee.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.employee.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.employee.index')); ?>">
                     <i class="nav-icon cil-people"></i> Karyawan
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.attendance.*') ? 'active' : '' }}" href="{{ route('admin.hrd.attendance.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.attendance.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.attendance.index')); ?>">
                     <i class="nav-icon cil-calendar-check"></i> Kehadiran
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.output.*') ? 'active' : '' }}" href="{{ route('admin.hrd.output.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.output.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.output.index')); ?>">
                     <i class="nav-icon cil-chart-pie"></i> Output Pemilah
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.waste-category.*') ? 'active' : '' }}" href="{{ route('admin.hrd.waste-category.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.waste-category.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.waste-category.index')); ?>">
                     <i class="nav-icon cil-tags"></i> Kategori Sampah
                 </a>
             </li>
-            @endhasanyrole
+            <?php endif; ?>
 
-            @hasanyrole('manajemen|hrd|keuangan|super_admin')
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'manajemen|hrd|keuangan|super_admin')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.wage-rate.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-rate.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.wage-rate.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.wage-rate.index')); ?>">
                     <i class="nav-icon cil-dollar"></i> Tarif Upah
                 </a>
             </li>
-            @endhasanyrole
+            <?php endif; ?>
 
-            @hasanyrole('manajemen|keuangan|super_admin')
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'manajemen|keuangan|super_admin')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.wage-calculation.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-calculation.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.wage-calculation.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.wage-calculation.index')); ?>">
                     <i class="nav-icon cil-calculator"></i> Perhitungan Upah
                 </a>
             </li>
-            @endhasanyrole
-            @endhasanyrole
+            <?php endif; ?>
+            <?php endif; ?>
 
-            {{-- Administrasi --}}
-            @canany(['view_users', 'view_company_settings', 'view_activity_log'])
+            
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_users', 'view_company_settings', 'view_activity_log'])): ?>
             <li class="nav-title">Administrasi</li>
-            @endcan
-            @can('view_users')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_users')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}" href="{{ route('admin.roles.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.roles.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.roles.index')); ?>">
                     <i class="nav-icon cil-lock-locked"></i> Manajemen Role
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.users.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.users.index')); ?>">
                     <i class="nav-icon cil-user"></i> Users
                 </a>
             </li>
-            @endcan
-            @can('view_company_settings')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_company_settings')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.company-settings') ? 'active' : '' }}" href="{{ route('admin.company-settings') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.company-settings') ? 'active' : ''); ?>" href="<?php echo e(route('admin.company-settings')); ?>">
                     <i class="nav-icon cil-building"></i> Pengaturan Perusahaan
                 </a>
             </li>
-            @endcan
-            @can('view_activity_log')
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_activity_log')): ?>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}" href="{{ route('admin.activities.index') }}">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.activities.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.activities.index')); ?>">
                     <i class="nav-icon cil-history"></i> Log Aktivitas
                 </a>
             </li>
-            @endcan
+            <?php endif; ?>
 
-            @if(auth()->user() && auth()->user()->is_super_admin)
+            <?php if(auth()->user() && auth()->user()->is_super_admin): ?>
             <!-- CENTRAL PANEL -->
             <li class="nav-title text-danger">CENTRAL PANEL (SUPERADMIN)</li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('central.dashboard') }}">
+                <a class="nav-link" href="<?php echo e(route('central.dashboard')); ?>">
                     <i class="nav-icon cil-speedometer text-danger"></i> Central Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('central.tenants.index') }}">
+                <a class="nav-link" href="<?php echo e(route('central.tenants.index')); ?>">
                     <i class="nav-icon cil-building text-danger"></i> Manajemen Tenant
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('central.users.index') }}">
+                <a class="nav-link" href="<?php echo e(route('central.users.index')); ?>">
                     <i class="nav-icon cil-people text-danger"></i> Semua User (Central)
                 </a>
             </li>
-            @endif
+            <?php endif; ?>
         </ul>
         <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
     </div>
 
     <div class="wrapper d-flex flex-column min-vh-100">
-        {{-- Header --}}
+        
         <header class="header header-sticky p-0 mb-4 shadow-sm bg-body">
             <div class="container-fluid px-4">
                 <button class="header-toggler" type="button"
@@ -495,14 +495,14 @@
                 </button>
 
                 <ul class="header-nav ms-auto flex-row align-items-center">
-                    {{-- RTL Toggle --}}
+                    
                     <li class="nav-item">
                         <button class="nav-link" type="button" onclick="toggleRTL()" title="Toggle RTL">
                             <i class="cil-swap-horizontal fs-5"></i>
                         </button>
                     </li>
                     
-                    {{-- Theme Toggle --}}
+                    
                     <li class="nav-item dropdown">
                         <button class="nav-link" type="button" data-coreui-toggle="dropdown" aria-expanded="false" title="Toggle Theme">
                             <i class="cil-contrast fs-5" id="theme-icon"></i>
@@ -517,20 +517,21 @@
                     <li class="nav-item dropdown ms-2">
                         <a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                             <div class="avatar avatar-md bg-primary text-white d-flex align-items-center justify-content-center" style="width:36px;height:36px;border-radius:50%;font-weight:600;font-size:0.875rem;">
-                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                <?php echo e(strtoupper(substr(auth()->user()->name ?? 'U', 0, 1))); ?>
+
                             </div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end pt-0">
                             <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2 py-3 px-4">
-                                <div class="fw-semibold">{{ auth()->user()->name ?? 'User' }}</div>
-                                <small class="text-body-secondary">{{ auth()->user()->email ?? '' }}</small>
+                                <div class="fw-semibold"><?php echo e(auth()->user()->name ?? 'User'); ?></div>
+                                <small class="text-body-secondary"><?php echo e(auth()->user()->email ?? ''); ?></small>
                             </div>
-                            <a class="dropdown-item" href="{{ route('admin.company-settings') }}">
+                            <a class="dropdown-item" href="<?php echo e(route('admin.company-settings')); ?>">
                                 <i class="cil-settings me-2"></i> Pengaturan
                             </a>
                             <div class="dropdown-divider"></div>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit" class="dropdown-item text-danger">
                                     <i class="cil-account-logout me-2"></i> Logout
                                 </button>
@@ -541,68 +542,71 @@
             </div>
         </header>
 
-        {{-- Content --}}
+        
         <div class="body flex-grow-1">
             <div class="container-fluid px-4">
-                {{-- Flash Messages --}}
-                @if(session('success'))
+                
+                <?php if(session('success')): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="cil-check-circle me-2"></i>{{ session('success') }}
+                        <i class="cil-check-circle me-2"></i><?php echo e(session('success')); ?>
+
                         <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
                     </div>
-                @endif
-                @if(session('error'))
+                <?php endif; ?>
+                <?php if(session('error')): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="cil-x-circle me-2"></i>{{ session('error') }}
+                        <i class="cil-x-circle me-2"></i><?php echo e(session('error')); ?>
+
                         <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
                     </div>
-                @endif
-                @if(session('warning'))
+                <?php endif; ?>
+                <?php if(session('warning')): ?>
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                        <i class="cil-warning me-2"></i>{{ session('warning') }}
+                        <i class="cil-warning me-2"></i><?php echo e(session('warning')); ?>
+
                         <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
                     </div>
-                @endif
-                @if($errors->any())
+                <?php endif; ?>
+                <?php if($errors->any()): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="cil-x-circle me-2"></i>
                         <strong>Terjadi kesalahan:</strong>
                         <ul class="mb-0 mt-1">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
+                            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li><?php echo e($error); ?></li>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
                         <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @yield('content')
+                <?php echo $__env->yieldContent('content'); ?>
             </div>
         </div>
 
-        {{-- Footer --}}
+        
         <footer class="footer px-4 mt-auto">
             <div class="text-body-secondary small">
-                &copy; {{ date('Y') }} TPST App. All rights reserved.
+                &copy; <?php echo e(date('Y')); ?> TPST App. All rights reserved.
             </div>
         </footer>
     </div>
 
-    {{-- Mobile Bottom Nav --}}
+    
     <div class="mobile-bottom-nav">
-        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>">
             <i class="cil-speedometer"></i>
             <span>Home</span>
         </a>
-        <a href="{{ route('admin.ritase.index') }}" class="nav-link {{ request()->routeIs('admin.ritase.*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('admin.ritase.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.ritase.*') ? 'active' : ''); ?>">
             <i class="cil-truck"></i>
             <span>Ritase</span>
         </a>
-        <a href="{{ route('admin.penjualan.index') }}" class="nav-link {{ request()->routeIs('admin.penjualan.*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('admin.penjualan.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.penjualan.*') ? 'active' : ''); ?>">
             <i class="cil-cart"></i>
             <span>Jual</span>
         </a>
-        <a href="{{ route('admin.jurnal.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
+        <a href="<?php echo e(route('admin.jurnal.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.jurnal.*') ? 'active' : ''); ?>">
             <i class="cil-file"></i>
             <span>Jurnal</span>
         </a>
@@ -612,10 +616,10 @@
         </a>
     </div>
 
-    {{-- Overlay for mobile sidebar --}}
+    
     <div id="sidebar-overlay" class="d-none" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1031;"></div>
 
-    {{-- CoreUI JS --}}
+    
     <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.3.1/dist/js/coreui.bundle.min.js"></script>
     <script>
         function setTheme(theme) {
@@ -659,6 +663,7 @@
             this.classList.add('d-none');
         });
     </script>
-    @stack('scripts')
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>
+<?php /**PATH D:\PROJECT_HERD\tpst-app\resources\views/layouts/admin.blade.php ENDPATH**/ ?>
