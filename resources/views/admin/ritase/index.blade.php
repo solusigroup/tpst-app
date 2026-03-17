@@ -7,7 +7,11 @@
         <h1>Ritase</h1>
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Ritase</li></ol></nav>
     </div>
-    <a href="{{ route('admin.ritase.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah Ritase</a>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.ritase.export-rekap', request()->all()) }}" class="btn btn-danger" target="_blank"><i class="cil-print me-1"></i> Cetak Rekap (PDF)</a>
+        <a href="{{ route('admin.ritase.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah Ritase</a>
+    </div>
 </div>
 
 <div class="card">
@@ -17,12 +21,36 @@
                 <input type="text" name="search" class="form-control" placeholder="Cari nomor tiket..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
+                <input type="date" name="start_date" class="form-control" title="Tanggal Mulai" value="{{ request('start_date') }}">
+            </div>
+            <div class="col-auto">
+                <input type="date" name="end_date" class="form-control" title="Tanggal Selesai" value="{{ request('end_date') }}">
+            </div>
+            <div class="col-auto">
                 <button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button>
             </div>
-            @if(request()->hasAny(['search']))
+            @if(request()->hasAny(['search', 'start_date', 'end_date']))
                 <div class="col-auto"><a href="{{ route('admin.ritase.index') }}" class="btn btn-outline-secondary">Reset</a></div>
             @endif
         </form>
+    </div>
+    
+    <div class="card-body border-bottom bg-primary bg-opacity-10 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-semibold text-primary">
+                <i class="cil-weight me-2"></i> TOTAL BERAT NETTO 
+                @if(request('start_date') && request('end_date'))
+                    ({{ \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->translatedFormat('d M Y') }})
+                @elseif(request('start_date'))
+                    (Melampaui {{ \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d M Y') }})
+                @elseif(request('end_date'))
+                    (Mendahului {{ \Carbon\Carbon::parse(request('end_date'))->translatedFormat('d M Y') }})
+                @else
+                    (Semua Waktu)
+                @endif
+            </div>
+            <div class="fs-4 fw-bold text-primary">{{ number_format($totalBeratNetto ?? 0, 2, ',', '.') }} kg</div>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">

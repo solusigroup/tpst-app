@@ -20,9 +20,44 @@ class RitaseController extends Controller
             $query->where('nomor_tiket', 'like', '%' . $request->search . '%');
         }
 
+        if ($request->filled('start_date')) {
+            $query->whereDate('waktu_masuk', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('waktu_masuk', '<=', $request->end_date);
+        }
+
+        $totalBeratNetto = (clone $query)->sum('berat_netto');
         $ritase = $query->orderByDesc('waktu_masuk')->paginate(15)->withQueryString();
 
-        return view('admin.ritase.index', compact('ritase'));
+        return view('admin.ritase.index', compact('ritase', 'totalBeratNetto'));
+    }
+
+    public function exportRekap(Request $request)
+    {
+        Gate::authorize('view_ritase');
+        $query = Ritase::with(['armada', 'klien']);
+
+        if ($request->filled('search')) {
+            $query->where('nomor_tiket', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('waktu_masuk', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('waktu_masuk', '<=', $request->end_date);
+        }
+
+        $ritase = $query->orderByDesc('waktu_masuk')->get();
+        $totalBeratNetto = $ritase->sum('berat_netto');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.ritase.pdf-rekap', compact('ritase', 'totalBeratNetto'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Rekap_Ritase_' . date('Ymd_His') . '.pdf');
     }
 
     public function create()

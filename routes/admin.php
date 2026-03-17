@@ -33,6 +33,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional
+    Route::get('ritase/export-rekap', [RitaseController::class, 'exportRekap'])->name('ritase.export-rekap');
     Route::resource('ritase', RitaseController::class);
     Route::post('ritase/{ritase}/post', [RitaseController::class, 'post'])->name('ritase.post');
     Route::resource('klien', KlienController::class);
