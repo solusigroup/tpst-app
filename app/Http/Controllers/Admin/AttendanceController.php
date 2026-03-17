@@ -34,7 +34,7 @@ class AttendanceController extends Controller
             ->orderBy('attendance_date', 'desc')
             ->paginate(20);
 
-        $users = User::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
 
         return view('admin.hrd.attendance.index', compact('attendances', 'users'));
     }
@@ -42,7 +42,7 @@ class AttendanceController extends Controller
     public function create()
     {
         $tenantId = auth()->user()->tenant_id;
-        $users = User::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
         return view('admin.hrd.attendance.create', compact('users'));
     }
 
@@ -69,7 +69,7 @@ class AttendanceController extends Controller
     {
         $this->authorize('edit', $attendance);
         $tenantId = auth()->user()->tenant_id;
-        $users = User::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
         return view('admin.hrd.attendance.edit', compact('attendance', 'users'));
     }
 

@@ -33,8 +33,7 @@ class WageCalculationController extends Controller
             ->orderBy('week_start', 'desc')
             ->paginate(20);
 
-        $users = User::where('tenant_id', $tenantId)
-            ->where('id', '!=', auth()->id())
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get();
 
@@ -69,10 +68,9 @@ class WageCalculationController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         if ($validated['user_id'] ?? null) {
-            $users = User::where('id', $validated['user_id'])->get();
+            $users = User::role('karyawan')->where('id', $validated['user_id'])->get();
         } else {
-            $users = User::where('tenant_id', $tenantId)
-                ->where('id', '!=', auth()->id())
+            $users = User::role('karyawan')->where('tenant_id', $tenantId)
                 ->get();
         }
 

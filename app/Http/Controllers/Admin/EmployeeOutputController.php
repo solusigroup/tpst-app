@@ -35,7 +35,7 @@ class EmployeeOutputController extends Controller
             ->orderBy('output_date', 'desc')
             ->paginate(20);
 
-        $users = User::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
         $categories = WasteCategory::where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('name')
@@ -47,7 +47,7 @@ class EmployeeOutputController extends Controller
     public function create()
     {
         $tenantId = auth()->user()->tenant_id;
-        $users = User::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
         $categories = WasteCategory::where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('name')
@@ -79,7 +79,7 @@ class EmployeeOutputController extends Controller
     {
         $this->authorize('update', $output);
         $tenantId = auth()->user()->tenant_id;
-        $users = User::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $users = User::role('karyawan')->where('tenant_id', $tenantId)->orderBy('name')->get();
         $categories = WasteCategory::where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('name')

@@ -14,7 +14,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::role('karyawan');
         if (!auth()->user()->isSuperAdmin()) {
             $query->where('tenant_id', auth()->user()->tenant_id);
         }
