@@ -21,11 +21,18 @@ class DashboardController extends Controller
 
         // Stats
         $tonaseHariIni = Ritase::whereDate('waktu_masuk', $today)->sum('berat_netto');
-        $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
-            ->where('biaya_tipping', '>', 0)
-            ->sum('biaya_tipping');
-        $penjualanBulanIni = Penjualan::whereBetween('tanggal', [$monthStart, $monthEnd])
-            ->sum('total_harga');
+        $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
+
+        if (!auth()->user()->hasRole('ritase only')) {
+            $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
+                ->where('biaya_tipping', '>', 0)
+                ->sum('biaya_tipping');
+            $penjualanBulanIni = Penjualan::whereBetween('tanggal', [$monthStart, $monthEnd])
+                ->sum('total_harga');
+        } else {
+            $pendapatanTipping = 0;
+            $penjualanBulanIni = 0;
+        }
         $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
 
         // Chart data: Daily tonnage for last 14 days
@@ -41,15 +48,17 @@ class DashboardController extends Controller
 
         // Chart data: Revenue for last 6 months
         $monthlyRevenue = collect();
-        for ($i = 5; $i >= 0; $i--) {
-            $month = Carbon::now()->subMonths($i);
-            $revenue = Penjualan::whereYear('tanggal', $month->year)
-                ->whereMonth('tanggal', $month->month)
-                ->sum('total_harga');
-            $monthlyRevenue->push([
-                'month' => $month->format('M Y'),
-                'revenue' => round($revenue, 0),
-            ]);
+        if (!auth()->user()->hasRole('ritase only')) {
+            for ($i = 5; $i >= 0; $i--) {
+                $month = Carbon::now()->subMonths($i);
+                $revenue = Penjualan::whereYear('tanggal', $month->year)
+                    ->whereMonth('tanggal', $month->month)
+                    ->sum('total_harga');
+                $monthlyRevenue->push([
+                    'month' => $month->format('M Y'),
+                    'revenue' => round($revenue, 0),
+                ]);
+            }
         }
 
         return view('admin.dashboard', compact(

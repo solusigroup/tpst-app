@@ -32,6 +32,7 @@
             </div>
         </div>
     </div>
+    @if(!auth()->user()->hasRole('ritase only'))
     <div class="col-sm-6 col-xl-3">
         <div class="card stat-card stat-info">
             <div class="card-body d-flex align-items-center">
@@ -58,6 +59,7 @@
             </div>
         </div>
     </div>
+    @endif
     <div class="col-sm-6 col-xl-3">
         <div class="card stat-card stat-primary">
             <div class="card-body d-flex align-items-center">
@@ -75,16 +77,17 @@
 
 {{-- Charts --}}
 <div class="row g-4 mb-4">
-    <div class="col-xl-8">
+    <div class="{{ auth()->user()->hasRole('ritase only') ? 'col-xl-12' : 'col-xl-8' }}">
         <div class="card">
             <div class="card-header bg-white border-bottom-0 pt-4">
                 <h5 class="card-title mb-0 fw-semibold">Tonase Harian (14 Hari Terakhir)</h5>
             </div>
             <div class="card-body">
-                <canvas id="dailyTonnageChart" height="100"></canvas>
+                <canvas id="dailyTonnageChart" height="{{ auth()->user()->hasRole('ritase only') ? '80' : '100' }}"></canvas>
             </div>
         </div>
     </div>
+    @if(!auth()->user()->hasRole('ritase only'))
     <div class="col-xl-4">
         <div class="card">
             <div class="card-header bg-white border-bottom-0 pt-4">
@@ -95,6 +98,7 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection
 
@@ -131,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    @if(!auth()->user()->hasRole('ritase only'))
     // Revenue Chart
     const revenueData = @json($monthlyRevenue);
     new Chart(document.getElementById('revenueChart'), {
@@ -159,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    @endif
 });
 </script>
 @endpush
