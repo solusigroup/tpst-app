@@ -115,7 +115,10 @@ class RolePermissionSeeder extends Seeder
             'view_ritase',
         ]);
 
-        // 6. HRD Role
+        // 6. Karyawan Role (General Employee)
+        $karyawan = Role::firstOrCreate(['name' => 'karyawan']);
+
+        // 7. HRD Role
         $hrd = Role::firstOrCreate(['name' => 'hrd']);
         $hrd->givePermissionTo([
             'view_attendance', 'create_attendance', 'update_attendance', 'delete_attendance',
