@@ -73,6 +73,9 @@
                                             <span class="badge bg-{{ $emp->salary_type == 'bulanan' ? 'info' : 'success' }}">
                                                 {{ ucfirst($emp->salary_type) }}
                                             </span>
+                                            @if($emp->salary_type == 'bulanan' && $emp->monthly_salary)
+                                                <br><small class="text-muted">Rp {{ number_format($emp->monthly_salary, 0, ',', '.') }}</small>
+                                            @endif
                                         @else
                                             -
                                         @endif

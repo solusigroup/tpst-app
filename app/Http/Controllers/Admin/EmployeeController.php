@@ -52,8 +52,13 @@ class EmployeeController extends Controller
             'address' => 'nullable|string',
             'ktp_number' => 'nullable|string|max:50',
             'salary_type' => 'nullable|in:bulanan,borongan',
+            'monthly_salary' => 'nullable|numeric|min:0',
             'photo' => 'nullable|image|max:2048',
         ]);
+        
+        if ($validated['salary_type'] !== 'bulanan') {
+            $validated['monthly_salary'] = null;
+        }
 
         $validated['tenant_id'] = $tenantId;
         $validated['password'] = Hash::make('password123'); // Default password
@@ -98,8 +103,13 @@ class EmployeeController extends Controller
             'address' => 'nullable|string',
             'ktp_number' => 'nullable|string|max:50',
             'salary_type' => 'nullable|in:bulanan,borongan',
+            'monthly_salary' => 'nullable|numeric|min:0',
             'photo' => 'nullable|image|max:2048',
         ]);
+
+        if ($validated['salary_type'] !== 'bulanan') {
+            $validated['monthly_salary'] = null;
+        }
 
         if ($request->hasFile('photo')) {
             // Delete old photo

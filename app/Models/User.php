@@ -40,6 +40,7 @@ class User extends Authenticatable
         'ktp_number',
         'photo',
         'salary_type',
+        'monthly_salary',
     ];
 
     /**

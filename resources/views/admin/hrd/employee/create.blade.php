@@ -47,12 +47,23 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tipe Gaji</label>
-                            <select name="salary_type" class="form-select @error('salary_type') is-invalid @enderror">
+                            <select name="salary_type" id="salary_type" class="form-select @error('salary_type') is-invalid @enderror">
                                 <option value="">-- Pilih Tipe --</option>
                                 <option value="bulanan" {{ old('salary_type') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
                                 <option value="borongan" {{ old('salary_type') == 'borongan' ? 'selected' : '' }}>Borongan</option>
                             </select>
                             @error('salary_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3" id="monthly_salary_container" style="display: {{ old('salary_type') == 'bulanan' ? 'flex' : 'none' }};">
+                        <div class="col-md-6">
+                            <label class="form-label">Gaji Bulanan (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" name="monthly_salary" class="form-control @error('monthly_salary') is-invalid @enderror" value="{{ old('monthly_salary') }}" min="0" step="1">
+                            </div>
+                            @error('monthly_salary') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
@@ -79,3 +90,22 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const salaryTypeSelect = document.getElementById('salary_type');
+        const monthlySalaryContainer = document.getElementById('monthly_salary_container');
+
+        if(salaryTypeSelect) {
+            salaryTypeSelect.addEventListener('change', function() {
+                if (this.value === 'bulanan') {
+                    monthlySalaryContainer.style.display = 'flex';
+                } else {
+                    monthlySalaryContainer.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+@endpush
