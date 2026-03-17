@@ -36,7 +36,13 @@
     </tr>
     <tr>
         <td><strong>Periode Gaji</strong></td>
-        <td>: {{ \Carbon\Carbon::parse($wageCalculation->week_start)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($wageCalculation->week_end)->format('d/m/Y') }}</td>
+        <td>: 
+            @if($wageCalculation->user->salary_type === 'bulanan')
+                Bulan {{ \Carbon\Carbon::parse($wageCalculation->week_start)->translatedFormat('F Y') }}
+            @else
+                {{ \Carbon\Carbon::parse($wageCalculation->week_start)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($wageCalculation->week_end)->format('d/m/Y') }}
+            @endif
+        </td>
     </tr>
     <tr>
         <td><strong>Status Pembayaran</strong></td>
@@ -76,7 +82,12 @@
 </table>
 
 <div class="total-box">
+    @if($wageCalculation->user->salary_type === 'borongan' || $wageCalculation->total_output > 0)
     Total Keseluruhan Output: {{ number_format($wageCalculation->total_output, 2, ',', '.') }} kg<br><br>
+    @endif
+    @if($wageCalculation->user->salary_type === 'bulanan')
+    GAJI POKOK BULANAN: Rp {{ number_format($wageCalculation->user->monthly_salary ?? 0, 0, ',', '.') }}<br><br>
+    @endif
     TOTAL UPAH DITERIMA: Rp {{ number_format($wageCalculation->total_wage, 0, ',', '.') }}
 </div>
 

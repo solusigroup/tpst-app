@@ -88,7 +88,13 @@
                     @forelse($wages as $item)
                     <tr>
                         <td><strong>{{ $item->user->name ?? 'Unknown' }}</strong></td>
-                        <td>{{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}</td>
+                        <td>
+                            @if($item->user->salary_type === 'bulanan')
+                                Bulan {{ \Carbon\Carbon::parse($item->week_start)->translatedFormat('F Y') }}
+                            @else
+                                {{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}
+                            @endif
+                        </td>
                         <td><strong>Rp {{ number_format($item->total_wage, 2, ',', '.') }}</strong></td>
                         <td>{{ number_format($item->total_output, 2, ',', '.') }} kg</td>
                         <td>

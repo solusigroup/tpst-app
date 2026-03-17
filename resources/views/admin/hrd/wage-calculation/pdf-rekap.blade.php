@@ -36,7 +36,13 @@
         <tr>
             <td class="text-center">{{ $index + 1 }}</td>
             <td>{{ $item->user->name ?? 'Unknown' }}</td>
-            <td>{{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}</td>
+            <td>
+                @if($item->user->salary_type === 'bulanan')
+                    Bulan {{ \Carbon\Carbon::parse($item->week_start)->translatedFormat('F Y') }}
+                @else
+                    {{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}
+                @endif
+            </td>
             <td class="text-end">{{ number_format($item->total_output, 2, ',', '.') }} kg</td>
             <td class="text-end">Rp {{ number_format($item->total_wage, 2, ',', '.') }}</td>
             <td>

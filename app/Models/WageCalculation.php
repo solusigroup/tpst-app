@@ -50,8 +50,15 @@ class WageCalculation extends Model
             ->whereBetween('output_date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
             ->get();
 
+        $user = User::find($userId);
+
         $totalQuantity = $outputs->sum('quantity');
-        $totalWage = $outputs->sum(fn($output) => $output->getWageForThisOutput());
+        
+        if ($user && $user->salary_type === 'bulanan') {
+            $totalWage = $user->monthly_salary ?? 0;
+        } else {
+            $totalWage = $outputs->sum(fn($output) => $output->getWageForThisOutput());
+        }
 
         $calculation = self::firstOrCreate(
             [

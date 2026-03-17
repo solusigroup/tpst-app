@@ -19,7 +19,13 @@
             <div class="card-body">
                 <table class="table table-borderless table-sm mb-0">
                     <tr><td class="text-body-secondary">Karyawan</td><td>: <strong>{{ $wageCalculation->user->name ?? '-' }}</strong></td></tr>
-                    <tr><td class="text-body-secondary">Periode</td><td>: {{ \Carbon\Carbon::parse($wageCalculation->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($wageCalculation->week_end)->format('d/m/Y') }}</td></tr>
+                    <tr><td class="text-body-secondary">Periode</td><td>: 
+                        @if($wageCalculation->user->salary_type === 'bulanan')
+                            Bulan {{ \Carbon\Carbon::parse($wageCalculation->week_start)->translatedFormat('F Y') }}
+                        @else
+                            {{ \Carbon\Carbon::parse($wageCalculation->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($wageCalculation->week_end)->format('d/m/Y') }}
+                        @endif
+                    </td></tr>
                     <tr><td class="text-body-secondary">Total Output</td><td>: {{ number_format($wageCalculation->total_output, 2, ',', '.') }} kg</td></tr>
                     <tr><td class="text-body-secondary">Status</td><td>: 
                         @if($wageCalculation->status == 'pending') <span class="badge bg-warning">Pending</span>
