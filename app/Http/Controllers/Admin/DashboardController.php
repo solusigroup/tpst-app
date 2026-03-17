@@ -23,7 +23,7 @@ class DashboardController extends Controller
         $tonaseHariIni = Ritase::whereDate('waktu_masuk', $today)->sum('berat_netto');
         $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
 
-        if (!auth()->user()->hasRole('ritase only')) {
+        if (!auth()->user()->hasRole('ritase_only')) {
             $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
                 ->where('biaya_tipping', '>', 0)
                 ->sum('biaya_tipping');
@@ -48,7 +48,7 @@ class DashboardController extends Controller
 
         // Chart data: Revenue for last 6 months
         $monthlyRevenue = collect();
-        if (!auth()->user()->hasRole('ritase only')) {
+        if (!auth()->user()->hasRole('ritase_only')) {
             for ($i = 5; $i >= 0; $i--) {
                 $month = Carbon::now()->subMonths($i);
                 $revenue = Penjualan::whereYear('tanggal', $month->year)
