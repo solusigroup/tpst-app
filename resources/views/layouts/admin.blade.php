@@ -461,6 +461,14 @@
             </li>
             @endcan
 
+            {{-- Panduan / User Guide --}}
+            <li class="nav-title">Bantuan</li>
+            <li class="nav-item">
+                <a class="nav-link text-info" href="/panduan.html" target="_blank">
+                    <i class="nav-icon cil-book text-info"></i> Panduan Aplikasi
+                </a>
+            </li>
+
             @if(auth()->user() && auth()->user()->is_super_admin)
             <!-- CENTRAL PANEL -->
             <li class="nav-title text-danger">CENTRAL PANEL (SUPERADMIN)</li>

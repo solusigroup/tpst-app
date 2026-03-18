@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Pengoperasian TPST-App SimpleAkunting</title>
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --info: #0dcaf0;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --sidebar: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            padding: 0 15px;
+            color: #ecf0f1;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li a {
+            display: block;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .sidebar li a:hover {
+            background-color: #34495e;
+            color: white;
+            border-left-color: var(--info);
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 40px;
+            width: calc(100% - 250px);
+            box-sizing: border-box;
+            max-width: 1000px;
+        }
+
+        .header-main {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-top: 5px solid var(--primary);
+        }
+
+        .header-main p {
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+
+        .section-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-card h2 {
+            color: var(--dark);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .step-list {
+            margin-top: 20px;
+            padding-left: 20px;
+        }
+
+        .step-list li {
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border-radius: 4px;
+            color: white;
+            margin-right: 5px;
+        }
+        .bg-primary { background-color: var(--primary); }
+        .bg-success { background-color: var(--success); }
+        .bg-warning { background-color: var(--warning); color: #000;}
+        .bg-danger { background-color: var(--danger); }
+        .bg-info { background-color: var(--info); color: #000; }
+
+        .note-box {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--info);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .content { margin-left: 0; width: 100%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>TPST SimpleAkunting</h2>
+        <ul>
+            <li><a href="#pendahuluan">Pendahuluan</a></li>
+            <li><a href="#siapkan-master">1. Persiapan Master Data</a></li>
+            <li><a href="#alur-operasional">2. Alur Operasional Sampah</a></li>
+            <li><a href="#alur-hrd">3. Penggajian SDM</a></li>
+            <li><a href="#alur-keuangan">4. Penagihan & Keuangan</a></li>
+            <li><a href="#laporan">5. Analisis & Laporan</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div class="header-main" id="pendahuluan">
+            <h1 style="margin-top: 0; color: var(--primary);">Panduan Pengoperasian TPST-App SimpleAkunting</h1>
+            <p>Aplikasi ini dirancang untuk mensinergikan kegiatan operasional pengelolaan sampah di TPST (Tempat Pengelolaan Sampah Terpadu) dengan pencatatan akuntansi otomatis dan manajemen SDM terpadu.</p>
+        </div>
+
+        <div class="note-box">
+            <strong>Catatan Penting:</strong> Aplikasi ini menggunakan sistem <em>Multi-Tenant</em>. Pastikan Bapak/Ibu masuk (login) dengan akun yang memiliki hak akses Perusahaan (KSO) yang tepat agar datanya tidak bercampur.
+        </div>
+
+        <!-- Bagian 1 -->
+        <div class="section-card" id="siapkan-master">
+            <h2 style="border-left-color: var(--info);">Langkah 1: Persiapan Master Data</h2>
+            <p>Sebelum menjalankan operasional harian, lengkapi data dasar berikut dari menu sidebar kiri:</p>
+            <ul class="step-list">
+                <li><span class="badge bg-primary">Master Data > Klien</span> Daftarkan sumber sampah/pelanggan yang bermitra dengan TPST Anda. Klien ini nantinya akan digunakan saat menagih Tipping Fee dan membeli hasil rongsok.</li>
+                <li><span class="badge bg-primary">Master Data > Armada</span> Daftarkan mobil angkut dan nopolnya untuk pelacakan alur masuk jembatan timbang.</li>
+                <li><span class="badge bg-primary">Master Data > Kategori Sampah</span> Tambahkan daftar tipe daur ulang (Misal: Plastik HD, Kardus, Botol PET) yang akan dihasilkan oleh area produksi/pemilahan.</li>
+                <li><span class="badge bg-primary">SDM > Data Pegawai</span> Masukkan nama-nama karyawan. Tetapkan tipe gajinya, apakah <strong>Bulanan</strong> atau <strong>Borongan</strong>.</li>
+            </ul>
+        </div>
+
+        <!-- Bagian 2 -->
+        <div class="section-card" id="alur-operasional">
+            <h2 style="border-left-color: var(--success);">Langkah 2: Alur Operasional Sampah (Harian)</h2>
+            <p>Siklus fisik barang yang terjadi setiap harinya dicatat pada dua modul berikut:</p>
+            
+            <h3>A. Penerimaan Sampah (Ritase / Tipping Fee)</h3>
+            <ol>
+                <li>Buka menu <span class="badge bg-success">Operasional > Ritase Masuk</span>.</li>
+                <li>Buat data baru saat truk masuk. Pilih Klien, Armada, lalu isi <strong>Berat Bruto / Tarra</strong>. Sistem akan otomatis menghitung <strong>Berat Netto</strong>.</li>
+                <li>Masukkan Harga <em>Tipping Fee</em> jika ada biaya layanan bongkar.</li>
+            </ol>
+
+            <h3>B. Produksi / Pemilahan & Penjualan</h3>
+            <ol>
+                <li>Sampah yang diproses pemilah akan dicatat di <span class="badge bg-success">Operasional > Hasil Pilahan</span>. Pilih "Kategori Sampah", isi nominal Kiloan, dan pilih nama petugas yang memilahnya (Penting untuk perhitungan gaji borongan nanti).</li>
+                <li>Ketika barang laku terjual ke pabrik/pengepul, buka menu <span class="badge bg-success">Operasional > Penjualan B2B</span>. Pilih Klien dan kuantitas barang.</li>
+                <li>Sistem akan menolak penjualan jika stok barang di gudang (kalkulasi: Total Pilahan - Total Penjualan) tidak mencukupi (Terkunci Murni).</li>
+            </ol>
+        </div>
+
+        <!-- Bagian 3 -->
+        <div class="section-card" id="alur-hrd">
+            <h2 style="border-left-color: var(--warning);">Langkah 3: Menghitung Gaji Karyawan (SDM)</h2>
+            <p>Bagi karyawan bertipe Borongan, gajinya dibayar berdasarkan hasil Tonase sampah yang mereka pilah.</p>
+            <ul class="step-list">
+                <li>Buka menu <span class="badge bg-warning">SDM > Pengaturan Tarif Upah</span>. Pastikan Anda sudah menyetel berapa rupiah upah per Kilogram sampah.</li>
+                <li>Masuk ke <span class="badge bg-warning">SDM > Perhitungan Upah</span>.</li>
+                <li>Klik tombol <strong>Hitung Upah Mingguan</strong>. Pilih tanggal. Sistem akan merekap otomatis total KG dan Upah seluruh karyawan selama 7 hari kalender.</li>
+                <li><b class="text-danger">Integrasi Akuntansi:</b> Di tabel Rekap Gaji, terdapat tombol <span class="badge bg-info">Buat Jurnal</span>. Saat Gaji dibayarkan, klik tombol tersebut. Sistem akan otomatis mengisi angka <em>Debit: Beban Gaji</em> dan nilainya, Anda tinggal memilih akun Kas yang mengeluarkan uang.</li>
+            </ul>
+        </div>
+
+        <!-- Bagian 4 -->
+        <div class="section-card" id="alur-keuangan">
+            <h2 style="border-left-color: var(--danger);">Langkah 4: Penagihan (Invoice) & Manajemen Akuntansi</h2>
+            
+            <h3>Membuat Tagihan Kolektif</h3>
+            <ol>
+                <li>Buka <span class="badge bg-danger">Keuangan > Invoice</span> lalu klik Buat Invoice.</li>
+                <li>Pilih <strong>Klien (Customer)</strong>. Ajaibnya, di bawah dropdown tersebut akan langsung muncul daftar centang seluruh transaksi <strong>Ritase (Tipping)</strong> dan <strong>Penjualan Rongsok</strong> yang belum pernah ditagih ke Klien tersebut!</li>
+                <li>Centang hutang-hutang operasi mereka. Total Tagihan akan dihitung secara Real-Time. Simpan dan Cetak ke PDF.</li>
+                <li><b class="text-danger">Integrasi Akuntansi:</b> Sama seperti SDM, di halaman list Invoice terdapat tombol <span class="badge bg-info">Buat Jurnal</span> untuk mempermudah Kasir mencatat Pemasukan Piutang. Nominal dan format referensi akan menempel secara akurat di Buku Besar.</li>
+            </ol>
+
+            <h3>Jurnal Tambahan</h3>
+            <p>Untuk transaksi pengeluaran (Beli bensin, bayar listrik) Anda bisa menggunakan menu <span class="badge bg-danger">Keuangan > Transaksi Kasir</span> yang *User-Friendly* atau masuk ke <span class="badge bg-danger">Keuangan > Jurnal Umum</span> bagi akuntan mahir (Format Debit - Kredit manual).</p>
+        </div>
+
+        <!-- Bagian 5 -->
+        <div class="section-card" id="laporan">
+            <h2 style="border-left-color: var(--dark);">Langkah 5: Membaca Laporan & Analitik Akhir</h2>
+            <p>Semua data yang masuk dari Operasi dan Keuangan dapat dipantau dari menu <strong>Laporan</strong>.</p>
+            <ul class="step-list">
+                <li><strong>Operasional:</strong> Anda dapat mencetak rekap Ritase Bulanan, Log Penjualan, dan Rekap Stok Hasil Pilahan (Gross vs Penjualan).</li>
+                <li><strong>Keuangan:</strong>
+                    Terdapat Buku Besar untuk audit transaksi per akun COA, Laba Rugi untuk memantau untung bisnis, dan **Laporan Posisi Keuangan (Balance Sheet)** untuk memantau kesehatan Aset vs (Liabilitas + Modal/Laba).
+                </li>
+            </ul>
+            <div class="note-box">
+                Semua output Laporan mendukung export dalam bentuk cetak Web, <strong>PDF Report</strong>, dan <strong>Spreadsheet Excel</strong> secara asinkronus (Real-time update per klik tanpa harus memuat data dari kemarin).
+            </div>
+        </div>
+        
+        <p style="text-align: center; color: var(--secondary); margin-top: 50px; font-size: 0.9em;">&copy; 2026 Solusi Group - Panduan Resmi Aplikasi Terpadu TPST.</p>
+    </div>
+
+</body>
+</html>
