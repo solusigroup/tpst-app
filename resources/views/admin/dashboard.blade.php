@@ -80,7 +80,7 @@
     <div class="{{ auth()->user()->hasRole('ritase_only') ? 'col-xl-12' : 'col-xl-8' }}">
         <div class="card">
             <div class="card-header bg-white border-bottom-0 pt-4">
-                <h5 class="card-title mb-0 fw-semibold">Tonase Harian (14 Hari Terakhir)</h5>
+                <h5 class="card-title mb-0 fw-semibold">Tonase Harian (30 Hari Terakhir)</h5>
             </div>
             <div class="card-body">
                 <canvas id="dailyTonnageChart" height="{{ auth()->user()->hasRole('ritase_only') ? '80' : '100' }}"></canvas>

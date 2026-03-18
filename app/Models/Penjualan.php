@@ -30,6 +30,8 @@ class Penjualan extends Model
         'berat_kg',
         'harga_satuan',
         'total_harga',
+        'invoice_id',
+        'status_invoice',
     ];
 
     protected $casts = [
@@ -73,5 +75,13 @@ class Penjualan extends Model
     public function jurnalHeaders()
     {
         return $this->morphMany(JurnalHeader::class, 'referensi');
+    }
+
+    /**
+     * Get the invoice this penjualan belongs to.
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 }

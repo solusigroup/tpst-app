@@ -104,7 +104,10 @@
                             @endif
                         </td>
                         <td class="text-end">
-                            <a href="{{ route('admin.hrd.wage-calculation.show', $item) }}" class="btn btn-sm btn-outline-info"><i class="cil-search"></i> Detail</a>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('admin.hrd.wage-calculation.show', $item) }}" class="btn btn-outline-info"><i class="cil-search"></i> Detail</a>
+                                <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\WageCalculation'), 'ref_id' => $item->id]) }}" class="btn btn-outline-primary" title="Buat Jurnal"><i class="cil-book"></i> Jurnal</a>
+                            </div>
                         </td>
                     </tr>
                     @empty

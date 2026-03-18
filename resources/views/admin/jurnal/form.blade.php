@@ -12,6 +12,11 @@
 <form method="POST" action="{{ isset($jurnal) ? route('admin.jurnal.update', $jurnal) : route('admin.jurnal.store') }}" enctype="multipart/form-data">
     @csrf @if(isset($jurnal)) @method('PUT') @endif
 
+    @if(isset($refType) && isset($refId))
+        <input type="hidden" name="referensi_type" value="{{ $refType }}">
+        <input type="hidden" name="referensi_id" value="{{ $refId }}">
+    @endif
+
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card">
@@ -29,7 +34,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $jurnal->deskripsi ?? '') }}</textarea>
+                            <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $jurnal->deskripsi ?? ($defaultDeskripsi ?? '')) }}</textarea>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Bukti Transaksi</label>
@@ -71,14 +76,14 @@
                                 @else
                                     <tr>
                                         <td><select name="details[0][coa_id]" class="form-select form-select-sm" required><option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach</select></td>
-                                        <td><input type="number" name="details[0][debit]" class="form-control form-control-sm debit-input" value="0" oninput="updateTotals()"></td>
+                                        <td><input type="number" name="details[0][debit]" class="form-control form-control-sm debit-input" value="{{ old('details.0.debit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><input type="number" name="details[0][kredit]" class="form-control form-control-sm kredit-input" value="0" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
                                     </tr>
                                     <tr>
                                         <td><select name="details[1][coa_id]" class="form-select form-select-sm" required><option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach</select></td>
                                         <td><input type="number" name="details[1][debit]" class="form-control form-control-sm debit-input" value="0" oninput="updateTotals()"></td>
-                                        <td><input type="number" name="details[1][kredit]" class="form-control form-control-sm kredit-input" value="0" oninput="updateTotals()"></td>
+                                        <td><input type="number" name="details[1][kredit]" class="form-control form-control-sm kredit-input" value="{{ old('details.1.kredit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
                                     </tr>
                                 @endif

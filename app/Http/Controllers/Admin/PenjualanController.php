@@ -27,13 +27,16 @@ class PenjualanController extends Controller
         
         $penjualan = $penjualanQuery->get()->keyBy('jenis_produk');
 
-        $stok = [];
+        // Ensure all active waste categories are present in the stock list, even if 0
+        $allCategories = \App\Models\WasteCategory::where('is_active', true)->pluck('name')->toArray();
+        $stok = array_fill_keys($allCategories, 0);
+
         foreach ($hasilPilahan as $jenis => $data) {
             $masuk = $data->total_masuk;
             $keluar = isset($penjualan[$jenis]) ? $penjualan[$jenis]->total_keluar : 0;
             $sisa = $masuk - $keluar;
             
-            if ($sisa > 0 || ($excludePenjualanId && isset($penjualan[$jenis]))) {
+            if ($sisa > 0 || ($excludePenjualanId && isset($penjualan[$jenis])) || in_array($jenis, $allCategories)) {
                 $stok[$jenis] = $sisa;
             }
         }

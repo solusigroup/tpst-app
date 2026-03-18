@@ -87,6 +87,10 @@
                 </tr>
                 @endforeach
                 <tr>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">Laba/Rugi Berjalan</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($labaRugi ?? 0, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px;">Total Ekuitas</td>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ number_format($totalEkuitas, 0, ',', '.') }}</td>
                 </tr>

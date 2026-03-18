@@ -63,6 +63,7 @@
                         <th>Berat Netto</th>
                         <th>Status</th>
                         <th>Waktu Masuk</th>
+                        <th>Status Invoice</th>
                         <th class="text-end">Aksi</th>
                     </tr>
                 </thead>
@@ -78,6 +79,10 @@
                             <span class="badge bg-{{ $statusColors[$item->status] ?? 'secondary' }}">{{ ucfirst($item->status) }}</span>
                         </td>
                         <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
+                        <td>
+                            @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
+                            <span class="badge bg-{{ $invoiceColors[$item->status_invoice] ?? 'secondary' }}">{{ $item->status_invoice ?? 'Unbilled' }}</span>
+                        </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.ritase.edit', $item) }}" class="btn btn-outline-primary" title="Edit"><i class="cil-pencil"></i></a>
@@ -89,7 +94,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                     @endforelse
                 </tbody>
             </table>

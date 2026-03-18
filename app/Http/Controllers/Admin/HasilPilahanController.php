@@ -32,7 +32,15 @@ class HasilPilahanController extends Controller
     public function create()
     {
         Gate::authorize('create_hasil_pilahan');
-        return view('admin.hasil-pilahan.form');
+        $wasteCategories = \App\Models\WasteCategory::where('is_active', true)->orderBy('name')->pluck('name');
+        
+        $query = \App\Models\User::role('karyawan')->where('salary_type', 'borongan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $petugas = $query->orderBy('name')->pluck('name');
+
+        return view('admin.hasil-pilahan.form', compact('wasteCategories', 'petugas'));
     }
 
     public function store(Request $request)
@@ -56,7 +64,15 @@ class HasilPilahanController extends Controller
     public function edit(HasilPilahan $hasilPilahan)
     {
         Gate::authorize('update_hasil_pilahan');
-        return view('admin.hasil-pilahan.form', compact('hasilPilahan'));
+        $wasteCategories = \App\Models\WasteCategory::where('is_active', true)->orderBy('name')->pluck('name');
+
+        $query = \App\Models\User::role('karyawan')->where('salary_type', 'borongan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $petugas = $query->orderBy('name')->pluck('name');
+
+        return view('admin.hasil-pilahan.form', compact('hasilPilahan', 'wasteCategories', 'petugas'));
     }
 
     public function update(Request $request, HasilPilahan $hasilPilahan)

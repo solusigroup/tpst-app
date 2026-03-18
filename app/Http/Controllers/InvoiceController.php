@@ -11,16 +11,10 @@ class InvoiceController extends Controller
 {
     public function print(Invoice $invoice)
     {
-        $invoice->load(['klien', 'tenant']);
+        $invoice->load(['klien', 'tenant', 'ritase', 'penjualan']);
         
-        // Fetch related ritase for the client and period
-        // Usually, we would filter by month/year of the ritase too
-        $ritase = Ritase::where('klien_id', $invoice->klien_id)
-            ->whereMonth('waktu_masuk', $invoice->periode_bulan)
-            ->whereYear('waktu_masuk', $invoice->periode_tahun)
-            ->get();
-
-        $totalTonnage = $ritase->sum('berat_netto');
+        $totalTonnageRitase = $invoice->ritase->sum('berat_netto');
+        $totalTonnagePenjualan = $invoice->penjualan->sum('berat_kg');
         
         $monthNames = [
             '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
@@ -30,6 +24,6 @@ class InvoiceController extends Controller
         
         $periodeLabel = $monthNames[$invoice->periode_bulan] . ' ' . $invoice->periode_tahun;
 
-        return view('invoices.print', compact('invoice', 'ritase', 'totalTonnage', 'periodeLabel'));
+        return view('invoices.print', compact('invoice', 'totalTonnageRitase', 'totalTonnagePenjualan', 'periodeLabel'));
     }
 }

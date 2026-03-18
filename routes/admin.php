@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CoaController;
 use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\JurnalKasController;
 use App\Http\Controllers\Admin\InvoiceAdminController;
+use App\Http\Controllers\Admin\InvoiceItemController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\CompanySettingsController;
@@ -47,6 +48,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('jurnal/{jurnal}/post', [JurnalController::class, 'post'])->name('jurnal.post');
     Route::post('jurnal/{jurnal}/unpost', [JurnalController::class, 'unpost'])->name('jurnal.unpost');
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
+    Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
     Route::resource('invoice', InvoiceAdminController::class);
 
     // PENGATURAN

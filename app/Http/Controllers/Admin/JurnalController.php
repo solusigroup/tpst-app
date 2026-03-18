@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\JurnalHeader;
 use App\Models\JurnalKas;
 use App\Models\Coa;
+use App\Models\Invoice;
+use App\Models\WageCalculation;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -32,11 +34,33 @@ class JurnalController extends Controller
         return view('admin.jurnal.index', compact('jurnals'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         Gate::authorize('create_jurnal');
         $coas = Coa::orderBy('kode_akun')->get();
-        return view('admin.jurnal.form', compact('coas'));
+
+        $defaultDeskripsi = '';
+        $defaultNominal = 0;
+        $refType = is_string($request->ref_type) ? urldecode($request->ref_type) : null;
+        $refId = $request->ref_id;
+
+        if ($refType && $refId) {
+            if ($refType === Invoice::class) {
+                $invoice = Invoice::find($refId);
+                if ($invoice) {
+                    $defaultDeskripsi = "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice}";
+                    $defaultNominal = $invoice->total_tagihan;
+                }
+            } elseif ($refType === WageCalculation::class) {
+                $wage = WageCalculation::find($refId);
+                if ($wage) {
+                    $defaultDeskripsi = "Pembayaran Gaji Karyawan Borongan ID-{$wage->id}";
+                    $defaultNominal = $wage->total_wage;
+                }
+            }
+        }
+
+        return view('admin.jurnal.form', compact('coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId'));
     }
 
     public function store(Request $request)
@@ -51,6 +75,8 @@ class JurnalController extends Controller
             'details.*.coa_id' => 'required|exists:coa,id',
             'details.*.debit' => 'nullable|numeric|min:0',
             'details.*.kredit' => 'nullable|numeric|min:0',
+            'referensi_type' => 'nullable|string',
+            'referensi_id' => 'nullable|integer',
         ]);
 
         $buktiPath = null;
@@ -84,6 +110,8 @@ class JurnalController extends Controller
             'deskripsi' => $validated['deskripsi'] ?? null,
             'bukti_transaksi' => $buktiPath,
             'status' => 'unposted',
+            'referensi_type' => $validated['referensi_type'] ?? null,
+            'referensi_id' => $validated['referensi_id'] ?? null,
         ]);
 
         foreach ($validated['details'] as $detail) {

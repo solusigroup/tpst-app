@@ -53,7 +53,7 @@
                         <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
                         <td><strong>{{ $r->kode_akun }}</strong></td>
                         <td>{{ $r->nama_akun }}</td>
-                        <td>{{ \Illuminate\Support\Str::limit($r->deskripsi, 40) }}</td>
+                        <td style="font-size: 0.85rem; max-width: 300px; white-space: normal; word-wrap: break-word;">{{ $r->deskripsi }}</td>
                         <td class="text-end">{{ $r->debit > 0 ? number_format($r->debit, 0, ',', '.') : '-' }}</td>
                         <td class="text-end">{{ $r->kredit > 0 ? number_format($r->kredit, 0, ',', '.') : '-' }}</td>
                     </tr>

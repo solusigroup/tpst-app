@@ -141,6 +141,16 @@ class LaporanController extends Controller
         $liabilitasJPj = $query->where('klasifikasi', 'Liabilitas Jangka Panjang');
         $ekuitas = $query->where('klasifikasi', 'Ekuitas');
 
+        // Menghitung Laba/Rugi Berjalan untuk diseimbangkan ke Ekuitas
+        $labaRugi = DB::table('jurnal_detail as jd')
+            ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+            ->join('coa', 'jd.coa_id', '=', 'coa.id')
+            ->where('jh.status', 'posted')
+            ->whereIn('coa.tipe', ['Revenue', 'Expense'])
+            ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
+            ->selectRaw("COALESCE(SUM(CASE WHEN coa.tipe = 'Revenue' THEN jd.kredit - jd.debit ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN coa.tipe = 'Expense' THEN jd.debit - jd.kredit ELSE 0 END), 0) as laba_rugi")
+            ->value('laba_rugi') ?? 0;
+
         $totalAsetLancar = $asetLancar->sum('saldo');
         $totalAsetTidakLancar = $asetTidakLancar->sum('saldo');
         $totalAset = $totalAsetLancar + $totalAsetTidakLancar;
@@ -148,11 +158,11 @@ class LaporanController extends Controller
         $totalLiabilitasJP = $liabilitasJP->sum('saldo');
         $totalLiabilitasJPj = $liabilitasJPj->sum('saldo');
         $totalLiabilitas = $totalLiabilitasJP + $totalLiabilitasJPj;
-        $totalEkuitas = $ekuitas->sum('saldo');
+        $totalEkuitas = $ekuitas->sum('saldo') + $labaRugi;
         $totalLiabilitasEkuitas = $totalLiabilitas + $totalEkuitas;
 
         $data = compact(
-            'asetLancar', 'asetTidakLancar', 'liabilitasJP', 'liabilitasJPj', 'ekuitas',
+            'asetLancar', 'asetTidakLancar', 'liabilitasJP', 'liabilitasJPj', 'ekuitas', 'labaRugi',
             'totalAsetLancar', 'totalAsetTidakLancar', 'totalAset',
             'totalLiabilitasJP', 'totalLiabilitasJPj', 'totalLiabilitas',
             'totalEkuitas', 'totalLiabilitasEkuitas', 'sampai'

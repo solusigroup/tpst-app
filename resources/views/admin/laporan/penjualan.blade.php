@@ -20,7 +20,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>Tanggal</th><th>Klien</th><th>Jenis Produk</th><th class="text-end">Berat</th><th class="text-end">Harga Satuan</th><th class="text-end">Total Harga</th></tr></thead>
+                <thead class="bg-light"><tr><th>Tanggal</th><th>Klien</th><th>Jenis Produk</th><th class="text-end">Berat</th><th class="text-end">Harga Satuan</th><th class="text-end">Total Harga</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
@@ -30,13 +30,17 @@
                         <td class="text-end">{{ number_format($r->berat_kg, 2, ',', '.') }} kg</td>
                         <td class="text-end">Rp {{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
                         <td class="text-end fw-semibold">Rp {{ number_format($r->total_harga, 0, ',', '.') }}</td>
+                        <td>
+                            @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
+                            <span class="badge bg-{{ $invoiceColors[$r->status_invoice] ?? 'secondary' }}">{{ $r->status_invoice ?? 'Unbilled' }}</span>
+                        </td>
                     </tr>
                     @empty
                     <tr><td colspan="6" class="text-center py-4 text-body-secondary">Belum ada data penjualan.</td></tr>
                     @endforelse
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="3" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Transaksi)</td><td class="text-end">{{ number_format($totals->total_berat ?? 0, 2, ',', '.') }} kg</td><td></td><td class="text-end">Rp {{ number_format($totals->total_harga ?? 0, 0, ',', '.') }}</td></tr>
+                    <tr><td colspan="3" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Transaksi)</td><td class="text-end">{{ number_format($totals->total_berat ?? 0, 2, ',', '.') }} kg</td><td></td><td class="text-end">Rp {{ number_format($totals->total_harga ?? 0, 0, ',', '.') }}</td><td></td></tr>
                 </tfoot>
             </table>
         </div>

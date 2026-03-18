@@ -9,7 +9,7 @@ class WageRatePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['admin', 'hrd', 'keuangan', 'superadmin']);
+        return $user->hasRole(['admin', 'hrd', 'keuangan', 'super_admin']);
     }
 
     public function view(User $user, WageRate $rate): bool
@@ -19,18 +19,18 @@ class WageRatePolicy
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['admin', 'hrd', 'superadmin']);
+        return $user->hasRole(['admin', 'hrd', 'super_admin']);
     }
 
     public function update(User $user, WageRate $rate): bool
     {
         return $user->tenant_id === $rate->tenant_id &&
-            $user->hasRole(['admin', 'hrd', 'superadmin']);
+            $user->hasRole(['admin', 'hrd', 'super_admin']);
     }
 
     public function delete(User $user, WageRate $rate): bool
     {
         return $user->tenant_id === $rate->tenant_id &&
-            $user->hasRole(['admin', 'superadmin']);
+            $user->hasRole(['admin', 'super_admin']);
     }
 }

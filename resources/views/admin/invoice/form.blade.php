@@ -41,7 +41,8 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Total Tagihan (Rp) <span class="text-danger">*</span></label>
-                <input type="number" name="total_tagihan" class="form-control @error('total_tagihan') is-invalid @enderror" value="{{ old('total_tagihan', $invoice->total_tagihan ?? '') }}" required>
+                <input type="number" id="total_tagihan" name="total_tagihan" class="form-control @error('total_tagihan') is-invalid @enderror" value="{{ old('total_tagihan', $invoice->total_tagihan ?? '0') }}" required readonly>
+                <small class="text-muted">Dihitung otomatis berdasarkan item yang dipilih.</small>
                 @error('total_tagihan') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6">
@@ -49,6 +50,26 @@
                 <select name="status" class="form-select" required>
                     @foreach(['Draft','Sent','Paid','Canceled'] as $s)<option value="{{ $s }}" {{ old('status', $invoice->status ?? 'Draft') == $s ? 'selected' : '' }}>{{ $s }}</option>@endforeach
                 </select>
+            </div>
+            <div class="col-12 mt-4">
+                <h5 class="border-bottom pb-2">Item Tertagih</h5>
+                <div id="loading-items" class="text-muted" style="display: none;">Memuat data...</div>
+                <div id="no-items" class="text-muted" style="display: none;">Pilih Klien untuk melihat item yang belum ditagihkan.</div>
+                
+                <div id="ritase-container" class="mb-3" style="display: none;">
+                    <strong>Ritase (Tipping Fee)</strong>
+                    <div class="mt-2" id="ritase-list"></div>
+                </div>
+
+                <div id="penjualan-container" class="mb-3" style="display: none;">
+                    <strong>Penjualan (Hasil Pilahan)</strong>
+                    <div class="mt-2" id="penjualan-list"></div>
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <label class="form-label">Deskripsi Layanan (Opsional)</label>
+                <textarea name="deskripsi_layanan" class="form-control" rows="2" placeholder="Gunakan untuk menimpa deskripsi otomatis pada saat cetak invoice">{{ old('deskripsi_layanan', $invoice->deskripsi_layanan ?? '') }}</textarea>
+                <small class="text-muted">Jika diisi, teks ini akan muncul sebagai rincian utama di PDF. Jika dikosongkan, PDf akan merincikan otomatis berdasarkan rekapan Ritase/Penjualan.</small>
             </div>
             <div class="col-12">
                 <label class="form-label">Keterangan</label>
@@ -62,3 +83,123 @@
     </form>
 </div></div></div></div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const klienSelect = document.querySelector('select[name="klien_id"]');
+    const loadingDiv = document.getElementById('loading-items');
+    const noItemsDiv = document.getElementById('no-items');
+    const ritaseContainer = document.getElementById('ritase-container');
+    const ritaseList = document.getElementById('ritase-list');
+    const penjualanContainer = document.getElementById('penjualan-container');
+    const penjualanList = document.getElementById('penjualan-list');
+    const totalTagihanInput = document.getElementById('total_tagihan');
+    
+    // Check if we are editing an invoice
+    const invoiceId = "{{ isset($invoice) ? $invoice->id : '' }}";
+
+    function formatRupiah(number) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
+            total += parseFloat(cb.dataset.price);
+        });
+        totalTagihanInput.value = total;
+    }
+
+    function fetchItems() {
+        const klienId = klienSelect.value;
+        if (!klienId) {
+            ritaseContainer.style.display = 'none';
+            penjualanContainer.style.display = 'none';
+            noItemsDiv.style.display = 'block';
+            return;
+        }
+
+        loadingDiv.style.display = 'block';
+        noItemsDiv.style.display = 'none';
+        ritaseList.innerHTML = '';
+        penjualanList.innerHTML = '';
+        totalTagihanInput.value = 0; // reset calculated total until fetched
+
+        let url = `{{ route('admin.invoice-items.pending') }}?klien_id=${klienId}`;
+        if (invoiceId) url += `&invoice_id=${invoiceId}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                
+                let hasItems = false;
+
+                // Handle Ritase
+                if (data.ritase && data.ritase.length > 0) {
+                    hasItems = true;
+                    ritaseContainer.style.display = 'block';
+                    data.ritase.forEach(item => {
+                        const checked = item.selected ? 'checked' : '';
+                        ritaseList.innerHTML += `
+                            <div class="form-check">
+                                <input class="form-check-input item-checkbox" type="checkbox" name="selected_ritase[]" value="${item.id}" id="ritase_${item.id}" data-price="${item.price}" ${checked}>
+                                <label class="form-check-label" for="ritase_${item.id}">
+                                    ${item.label}
+                                </label>
+                            </div>
+                        `;
+                    });
+                } else {
+                    ritaseContainer.style.display = 'none';
+                }
+
+                // Handle Penjualan
+                if (data.penjualan && data.penjualan.length > 0) {
+                    hasItems = true;
+                    penjualanContainer.style.display = 'block';
+                    data.penjualan.forEach(item => {
+                        const checked = item.selected ? 'checked' : '';
+                        penjualanList.innerHTML += `
+                            <div class="form-check">
+                                <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" ${checked}>
+                                <label class="form-check-label" for="penjualan_${item.id}">
+                                    ${item.label}
+                                </label>
+                            </div>
+                        `;
+                    });
+                } else {
+                    penjualanContainer.style.display = 'none';
+                }
+
+                if (!hasItems) {
+                    noItemsDiv.style.display = 'block';
+                    noItemsDiv.textContent = 'Tidak ada tagihan tertunda untuk klien ini.';
+                } else {
+                    // Attach change event listeners to checkboxes for live re-calculation
+                    document.querySelectorAll('.item-checkbox').forEach(cb => {
+                        cb.addEventListener('change', calculateTotal);
+                    });
+                    // Initial calculation for pre-selected items (during edit mode)
+                    calculateTotal();
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching items:', err);
+                loadingDiv.style.display = 'none';
+                noItemsDiv.style.display = 'block';
+                noItemsDiv.textContent = 'Gagal memuat data. Silakan coba lagi.';
+            });
+    }
+
+    klienSelect.addEventListener('change', fetchItems);
+    
+    // Trigger automatically on page load to fetch existing items if Klien is pre-filled
+    if (klienSelect.value) {
+        fetchItems();
+    }
+});
+</script>
+@endpush

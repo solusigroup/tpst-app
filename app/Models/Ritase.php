@@ -36,6 +36,7 @@ class Ritase extends Model
         'jenis_sampah',
         'biaya_tipping',
         'status',
+        'status_invoice',
     ];
 
     protected $casts = [

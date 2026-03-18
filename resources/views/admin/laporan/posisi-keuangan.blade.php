@@ -67,6 +67,7 @@
                 <h6 class="fw-semibold text-body-secondary mt-3">Ekuitas</h6>
                 <table class="table table-sm">
                     @foreach($ekuitas as $item)<tr><td>{{ $item->kode_akun }} - {{ $item->nama_akun }}</td><td class="text-end">{{ number_format($item->saldo, 0, ',', '.') }}</td></tr>@endforeach
+                    <tr><td>Laba/Rugi Berjalan</td><td class="text-end">{{ number_format($labaRugi ?? 0, 0, ',', '.') }}</td></tr>
                     <tr class="fw-bold border-top"><td>Total Ekuitas</td><td class="text-end">{{ number_format($totalEkuitas, 0, ',', '.') }}</td></tr>
                 </table>
                 <div class="border-top border-2 pt-2 mt-3"><table class="table table-sm mb-0"><tr class="fw-bold fs-5"><td>TOTAL LIABILITAS + EKUITAS</td><td class="text-end {{ abs($totalAset - $totalLiabilitasEkuitas) < 0.01 ? 'text-success' : 'text-danger' }}">Rp {{ number_format($totalLiabilitasEkuitas, 0, ',', '.') }}</td></tr></table></div>

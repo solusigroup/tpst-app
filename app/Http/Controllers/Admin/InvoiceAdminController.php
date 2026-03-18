@@ -47,9 +47,31 @@ class InvoiceAdminController extends Controller
             'total_tagihan' => 'required|numeric|min:0',
             'status' => 'required|in:Draft,Sent,Paid,Canceled',
             'keterangan' => 'nullable|string',
+            'deskripsi_layanan' => 'nullable|string',
+            'selected_ritase' => 'nullable|array',
+            'selected_ritase.*' => 'exists:ritase,id',
+            'selected_penjualan' => 'nullable|array',
+            'selected_penjualan.*' => 'exists:penjualan,id',
         ]);
 
-        Invoice::create($validated);
+        $invoiceData = collect($validated)->except(['selected_ritase', 'selected_penjualan'])->toArray();
+        $invoice = Invoice::create($invoiceData);
+
+        // Attach Ritase
+        if (!empty($validated['selected_ritase'])) {
+            \App\Models\Ritase::whereIn('id', $validated['selected_ritase'])->update([
+                'invoice_id' => $invoice->id,
+                'status_invoice' => $invoice->status,
+            ]);
+        }
+
+        // Attach Penjualan
+        if (!empty($validated['selected_penjualan'])) {
+            \App\Models\Penjualan::whereIn('id', $validated['selected_penjualan'])->update([
+                'invoice_id' => $invoice->id,
+                'status_invoice' => $invoice->status,
+            ]);
+        }
 
         return redirect()->route('admin.invoice.index')->with('success', 'Invoice berhasil dibuat.');
     }
@@ -74,9 +96,33 @@ class InvoiceAdminController extends Controller
             'total_tagihan' => 'required|numeric|min:0',
             'status' => 'required|in:Draft,Sent,Paid,Canceled',
             'keterangan' => 'nullable|string',
+            'deskripsi_layanan' => 'nullable|string',
+            'selected_ritase' => 'nullable|array',
+            'selected_ritase.*' => 'exists:ritase,id',
+            'selected_penjualan' => 'nullable|array',
+            'selected_penjualan.*' => 'exists:penjualan,id',
         ]);
 
-        $invoice->update($validated);
+        $invoiceData = collect($validated)->except(['selected_ritase', 'selected_penjualan'])->toArray();
+        $invoice->update($invoiceData);
+
+        // Sync Ritase: nullify old attachments first
+        \App\Models\Ritase::where('invoice_id', $invoice->id)->update(['invoice_id' => null, 'status_invoice' => 'Draft']);
+        if (!empty($validated['selected_ritase'])) {
+            \App\Models\Ritase::whereIn('id', $validated['selected_ritase'])->update([
+                'invoice_id' => $invoice->id,
+                'status_invoice' => $invoice->status,
+            ]);
+        }
+
+        // Sync Penjualan: nullify old attachments first
+        \App\Models\Penjualan::where('invoice_id', $invoice->id)->update(['invoice_id' => null, 'status_invoice' => 'Draft']);
+        if (!empty($validated['selected_penjualan'])) {
+            \App\Models\Penjualan::whereIn('id', $validated['selected_penjualan'])->update([
+                'invoice_id' => $invoice->id,
+                'status_invoice' => $invoice->status,
+            ]);
+        }
 
         return redirect()->route('admin.invoice.index')->with('success', 'Invoice berhasil diperbarui.');
     }

@@ -22,14 +22,19 @@
                 <select name="kategori" class="form-select @error('kategori') is-invalid @enderror" required>
                     <option value="">-- Pilih --</option>
                     @foreach(['Organik'=>'Organik','Anorganik'=>'Anorganik','B3'=>'B3 (Bahan Berbahaya & Beracun)','Residu'=>'Residu'] as $val => $label)
-                        <option value="{{ $val }}" {{ old('kategori', $hasilPilahan->kategori ?? '') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                        <option value="{{ $val }}" {{ old('kategori', $hasilPilahan->kategori ?? 'Anorganik') == $val ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
                 @error('kategori') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-12">
                 <label class="form-label">Jenis <span class="text-danger">*</span></label>
-                <input type="text" name="jenis" class="form-control @error('jenis') is-invalid @enderror" placeholder="cth: Plastik, Kertas, Logam, Kompos" value="{{ old('jenis', $hasilPilahan->jenis ?? '') }}" required>
+                <select name="jenis" class="form-select @error('jenis') is-invalid @enderror" required>
+                    <option value="">-- Pilih Jenis --</option>
+                    @foreach($wasteCategories as $catName)
+                        <option value="{{ $catName }}" {{ old('jenis', $hasilPilahan->jenis ?? '') == $catName ? 'selected' : '' }}>{{ $catName }}</option>
+                    @endforeach
+                </select>
                 @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6">
@@ -39,7 +44,12 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Petugas <span class="text-danger">*</span></label>
-                <input type="text" name="officer" class="form-control @error('officer') is-invalid @enderror" value="{{ old('officer', $hasilPilahan->officer ?? '') }}" required>
+                <select name="officer" class="form-select @error('officer') is-invalid @enderror" required>
+                    <option value="">-- Pilih Petugas --</option>
+                    @foreach($petugas as $p)
+                        <option value="{{ $p }}" {{ old('officer', $hasilPilahan->officer ?? '') == $p ? 'selected' : '' }}>{{ $p }}</option>
+                    @endforeach
+                </select>
                 @error('officer') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-12">

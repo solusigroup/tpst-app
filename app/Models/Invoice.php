@@ -23,6 +23,7 @@ class Invoice extends Model
         'total_tagihan',
         'status',
         'keterangan',
+        'deskripsi_layanan',
     ];
 
     protected $casts = [
@@ -59,6 +60,13 @@ class Invoice extends Model
                 $invoice->nomor_invoice = $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
             }
         });
+        static::saved(function (Invoice $invoice) {
+            // Cascade status down to attached items
+            if ($invoice->isDirty('status')) {
+                $invoice->ritase()->update(['status_invoice' => $invoice->status]);
+                $invoice->penjualan()->update(['status_invoice' => $invoice->status]);
+            }
+        });
     }
 
     /**
@@ -83,5 +91,21 @@ class Invoice extends Model
     public function ritase(): HasMany
     {
         return $this->hasMany(Ritase::class);
+    }
+
+    /**
+     * Get all penjualan records linked to this invoice.
+     */
+    public function penjualan(): HasMany
+    {
+        return $this->hasMany(Penjualan::class);
+    }
+
+    /**
+     * Get associated jurnal headers.
+     */
+    public function jurnalHeaders()
+    {
+        return $this->morphMany(JurnalHeader::class, 'referensi');
     }
 }

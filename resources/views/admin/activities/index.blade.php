@@ -38,7 +38,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($activities as $log)
+                    @if($activities->isEmpty())
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-body-secondary">Tidak ada log aktivitas.</td>
+                    </tr>
+                    @else
+                    @foreach($activities as $log)
                     <tr>
                         <td>{{ $log->created_at->format('d M Y H:i:s') }}</td>
                         <td>
@@ -63,11 +68,8 @@
                         <td>{{ class_basename($log->subject_type) ?? '-' }}<br><small class="text-body-secondary">ID: {{ $log->subject_id ?? '-' }}</small></td>
                         <td>{{ $log->description }}</td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-body-secondary">Tidak ada log aktivitas.</td>
-                    </tr>
-                    @endforelse
+                    @endforeach
+                    @endif
                 </tbody>
             </table>
         </div>

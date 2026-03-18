@@ -35,9 +35,9 @@ class DashboardController extends Controller
         }
         $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
 
-        // Chart data: Daily tonnage for last 14 days
+        // Chart data: Daily tonnage for last 30 days
         $dailyTonnage = collect();
-        for ($i = 13; $i >= 0; $i--) {
+        for ($i = 29; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $tonnage = Ritase::whereDate('waktu_masuk', $date)->sum('berat_netto');
             $dailyTonnage->push([

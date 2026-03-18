@@ -81,4 +81,12 @@ class WageCalculation extends Model
 
         return $calculation;
     }
+
+    /**
+     * Get associated jurnal headers.
+     */
+    public function jurnalHeaders()
+    {
+        return $this->morphMany(JurnalHeader::class, 'referensi');
+    }
 }
