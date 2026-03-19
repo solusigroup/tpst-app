@@ -12,6 +12,12 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         $query = Attendance::query();
+
+        // If the logged-in user is a monthly-salary employee, restrict the listing
+        // to only their own attendances regardless of request parameters.
+        if (auth()->check() && auth()->user()->salary_type === 'bulanan') {
+            $request->merge(['user_id' => auth()->id()]);
+        }
         if (!auth()->user()->isSuperAdmin()) {
             $query->where('tenant_id', auth()->user()->tenant_id);
         }

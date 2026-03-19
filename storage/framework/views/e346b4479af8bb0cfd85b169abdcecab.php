@@ -257,11 +257,19 @@
         </div>
         <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
             
+            <?php if(!(auth()->check() && (auth()->user()->salary_type === 'bulanan' || auth()->user()->hasRole('karyawan')))): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('admin.dashboard')); ?>">
                     <i class="nav-icon cil-speedometer"></i> Dashboard
                 </a>
             </li>
+            <?php else: ?>
+            <li class="nav-item">
+                <a class="nav-link <?php echo e(request()->is('admin/hrd/attendance*') ? 'active' : ''); ?>" href="<?php echo e(url('admin/hrd/attendance') . '?user_id=' . auth()->id()); ?>">
+                    <i class="nav-icon cil-calendar-check"></i> Rekap Kehadiran Saya
+                </a>
+            </li>
+            <?php endif; ?>
 
             
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan'])): ?>
@@ -396,11 +404,18 @@
                     <i class="nav-icon cil-people"></i> Karyawan
                 </a>
             </li>
+            <?php endif; ?>
+
+            
+            <?php if((auth()->user() && auth()->user()->salary_type === 'bulanan') || (auth()->user() && auth()->user()->hasAnyRole(['manajemen','hrd','super_admin']))): ?>
             <li class="nav-item">
-                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.attendance.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.attendance.index')); ?>">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.attendance.*') || request()->routeIs('attendance.check-in') ? 'active' : ''); ?>" href="<?php echo e(auth()->user() && auth()->user()->salary_type === 'bulanan' ? route('attendance.check-in') : route('admin.hrd.attendance.index')); ?>">
                     <i class="nav-icon cil-calendar-check"></i> Kehadiran
                 </a>
             </li>
+            <?php endif; ?>
+
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'manajemen|hrd|super_admin')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.hrd.output.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hrd.output.index')); ?>">
                     <i class="nav-icon cil-chart-pie"></i> Output Pemilah
@@ -460,6 +475,14 @@
                 </a>
             </li>
             <?php endif; ?>
+
+            
+            <li class="nav-title">Bantuan</li>
+            <li class="nav-item">
+                <a class="nav-link text-info" href="/panduan.html" target="_blank">
+                    <i class="nav-icon cil-book text-info"></i> Panduan Aplikasi
+                </a>
+            </li>
 
             <?php if(auth()->user() && auth()->user()->is_super_admin): ?>
             <!-- CENTRAL PANEL -->

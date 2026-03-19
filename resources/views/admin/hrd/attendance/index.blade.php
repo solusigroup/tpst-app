@@ -7,44 +7,50 @@
         <h1>Kehadiran</h1>
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Kehadiran</li></ol></nav>
     </div>
+    @hasanyrole('manajemen|hrd|super_admin')
     <a href="{{ route('admin.hrd.attendance.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah Kehadiran</a>
+    @endhasanyrole
 </div>
 
+@if(Auth::user()->salary_type === 'bulanan')
 <div class="card mb-4">
     <div class="card-header bg-white py-3">
         <h5 class="mb-3">Quick Check-in / Check-out</h5>
-        <form method="POST" action="" id="quickActionForm" class="row g-2 align-items-end">
-            @csrf
+        <div class="row g-2 align-items-center">
             <div class="col-md-4">
-                <label class="form-label">Pilih Karyawan</label>
-                <select id="quickUserSelect" class="form-select" required>
-                    <option value="">-- Pilih Karyawan --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->id }}">{{ $u->name }}</option>
-                    @endforeach
-                </select>
+                <p class="mb-0">Anda dapat melakukan check-in dan check-out sendiri.</p>
             </div>
             <div class="col-auto">
-                <button type="button" class="btn btn-success text-white" onclick="submitQuick('check-in')"><i class="cil-account-login me-1"></i> Check In</button>
+                <form method="GET" action="{{ route('attendance.check-in') }}">
+                    <button type="submit" class="btn btn-success text-white"><i class="cil-account-login me-1"></i> Check In</button>
+                </form>
             </div>
             <div class="col-auto">
-                <button type="button" class="btn btn-warning text-white" onclick="submitQuick('check-out')"><i class="cil-account-logout me-1"></i> Check Out</button>
+                <form method="GET" action="{{ route('attendance.check-out') }}">
+                    <button type="submit" class="btn btn-warning text-white"><i class="cil-account-logout me-1"></i> Check Out</button>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
+@endif
 
 <div class="card">
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-md-3">
                 <label class="form-label">Karyawan</label>
-                <select name="user_id" class="form-select">
-                    <option value="">Semua Karyawan</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
-                    @endforeach
-                </select>
+                @if(auth()->check() && auth()->user()->hasRole('karyawan'))
+                    <input type="text" class="form-control bg-light" value="{{ auth()->user()->name }}" readonly>
+                    <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                @else
+                    <select name="user_id" class="form-select">
+                        <option value="">Semua Karyawan</option>
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
             <div class="col-md-2">
                 <label class="form-label">Dari Tanggal</label>
@@ -91,6 +97,7 @@
                             @else <span class="badge bg-secondary">{{ $item->status }}</span> @endif
                         </td>
                         <td class="text-end">
+                            @hasanyrole('manajemen|hrd|super_admin')
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.hrd.attendance.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
                                 <form method="POST" action="{{ route('admin.hrd.attendance.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin hapus kehadiran ini?')">
@@ -98,6 +105,7 @@
                                     <button class="btn btn-outline-danger"><i class="cil-trash"></i></button>
                                 </form>
                             </div>
+                            @endhasanyrole
                         </td>
                     </tr>
                     @empty

@@ -14,6 +14,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // If the logged-in user is a regular employee, redirect to their attendance recap
+        if (auth()->check() && (auth()->user()->hasRole('karyawan') || auth()->user()->salary_type === 'bulanan')) {
+            return redirect()->route('admin.hrd.attendance.index', ['user_id' => auth()->id()]);
+        }
 
         $today = Carbon::today();
         $monthStart = Carbon::now()->startOfMonth();

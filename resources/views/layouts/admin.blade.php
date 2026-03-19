@@ -257,11 +257,19 @@
         </div>
         <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
             {{-- Dashboard --}}
+            @if(!(auth()->check() && (auth()->user()->salary_type === 'bulanan' || auth()->user()->hasRole('karyawan'))))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                     <i class="nav-icon cil-speedometer"></i> Dashboard
                 </a>
             </li>
+            @else
+            <li class="nav-item">
+                <a class="nav-link {{ request()->is('admin/hrd/attendance*') ? 'active' : '' }}" href="{{ url('admin/hrd/attendance') . '?user_id=' . auth()->id() }}">
+                    <i class="nav-icon cil-calendar-check"></i> Rekap Kehadiran Saya
+                </a>
+            </li>
+            @endif
 
             {{-- Operasional --}}
             @canany(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan'])
@@ -396,11 +404,18 @@
                     <i class="nav-icon cil-people"></i> Karyawan
                 </a>
             </li>
+            @endhasanyrole
+
+            {{-- Show Kehadiran to HR roles OR users with salary_type = bulanan --}}
+            @if((auth()->user() && auth()->user()->salary_type === 'bulanan') || (auth()->user() && auth()->user()->hasAnyRole(['manajemen','hrd','super_admin'])))
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.attendance.*') ? 'active' : '' }}" href="{{ route('admin.hrd.attendance.index') }}">
+                <a class="nav-link {{ request()->routeIs('admin.hrd.attendance.*') || request()->routeIs('attendance.check-in') ? 'active' : '' }}" href="{{ auth()->user() && auth()->user()->salary_type === 'bulanan' ? route('attendance.check-in') : route('admin.hrd.attendance.index') }}">
                     <i class="nav-icon cil-calendar-check"></i> Kehadiran
                 </a>
             </li>
+            @endif
+
+            @hasanyrole('manajemen|hrd|super_admin')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hrd.output.*') ? 'active' : '' }}" href="{{ route('admin.hrd.output.index') }}">
                     <i class="nav-icon cil-chart-pie"></i> Output Pemilah

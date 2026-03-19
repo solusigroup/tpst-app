@@ -30,3 +30,10 @@ Route::middleware(['auth'])->group(function () {
     // Invoices
     Route::get('/invoices/{invoice}/print', [\App\Http\Controllers\InvoiceController::class, 'print'])->name('invoices.print');
 });
+
+use App\Http\Middleware\CheckSalaryType;
+
+Route::middleware(['auth', CheckSalaryType::class . ':bulanan'])->group(function () {
+    Route::get('/attendance/check-in', [\App\Http\Controllers\AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::get('/attendance/check-out', [\App\Http\Controllers\AttendanceController::class, 'checkOut'])->name('attendance.check-out');
+});
