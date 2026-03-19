@@ -245,6 +245,116 @@
             }
         }
     </style>
+    <style>
+        /* Dark theme contrast fixes */
+        [data-coreui-theme="dark"] body {
+            color: #e6eef8;
+            background-color: #0b1220;
+        }
+        [data-coreui-theme="dark"] .sidebar {
+            background: linear-gradient(180deg, #0b1220 0%, #07121a 100%);
+        }
+        [data-coreui-theme="dark"] .bg-white {
+            background: transparent !important;
+        }
+        [data-coreui-theme="dark"] .card,
+        [data-coreui-theme="dark"] .card .card-body,
+        [data-coreui-theme="dark"] .card .card-header,
+        [data-coreui-theme="dark"] .card .card-footer {
+            background-color: #0f1724;
+            color: #e6eef8;
+            border-color: rgba(255,255,255,0.03);
+        }
+        [data-coreui-theme="dark"] .breadcrumb,
+        [data-coreui-theme="dark"] .breadcrumb a,
+        [data-coreui-theme="dark"] .breadcrumb .active {
+            color: #9fb3d7;
+        }
+        [data-coreui-theme="dark"] .form-label,
+        [data-coreui-theme="dark"] .form-control,
+        [data-coreui-theme="dark"] .form-select,
+        [data-coreui-theme="dark"] .table th,
+        [data-coreui-theme="dark"] .table td,
+        [data-coreui-theme="dark"] .page-header h1,
+        [data-coreui-theme="dark"] .nav-link,
+        [data-coreui-theme="dark"] .stat-card {
+            color: #e6eef8 !important;
+        }
+        [data-coreui-theme="dark"] .form-control,
+        [data-coreui-theme="dark"] .form-select {
+            background: #07121a;
+            border-color: rgba(255,255,255,0.06);
+            color: #e6eef8;
+        }
+        [data-coreui-theme="dark"] .table thead th {
+            color: #d2e7ff;
+            background: rgba(255,255,255,0.02);
+        }
+        [data-coreui-theme="dark"] .badge {
+            color: #fff;
+        }
+        [data-coreui-theme="dark"] .btn-outline-secondary {
+            color: #e6eef8;
+            border-color: rgba(255,255,255,0.06);
+        }
+        /* Broad high-specificity overrides to ensure readable text in dark mode */
+        [data-coreui-theme="dark"] body,
+        [data-coreui-theme="dark"] .wrapper,
+        [data-coreui-theme="dark"] .container-fluid,
+        [data-coreui-theme="dark"] .card,
+        [data-coreui-theme="dark"] .card *,
+        [data-coreui-theme="dark"] .page-header h1,
+        [data-coreui-theme="dark"] h1, [data-coreui-theme="dark"] h2, [data-coreui-theme="dark"] h3,
+        [data-coreui-theme="dark"] h4, [data-coreui-theme="dark"] h5, [data-coreui-theme="dark"] h6,
+        [data-coreui-theme="dark"] p, [data-coreui-theme="dark"] label, [data-coreui-theme="dark"] a,
+        [data-coreui-theme="dark"] .nav-link, [data-coreui-theme="dark"] .dropdown-item,
+        [data-coreui-theme="dark"] .breadcrumb, [data-coreui-theme="dark"] .breadcrumb a,
+        [data-coreui-theme="dark"] .stat-card, [data-coreui-theme="dark"] .table th,
+        [data-coreui-theme="dark"] .table td, [data-coreui-theme="dark"] .form-label,
+        [data-coreui-theme="dark"] .list-group-item,
+        [data-coreui-theme="dark"] .mobile-bottom-nav .nav-link,
+        [data-coreui-theme="dark"] .badge,
+        [data-coreui-theme="dark"] .text-body-secondary,
+        [data-coreui-theme="dark"] .text-muted {
+            color: #e6eef8 !important;
+        }
+
+        /* Slightly muted secondary text */
+        [data-coreui-theme="dark"] .text-body-secondary,
+        [data-coreui-theme="dark"] .text-muted {
+            color: rgba(230,238,248,0.75) !important;
+        }
+
+        /* Form controls and placeholders */
+        [data-coreui-theme="dark"] .form-control,
+        [data-coreui-theme="dark"] .form-select,
+        [data-coreui-theme="dark"] textarea {
+            background: #07121a;
+            border-color: rgba(255,255,255,0.06);
+            color: #e6eef8 !important;
+        }
+        [data-coreui-theme="dark"] ::placeholder { color: rgba(230,238,248,0.6) !important; }
+
+        /* Tables */
+        [data-coreui-theme="dark"] .table {
+            color: #e6eef8 !important;
+        }
+
+        /* Ensure buttons keep readable text */
+        [data-coreui-theme="dark"] .btn,
+        [data-coreui-theme="dark"] .btn * {
+            color: inherit !important;
+        }
+
+        /* Links */
+        [data-coreui-theme="dark"] a { color: #a9d1ff !important; }
+
+        /* Sidebar items */
+        [data-coreui-theme="dark"] .sidebar .nav-link,
+        [data-coreui-theme="dark"] .sidebar .nav-title {
+            color: #dbeeff !important;
+        }
+    </style>
     <?php echo $__env->yieldPushContent('styles'); ?>
 </head>
 <body>
