@@ -185,30 +185,41 @@ unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Foto Tiket</label>
-                        <input type="file" name="foto_tiket" class="form-control <?php $__errorArgs = ['foto_tiket'];
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket').click()">
+                                <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
+                            </button>
+                        </div>
+                        <input type="file" name="foto_tiket" id="foto_tiket" class="form-control d-none <?php $__errorArgs = ['foto_tiket'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" accept="image/*">
+unset($__errorArgs, $__bag); ?>" accept="image/*" capture="environment" onchange="previewImage(this)">
+                        <div id="file-name-display" class="small text-muted mb-2"></div>
                         <?php $__errorArgs = ['foto_tiket'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback d-block"><?php echo e($message); ?></div> <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                        <?php if(isset($ritase) && $ritase->foto_tiket): ?>
-                            <div class="mt-2 text-center border p-2 rounded">
-                                <a href="<?php echo e(asset('storage/' . $ritase->foto_tiket)); ?>" target="_blank">
-                                    <img src="<?php echo e(asset('storage/' . $ritase->foto_tiket)); ?>" class="img-fluid rounded" style="max-height: 150px;">
+                        
+                        <div id="image-preview" class="mt-2 text-center border p-2 rounded <?php echo e((isset($ritase) && $ritase->foto_tiket) ? '' : 'd-none'); ?>">
+                            <?php if(isset($ritase) && $ritase->foto_tiket): ?>
+                                <a href="<?php echo e(asset('storage/' . $ritase->foto_tiket)); ?>" target="_blank" id="preview-link">
+                                    <img src="<?php echo e(asset('storage/' . $ritase->foto_tiket)); ?>" id="preview-img" class="img-fluid rounded" style="max-height: 200px;">
                                 </a>
-                                <p class="small text-muted mt-1 mb-0">Klik gambar untuk melihat ukuran penuh</p>
-                            </div>
-                        <?php endif; ?>
+                            <?php else: ?>
+                                <a href="#" target="_blank" id="preview-link">
+                                    <img src="" id="preview-img" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            <?php endif; ?>
+                            <p class="small text-muted mt-1 mb-0">Preview foto tiket</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -230,6 +241,23 @@ function calcNetto() {
     const bruto = parseFloat(document.getElementById('berat_bruto').value) || 0;
     const tarra = parseFloat(document.getElementById('berat_tarra').value) || 0;
     document.getElementById('berat_netto').value = (bruto - tarra).toFixed(2);
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        document.getElementById('file-name-display').textContent = 'File terpilih: ' + file.name;
+        
+        reader.onload = function(e) {
+            document.getElementById('image-preview').classList.remove('d-none');
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('preview-link').href = e.target.result;
+        }
+        
+        reader.readAsDataURL(file);
+    }
 }
 </script>
 <?php $__env->stopPush(); ?>
