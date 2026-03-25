@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<form method="POST" action="{{ isset($ritase) ? route('admin.ritase.update', $ritase) : route('admin.ritase.store') }}">
+<form method="POST" action="{{ isset($ritase) ? route('admin.ritase.update', $ritase) : route('admin.ritase.store') }}" enctype="multipart/form-data">
     @csrf
     @if(isset($ritase)) @method('PUT') @endif
 
@@ -96,6 +96,34 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tiket (Manual)</label>
+                        <input type="text" name="tiket" class="form-control" value="{{ old('tiket', $ritase->tiket ?? '') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Foto Tiket</label>
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket').click()">
+                                <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
+                            </button>
+                        </div>
+                        <input type="file" name="foto_tiket" id="foto_tiket" class="form-control d-none @error('foto_tiket') is-invalid @enderror" accept="image/*" capture="environment" onchange="previewImage(this)">
+                        <div id="file-name-display" class="small text-muted mb-2"></div>
+                        @error('foto_tiket') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        
+                        <div id="image-preview" class="mt-2 text-center border p-2 rounded {{ (isset($ritase) && $ritase->foto_tiket) ? '' : 'd-none' }}">
+                            @if(isset($ritase) && $ritase->foto_tiket)
+                                <a href="{{ asset('storage/' . $ritase->foto_tiket) }}" target="_blank" id="preview-link">
+                                    <img src="{{ asset('storage/' . $ritase->foto_tiket) }}" id="preview-img" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            @else
+                                <a href="#" target="_blank" id="preview-link">
+                                    <img src="" id="preview-img" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            @endif
+                            <p class="small text-muted mt-1 mb-0">Preview foto tiket</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -116,6 +144,23 @@ function calcNetto() {
     const bruto = parseFloat(document.getElementById('berat_bruto').value) || 0;
     const tarra = parseFloat(document.getElementById('berat_tarra').value) || 0;
     document.getElementById('berat_netto').value = (bruto - tarra).toFixed(2);
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        document.getElementById('file-name-display').textContent = 'File terpilih: ' + file.name;
+        
+        reader.onload = function(e) {
+            document.getElementById('image-preview').classList.remove('d-none');
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('preview-link').href = e.target.result;
+        }
+        
+        reader.readAsDataURL(file);
+    }
 }
 </script>
 @endpush

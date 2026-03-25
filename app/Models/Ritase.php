@@ -28,6 +28,8 @@ class Ritase extends Model
         'klien_id',
         'invoice_id',
         'nomor_tiket',
+        'tiket',
+        'foto_tiket',
         'waktu_masuk',
         'waktu_keluar',
         'berat_bruto',

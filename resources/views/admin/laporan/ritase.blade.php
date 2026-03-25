@@ -34,12 +34,13 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Klien</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
+                <thead class="bg-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Tiket (M)</th><th>Armada</th><th>Klien</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->format('d M Y') }}</td>
                         <td><strong>{{ $r->nomor_tiket }}</strong></td>
+                        <td>{{ $r->tiket ?? '-' }}</td>
                         <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                         <td>{{ $r->klien->nama_klien ?? '-' }}</td>
                         <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
@@ -58,7 +59,7 @@
                     @endforelse
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="4" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td><td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td><td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td><td colspan="2"></td></tr>
+                    <tr><td colspan="5" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td><td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td><td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td><td colspan="2"></td></tr>
                 </tfoot>
             </table>
         </div>

@@ -18,7 +18,7 @@
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto">
-                <input type="text" name="search" class="form-control" placeholder="Cari nomor tiket..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control" placeholder="Cari nomor tiket / tiket manual..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
                 <input type="date" name="start_date" class="form-control" title="Tanggal Mulai" value="{{ request('start_date') }}">
@@ -63,6 +63,8 @@
                         <th>Berat Netto</th>
                         <th>Status</th>
                         <th>Waktu Masuk</th>
+                        <th>Tiket</th>
+                        <th>Foto</th>
                         <th>Status Invoice</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -79,6 +81,16 @@
                             <span class="badge bg-{{ $statusColors[$item->status] ?? 'secondary' }}">{{ ucfirst($item->status) }}</span>
                         </td>
                         <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
+                        <td>{{ $item->tiket ?? '-' }}</td>
+                        <td>
+                            @if($item->foto_tiket)
+                                <a href="{{ asset('storage/' . $item->foto_tiket) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="cil-image"></i>
+                                </a>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
                         <td>
                             @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
                             <span class="badge bg-{{ $invoiceColors[$item->status_invoice] ?? 'secondary' }}">{{ $item->status_invoice ?? 'Unbilled' }}</span>

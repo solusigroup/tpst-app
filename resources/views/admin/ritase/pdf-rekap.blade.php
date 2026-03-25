@@ -102,12 +102,13 @@
             <tr>
                 <th width="3%">No</th>
                 <th width="12%">No. Tiket</th>
-                <th width="15%">Waktu Masuk</th>
-                <th width="15%">Waktu Keluar</th>
-                <th width="15%">Armada</th>
+                <th width="10%">Tiket</th>
+                <th width="12%">Waktu Masuk</th>
+                <th width="12%">Waktu Keluar</th>
+                <th width="13%">Armada</th>
                 <th width="15%">Klien</th>
                 <th width="10%">Status</th>
-                <th width="15%" class="text-right">Berat Netto (kg)</th>
+                <th width="13%" class="text-right">Berat Netto (kg)</th>
             </tr>
         </thead>
         <tbody>
@@ -115,6 +116,7 @@
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td><strong>{{ $item->nomor_tiket ?? '-' }}</strong></td>
+                    <td>{{ $item->tiket ?? '-' }}</td>
                     <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
                     <td>{{ $item->waktu_keluar ? \Carbon\Carbon::parse($item->waktu_keluar)->format('d/m/Y H:i') : '-' }}</td>
                     <td>{{ $item->armada->plat_nomor ?? '-' }}</td>
