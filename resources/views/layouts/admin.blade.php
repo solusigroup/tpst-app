@@ -422,7 +422,7 @@
             @endcan
 
             {{-- Keuangan --}}
-            @canany(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice'])
+            @canany(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice', 'view_vendor', 'view_buku_pembantu'])
             <li class="nav-title">Keuangan</li>
             @endcan
             @can('view_coa')
@@ -432,12 +432,14 @@
                 </a>
             </li>
             @endcan
+            @can('view_vendor')
             {{-- Vendor --}}
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.vendor.*') ? 'active' : '' }}" href="{{ route('admin.vendor.index') }}">
                     <i class="nav-icon cil-address-book"></i> Vendor
                 </a>
             </li>
+            @endcan
             @can('view_jurnal')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}" href="{{ route('admin.jurnal.index') }}">
@@ -459,6 +461,7 @@
                 </a>
             </li>
             @endcan
+            @can('view_buku_pembantu')
             {{-- Buku Pembantu --}}
             <li class="nav-group {{ request()->routeIs('admin.buku-pembantu.*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
@@ -477,6 +480,7 @@
                     </li>
                 </ul>
             </li>
+            @endcan
 
             {{-- Laporan --}}
             @canany(['view_laporan_keuangan', 'view_laporan_operasional'])

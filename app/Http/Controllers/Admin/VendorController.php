@@ -12,7 +12,7 @@ class VendorController extends Controller
     public function index(Request $request)
     {
         try {
-            // Gate::authorize('view_vendor'); // Assuming permission exists or will be added
+            Gate::authorize('view_vendor');
             $query = Vendor::query();
 
             if ($request->filled('search')) {
@@ -29,14 +29,14 @@ class VendorController extends Controller
 
     public function create()
     {
-        // Gate::authorize('create_vendor');
+        Gate::authorize('create_vendor');
         return view('admin.vendor.form');
     }
 
     public function store(Request $request)
     {
         try {
-            // Gate::authorize('create_vendor');
+            Gate::authorize('create_vendor');
             
             $validated = $request->validate([
                 'nama_vendor' => 'required|string|max:255',
@@ -63,13 +63,13 @@ class VendorController extends Controller
 
     public function edit(Vendor $vendor)
     {
-        // Gate::authorize('update_vendor');
+        Gate::authorize('update_vendor');
         return view('admin.vendor.form', compact('vendor'));
     }
 
     public function update(Request $request, Vendor $vendor)
     {
-        // Gate::authorize('update_vendor');
+        Gate::authorize('update_vendor');
         
         $validated = $request->validate([
             'nama_vendor' => 'required|string|max:255',
@@ -84,7 +84,7 @@ class VendorController extends Controller
 
     public function destroy(Vendor $vendor)
     {
-        // Gate::authorize('delete_vendor');
+        Gate::authorize('delete_vendor');
         $vendor->delete();
         return redirect()->route('admin.vendor.index')->with('success', 'Vendor berhasil dihapus.');
     }

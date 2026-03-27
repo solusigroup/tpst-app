@@ -31,6 +31,8 @@ class RolePermissionSeeder extends Seeder
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
+            'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
+            'view_buku_pembantu',
             
             // Laporan
             'view_laporan_keuangan',
@@ -75,6 +77,8 @@ class RolePermissionSeeder extends Seeder
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
+            'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
+            'view_buku_pembantu',
             'view_laporan_keuangan', 'view_laporan_operasional',
             
             // HRD
@@ -94,6 +98,8 @@ class RolePermissionSeeder extends Seeder
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
             'view_penjualan', 'create_penjualan', 'update_penjualan', 'delete_penjualan',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
+            'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
+            'view_buku_pembantu',
             'view_laporan_keuangan', 'view_laporan_operasional',
             
             // HRD untuk Keuangan

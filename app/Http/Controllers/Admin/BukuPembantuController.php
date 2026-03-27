@@ -15,7 +15,7 @@ class BukuPembantuController extends Controller
     public function piutang(Request $request)
     {
         try {
-            // Gate::authorize('view_buku_pembantu');
+            Gate::authorize('view_buku_pembantu');
             $query = BukuPembantu::with(['contactable', 'jurnalHeader'])
                 ->where('tipe', 'piutang');
 
@@ -45,7 +45,7 @@ class BukuPembantuController extends Controller
     public function utang(Request $request)
     {
         try {
-            // Gate::authorize('view_buku_pembantu');
+            Gate::authorize('view_buku_pembantu');
             $query = BukuPembantu::with(['contactable', 'jurnalHeader'])
                 ->where('tipe', 'utang');
 
