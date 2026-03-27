@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitemap & Panduan Modul - TPST-App</title>
+    <!-- Mermaid JS -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --info: #0dcaf0;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --sidebar: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            padding: 0 15px;
+            color: #ecf0f1;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li a {
+            display: block;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .sidebar li a:hover {
+            background-color: #34495e;
+            color: white;
+            border-left-color: var(--info);
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 40px;
+            width: calc(100% - 250px);
+            box-sizing: border-box;
+            max-width: 1000px;
+        }
+
+        .header-main {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border-top: 5px solid var(--primary);
+        }
+
+        .header-main p {
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+
+        .section-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-card h2 {
+            color: var(--dark);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .mermaid-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        .step-list {
+            margin-top: 20px;
+            padding-left: 20px;
+        }
+
+        .step-list li {
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border-radius: 4px;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .bg-primary { background-color: var(--primary); }
+        .bg-success { background-color: var(--success); }
+        .bg-warning { background-color: var(--warning); color: #000; }
+        .bg-danger { background-color: var(--danger); }
+        .bg-info { background-color: var(--info); color: #000; }
+
+        .note-box {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--info);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .content { margin-left: 0; width: 100%; padding: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>TPST SimpleAkunting</h2>
+        <ul>
+            <li><a href="#sitemap">Visual Sitemap</a></li>
+            <li><a href="#operasional">1. Modul Operasional</a></li>
+            <li><a href="#hrd">2. Modul HRD</a></li>
+            <li><a href="#keuangan">3. Modul Keuangan</a></li>
+            <li><a href="#master">4. Master Data</a></li>
+            <li><a href="#roles">5. Hak Akses Role</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div class="header-main" id="sitemap">
+            <h1 style="margin-top: 0; color: var(--primary);">Sitemap & Panduan Modul TPST-App</h1>
+            <p>Dokumen ini merinci struktur aplikasi dan fungsi utama dari setiap modul yang tersedia dalam sistem pengelolaan sampah TPST.</p>
+        </div>
+
+        <div class="mermaid-container">
+            <div class="mermaid">
+                graph TD
+                    Dashboard["🏠 Dashboard<br/>(Analytics & Stats)"]
+                    
+                    subgraph Operasional
+                        Ritase["🚚 Ritase<br/>(Penerimaan Sampah)"]
+                        Produksi["🏭 Produksi Harian<br/>(RDF, Plastik, Kompos)"]
+                        Penjualan["💰 Penjualan<br/>(Produk & Offtaker)"]
+                    end
+                    
+                    subgraph HRD["👥 HRD (Manajemen SDM)"]
+                        Attendance["📅 Kehadiran<br/>(Check-in/Out)"]
+                        Output["⚖️ Output Karyawan<br/>(Hasil Pilahan)"]
+                        WageCalc["💵 Perhitungan Upah<br/>(Borongan Mingguan)"]
+                    end
+                    
+                    subgraph Keuangan["🏦 Keuangan & Akuntansi"]
+                        COA["📖 Chart of Accounts"]
+                        Jurnal["📝 Jurnal Umum"]
+                        BukuPembantu["📗 Buku Pembantu"]
+                        Laporan["📊 Laporan Keuangan"]
+                    end
+                    
+                    subgraph MasterData["⚙️ Master Data / Setup"]
+                        Klien["🏢 Manajemen Klien"]
+                        Armada["🚛 Manajemen Armada"]
+                        WasteCat["♻️ Kategori Sampah"]
+                        WageRate["🏷️ Tarif Upah"]
+                        Users["👤 Manajemen User"]
+                    end
+
+                    Dashboard --> Operasional
+                    Dashboard --> HRD
+                    Dashboard --> Keuangan
+                    Dashboard --> MasterData
+            </div>
+        </div>
+
+        <div class="section-card" id="operasional">
+            <h2>1. Modul Operasional</h2>
+            <ul class="step-list">
+                <li><strong>Ritase (Penerimaan)</strong>: Mencatat setiap armada yang masuk, mengukur berat bruto/tarra, serta menghitung biaya tipping secara otomatis.</li>
+                <li><strong>Produksi Harian</strong>: Mencatat hasil pengolahan sampah menjadi produk (RDF, Plastik, Kompos) dan residu yang dibuang ke TPA.</li>
+                <li><strong>Penjualan</strong>: Mencatat transaksi penjualan hasil produksi kepada offtaker/pembeli.</li>
+            </ul>
+        </div>
+
+        <div class="section-card" id="hrd">
+            <h2 style="border-left-color: var(--success);">2. Modul HRD (Manajemen SDM)</h2>
+            <ul class="step-list">
+                <li><strong>Kehadiran</strong>: Sistem absensi karyawan (hadir, sakit, ijin, cuti) dengan fitur quick check-in/out.</li>
+                <li><strong>Output Karyawan</strong>: Mencatat jumlah perolehan pilahan sampah (dalam kg) per karyawan per kategori sampah.</li>
+                <li><strong>Perhitungan Upah</strong>: Sistem payroll otomatis berbasis upah borongan (Jumlah Pilah × Tarif). Mendukung workflow persetujuan (Draft → Approved → Paid).</li>
+            </ul>
+        </div>
+
+        <div class="section-card" id="keuangan">
+            <h2 style="border-left-color: var(--danger);">3. Modul Keuangan & Akuntansi</h2>
+            <ul class="step-list">
+                <li><strong>Chart of Accounts (COA)</strong>: Pengaturan kode akun akuntansi (Kas, Piutang, Pendapatan, dll).</li>
+                <li><strong>Jurnal Umum</strong>: Pencatatan transaksi keuangan. Terintegrasi otomatis (via Observers) saat ada transaksi Ritase atau Penjualan.</li>
+                <li><strong>Laporan Keuangan</strong>: Menghasilkan laporan otomatis seperti Laba Rugi, Posisi Keuangan (Neraca), Arus Kas, Perubahan Ekuitas, dan Neraca Saldo.</li>
+            </ul>
+        </div>
+
+        <div class="section-card" id="master">
+            <h2 style="border-left-color: var(--warning);">4. Master Data & Konfigurasi</h2>
+            <ul class="step-list">
+                <li><strong>Klien & Armada</strong>: Manajemen data vendor/klien dan kendaraan pengangkut.</li>
+                <li><strong>Kategori & Tarif</strong>: Pengaturan jenis sampah (Plastik, Kertas, dll) serta tarif upah borongan yang berlaku per kategori.</li>
+                <li><strong>Manajemen User</strong>: Pengaturan hak akses berdasarkan Role (Admin, HRD, Keuangan, Timbangan).</li>
+            </ul>
+        </div>
+
+        <div class="section-card" id="roles">
+            <h2 style="border-left-color: var(--dark);">5. Matriks Hak Akses (Role Mapping)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Modul</th>
+                        <th>Admin</th>
+                        <th>Timbangan</th>
+                        <th>Keuangan</th>
+                        <th>HRD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Dashboard</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                    <tr><td>Ritase</td><td>✅</td><td>✅</td><td>👁️</td><td>❌</td></tr>
+                    <tr><td>Produksi</td><td>✅</td><td>✅</td><td>👁️</td><td>❌</td></tr>
+                    <tr><td>Penjualan</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                    <tr><td>Kehadiran</td><td>✅</td><td>❌</td><td>👁️</td><td>✅</td></tr>
+                    <tr><td>Output Pilahan</td><td>✅</td><td>❌</td><td>👁️</td><td>✅</td></tr>
+                    <tr><td>Perhitungan Upah</td><td>✅</td><td>❌</td><td>✅</td><td>✅</td></tr>
+                    <tr><td>Jurnal & Laporan</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                    <tr><td>Master Data</td><td>✅</td><td>❌</td><td>👁️</td><td>👁️</td></tr>
+                </tbody>
+            </table>
+            <div class="note-box">
+                ✅ = Full Access (CRUD) | 👁️ = Read Only | ❌ = No Access
+            </div>
+        </div>
+
+        <p style="text-align: center; color: var(--secondary); margin-top: 50px; font-size: 0.9em;">&copy; 2026 <a href="https://solusiconsulting.simpleakunting.biz.id/" target="_blank" style="color: inherit; text-decoration: none; font-weight: 600;">Solusi Consult</a> - Panduan Aplikasi Terpadu TPST.</p>
+    </div>
+
+</body>
+
+</html>

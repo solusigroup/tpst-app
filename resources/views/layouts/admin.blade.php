@@ -618,8 +618,13 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link text-info" href="/sitemap.html" target="_blank">
+                    <i class="nav-icon cil-sitemap text-info"></i> Sitemap & Modul
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-info" href="/schema_relasi.html" target="_blank">
-                    <i class="nav-icon cil-sitemap text-info"></i> Schema Relasi
+                    <i class="nav-icon cil-terminal text-info"></i> Schema Relasi
                 </a>
             </li>
 
