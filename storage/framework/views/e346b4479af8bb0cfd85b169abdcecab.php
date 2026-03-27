@@ -432,6 +432,12 @@
                 </a>
             </li>
             <?php endif; ?>
+            
+            <li class="nav-item">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.vendor.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.vendor.index')); ?>">
+                    <i class="nav-icon cil-address-book"></i> Vendor
+                </a>
+            </li>
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_jurnal')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.jurnal.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.jurnal.index')); ?>">
@@ -453,6 +459,24 @@
                 </a>
             </li>
             <?php endif; ?>
+            
+            <li class="nav-group <?php echo e(request()->routeIs('admin.buku-pembantu.*') ? 'show' : ''); ?>">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-library"></i> Buku Pembantu
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.buku-pembantu.piutang') ? 'active' : ''); ?>" href="<?php echo e(route('admin.buku-pembantu.piutang')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Piutang
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.buku-pembantu.utang') ? 'active' : ''); ?>" href="<?php echo e(route('admin.buku-pembantu.utang')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Utang Lancar
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
             
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_keuangan', 'view_laporan_operasional'])): ?>
@@ -591,6 +615,11 @@
             <li class="nav-item">
                 <a class="nav-link text-info" href="/panduan.html" target="_blank">
                     <i class="nav-icon cil-book text-info"></i> Panduan Aplikasi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-info" href="/schema_relasi.html" target="_blank">
+                    <i class="nav-icon cil-sitemap text-info"></i> Schema Relasi
                 </a>
             </li>
 

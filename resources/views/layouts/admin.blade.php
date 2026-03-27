@@ -432,6 +432,12 @@
                 </a>
             </li>
             @endcan
+            {{-- Vendor --}}
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.vendor.*') ? 'active' : '' }}" href="{{ route('admin.vendor.index') }}">
+                    <i class="nav-icon cil-address-book"></i> Vendor
+                </a>
+            </li>
             @can('view_jurnal')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}" href="{{ route('admin.jurnal.index') }}">
@@ -453,6 +459,24 @@
                 </a>
             </li>
             @endcan
+            {{-- Buku Pembantu --}}
+            <li class="nav-group {{ request()->routeIs('admin.buku-pembantu.*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-library"></i> Buku Pembantu
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.buku-pembantu.piutang') ? 'active' : '' }}" href="{{ route('admin.buku-pembantu.piutang') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Piutang
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.buku-pembantu.utang') ? 'active' : '' }}" href="{{ route('admin.buku-pembantu.utang') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Utang Lancar
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
             {{-- Laporan --}}
             @canany(['view_laporan_keuangan', 'view_laporan_operasional'])
@@ -591,6 +615,11 @@
             <li class="nav-item">
                 <a class="nav-link text-info" href="/panduan.html" target="_blank">
                     <i class="nav-icon cil-book text-info"></i> Panduan Aplikasi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-info" href="/schema_relasi.html" target="_blank">
+                    <i class="nav-icon cil-sitemap text-info"></i> Schema Relasi
                 </a>
             </li>
 

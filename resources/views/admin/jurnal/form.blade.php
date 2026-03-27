@@ -56,7 +56,8 @@
                     <div class="table-responsive">
                         <table class="table align-middle mb-0" id="detail-table">
                             <thead class="bg-light">
-                                <tr><th>Akun</th><th style="width:180px;">Debit</th><th style="width:180px;">Kredit</th><th style="width:50px;"></th></tr>
+                            <thead class="bg-light">
+                                <tr><th>Akun</th><th>Mitra (Opsional)</th><th style="width:180px;">Debit</th><th style="width:180px;">Kredit</th><th style="width:50px;"></th></tr>
                             </thead>
                             <tbody id="detail-body">
                                 @if(isset($jurnal) && $jurnal->jurnalDetails->count())
@@ -68,6 +69,21 @@
                                                 @foreach($coas as $c)<option value="{{ $c->id }}" {{ $detail->coa_id == $c->id ? 'selected' : '' }}>{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach
                                             </select>
                                         </td>
+                                        <td>
+                                            <select name="details[{{ $i }}][contactable_type_id]" class="form-select form-select-sm">
+                                                <option value="">-- Tanpa Mitra --</option>
+                                                <optgroup label="Klien">
+                                                    @foreach($kliens as $k)
+                                                        <option value="App\Models\Klien:{{ $k->id }}" {{ ($detail->contactable_type === 'App\Models\Klien' && $detail->contactable_id == $k->id) ? 'selected' : '' }}>{{ $k->nama_klien }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                                <optgroup label="Vendor">
+                                                    @foreach($vendors as $v)
+                                                        <option value="App\Models\Vendor:{{ $v->id }}" {{ ($detail->contactable_type === 'App\Models\Vendor' && $detail->contactable_id == $v->id) ? 'selected' : '' }}>{{ $v->nama_vendor }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            </select>
+                                        </td>
                                         <td><input type="number" name="details[{{ $i }}][debit]" class="form-control form-control-sm debit-input" value="{{ $detail->debit }}" oninput="updateTotals()"></td>
                                         <td><input type="number" name="details[{{ $i }}][kredit]" class="form-control form-control-sm kredit-input" value="{{ $detail->kredit }}" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
@@ -76,12 +92,26 @@
                                 @else
                                     <tr>
                                         <td><select name="details[0][coa_id]" class="form-select form-select-sm" required><option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach</select></td>
+                                        <td>
+                                            <select name="details[0][contactable_type_id]" class="form-select form-select-sm">
+                                                <option value="">-- Tanpa Mitra --</option>
+                                                <optgroup label="Klien">@foreach($kliens as $k)<option value="App\Models\Klien:{{ $k->id }}">{{ $k->nama_klien }}</option>@endforeach</optgroup>
+                                                <optgroup label="Vendor">@foreach($vendors as $v)<option value="App\Models\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>@endforeach</optgroup>
+                                            </select>
+                                        </td>
                                         <td><input type="number" name="details[0][debit]" class="form-control form-control-sm debit-input" value="{{ old('details.0.debit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><input type="number" name="details[0][kredit]" class="form-control form-control-sm kredit-input" value="0" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
                                     </tr>
                                     <tr>
                                         <td><select name="details[1][coa_id]" class="form-select form-select-sm" required><option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach</select></td>
+                                        <td>
+                                            <select name="details[1][contactable_type_id]" class="form-select form-select-sm">
+                                                <option value="">-- Tanpa Mitra --</option>
+                                                <optgroup label="Klien">@foreach($kliens as $k)<option value="App\Models\Klien:{{ $k->id }}">{{ $k->nama_klien }}</option>@endforeach</optgroup>
+                                                <optgroup label="Vendor">@foreach($vendors as $v)<option value="App\Models\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>@endforeach</optgroup>
+                                            </select>
+                                        </td>
                                         <td><input type="number" name="details[1][debit]" class="form-control form-control-sm debit-input" value="0" oninput="updateTotals()"></td>
                                         <td><input type="number" name="details[1][kredit]" class="form-control form-control-sm kredit-input" value="{{ old('details.1.kredit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
@@ -90,7 +120,7 @@
                             </tbody>
                             <tfoot class="bg-light">
                                 <tr>
-                                    <td class="fw-bold text-end">Total</td>
+                                    <td class="fw-bold text-end" colspan="2">Total</td>
                                     <td class="fw-bold" id="total-debit">0</td>
                                     <td class="fw-bold" id="total-kredit">0</td>
                                     <td></td>
@@ -123,8 +153,11 @@ let rowIndex = {{ isset($jurnal) ? $jurnal->jurnalDetails->count() : 2 }};
 
 function addRow() {
     const coaOptions = `<option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach`;
+    const mitraOptions = `<option value="">-- Tanpa Mitra --</option><optgroup label="Klien">@foreach($kliens as $k)<option value="App\\Models\\Klien:{{ $k->id }}">{{ $k->nama_klien }}</option>@endforeach</optgroup><optgroup label="Vendor">@foreach($vendors as $v)<option value="App\\Models\\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>@endforeach</optgroup>`;
+    
     const row = `<tr>
         <td><select name="details[${rowIndex}][coa_id]" class="form-select form-select-sm" required>${coaOptions}</select></td>
+        <td><select name="details[${rowIndex}][contactable_type_id]" class="form-select form-select-sm">${mitraOptions}</select></td>
         <td><input type="number" name="details[${rowIndex}][debit]" class="form-control form-control-sm debit-input" value="0" oninput="updateTotals()"></td>
         <td><input type="number" name="details[${rowIndex}][kredit]" class="form-control form-control-sm kredit-input" value="0" oninput="updateTotals()"></td>
         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>

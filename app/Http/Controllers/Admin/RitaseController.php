@@ -170,4 +170,52 @@ class RitaseController extends Controller
         $ritase->delete();
         return redirect()->route('admin.ritase.index')->with('success', 'Ritase berhasil dihapus.');
     }
+
+    public function approve(Ritase $ritase)
+    {
+        Gate::authorize('update_ritase');
+        
+        $ritase->update([
+            'is_approved' => true,
+            'approved_at' => now(),
+        ]);
+
+        // Auto-Invoice Logic
+        $month = $ritase->waktu_masuk->format('n');
+        $year = $ritase->waktu_masuk->format('Y');
+
+        $invoice = \App\Models\Invoice::where('tenant_id', $ritase->tenant_id)
+            ->where('klien_id', $ritase->klien_id)
+            ->where('periode_bulan', $month)
+            ->where('periode_tahun', $year)
+            ->where('status', 'Draft')
+            ->first();
+
+        if (!$invoice) {
+            $invoice = \App\Models\Invoice::create([
+                'tenant_id' => $ritase->tenant_id,
+                'klien_id' => $ritase->klien_id,
+                'periode_bulan' => $month,
+                'periode_tahun' => $year,
+                'tanggal_invoice' => now(),
+                'tanggal_jatuh_tempo' => now()->addDays(30),
+                'total_tagihan' => 0,
+                'status' => 'Draft',
+                'keterangan' => 'Generated automatically from approved ritase',
+            ]);
+        }
+
+        // Attach Ritase to Invoice
+        $ritase->update([
+            'invoice_id' => $invoice->id,
+            'status_invoice' => $invoice->status,
+        ]);
+
+        // Recalculate Invoice total
+        $totalRitase = $invoice->ritase()->sum('biaya_tipping');
+        $totalPenjualan = $invoice->penjualan()->sum('total_harga');
+        $invoice->update(['total_tagihan' => $totalRitase + $totalPenjualan]);
+
+        return redirect()->back()->with('success', 'Ritase berhasil di-approve dan ditambahkan ke Invoice Draft.');
+    }
 }

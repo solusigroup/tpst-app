@@ -60,7 +60,10 @@ class JurnalController extends Controller
             }
         }
 
-        return view('admin.jurnal.form', compact('coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId'));
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+        $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
+
+        return view('admin.jurnal.form', compact('coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId', 'kliens', 'vendors'));
     }
 
     public function store(Request $request)
@@ -75,6 +78,7 @@ class JurnalController extends Controller
             'details.*.coa_id' => 'required|exists:coa,id',
             'details.*.debit' => 'nullable|numeric|min:0',
             'details.*.kredit' => 'nullable|numeric|min:0',
+            'details.*.contactable_type_id' => 'nullable|string',
             'referensi_type' => 'nullable|string',
             'referensi_id' => 'nullable|integer',
         ]);
@@ -115,10 +119,18 @@ class JurnalController extends Controller
         ]);
 
         foreach ($validated['details'] as $detail) {
+            $contactType = null;
+            $contactId = null;
+            if (!empty($detail['contactable_type_id'])) {
+                [$contactType, $contactId] = explode(':', $detail['contactable_type_id']);
+            }
+
             $jurnal->jurnalDetails()->create([
                 'coa_id' => $detail['coa_id'],
                 'debit' => $detail['debit'] ?? 0,
                 'kredit' => $detail['kredit'] ?? 0,
+                'contactable_type' => $contactType,
+                'contactable_id' => $contactId,
             ]);
         }
 
@@ -129,8 +141,10 @@ class JurnalController extends Controller
     {
         Gate::authorize('update_jurnal');
         $jurnal->load('jurnalDetails.coa');
-        $coas = Coa::orderBy('kode_akun')->get();
-        return view('admin.jurnal.form', compact('jurnal', 'coas'));
+        $coas = \App\Models\Coa::orderBy('kode_akun')->get();
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+        $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
+        return view('admin.jurnal.form', compact('jurnal', 'coas', 'kliens', 'vendors'));
     }
 
     public function update(Request $request, JurnalHeader $jurnal)
@@ -145,6 +159,7 @@ class JurnalController extends Controller
             'details.*.coa_id' => 'required|exists:coa,id',
             'details.*.debit' => 'nullable|numeric|min:0',
             'details.*.kredit' => 'nullable|numeric|min:0',
+            'details.*.contactable_type_id' => 'nullable|string',
         ]);
 
         $data = [
@@ -192,10 +207,18 @@ class JurnalController extends Controller
         // Sync details
         $jurnal->jurnalDetails()->delete();
         foreach ($validated['details'] as $detail) {
+            $contactType = null;
+            $contactId = null;
+            if (!empty($detail['contactable_type_id'])) {
+                [$contactType, $contactId] = explode(':', $detail['contactable_type_id']);
+            }
+
             $jurnal->jurnalDetails()->create([
                 'coa_id' => $detail['coa_id'],
                 'debit' => $detail['debit'] ?? 0,
                 'kredit' => $detail['kredit'] ?? 0,
+                'contactable_type' => $contactType,
+                'contactable_id' => $contactId,
             ]);
         }
 

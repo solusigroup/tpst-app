@@ -63,8 +63,9 @@
                         <th>Berat Netto</th>
                         <th>Status</th>
                         <th>Waktu Masuk</th>
-                        <th>Tiket</th>
+                        <th>Bukti</th>
                         <th>Foto</th>
+                        <th>Approved</th>
                         <th>Status Invoice</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -89,6 +90,18 @@
                                 </a>
                             @else
                                 <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($item->is_approved)
+                                <span class="badge bg-success"><i class="cil-check-circle me-1"></i> Approved</span>
+                            @else
+                                <form method="POST" action="{{ route('admin.ritase.approve', $item) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        <i class="cil-check me-1"></i> Approve
+                                    </button>
+                                </form>
                             @endif
                         </td>
                         <td>

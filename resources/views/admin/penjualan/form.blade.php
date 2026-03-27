@@ -47,9 +47,18 @@
                 <input type="number" name="harga_satuan" id="harga_satuan" class="form-control @error('harga_satuan') is-invalid @enderror" value="{{ old('harga_satuan', $penjualan->harga_satuan ?? '') }}" required oninput="calcTotal()">
                 @error('harga_satuan') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label">Total Harga</label>
                 <input type="text" id="total_harga_display" class="form-control bg-light" value="Rp {{ number_format(old('total_harga', $penjualan->total_harga ?? 0), 0, ',', '.') }}" readonly>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Jumlah Bayar (DP/Tunai)</label>
+                <input type="number" name="jumlah_bayar" id="jumlah_bayar" class="form-control @error('jumlah_bayar') is-invalid @enderror" value="{{ old('jumlah_bayar', $penjualan->jumlah_bayar ?? 0) }}" required oninput="calcTotal()">
+                @error('jumlah_bayar') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Sisa (Piutang)</label>
+                <input type="text" id="sisa_bayar_display" class="form-control bg-light" value="Rp 0" readonly>
             </div>
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> {{ isset($penjualan) ? 'Perbarui' : 'Simpan' }}</button>
@@ -65,8 +74,13 @@
 function calcTotal() {
     const berat = parseFloat(document.getElementById('berat_kg').value) || 0;
     const harga = parseFloat(document.getElementById('harga_satuan').value) || 0;
+    const bayar = parseFloat(document.getElementById('jumlah_bayar').value) || 0;
+    
     const total = berat * harga;
+    const sisa = total - bayar;
+    
     document.getElementById('total_harga_display').value = 'Rp ' + total.toLocaleString('id-ID');
+    document.getElementById('sisa_bayar_display').value = 'Rp ' + Math.max(0, sisa).toLocaleString('id-ID');
 }
 
 let maxStock = 0;

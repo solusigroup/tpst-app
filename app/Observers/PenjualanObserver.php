@@ -18,64 +18,7 @@ class PenjualanObserver
      */
     public function created(Penjualan $penjualan): void
     {
-        try {
-            DB::transaction(function () use ($penjualan) {
-                // Get the chart of accounts
-                // Debit Account: Piutang Usaha (Receivable) - typically 1200
-                $debitCoa = Coa::where('tenant_id', $penjualan->tenant_id)
-                    ->where('tipe', 'Asset')
-                    ->where('nama_akun', 'like', '%Piutang%')
-                    ->first();
-
-                // If no Piutang account, try Kas
-                if (!$debitCoa) {
-                    $debitCoa = Coa::where('tenant_id', $penjualan->tenant_id)
-                        ->where('tipe', 'Asset')
-                        ->where('nama_akun', 'like', '%Kas%')
-                        ->first();
-                }
-
-                // Credit Account: Pendapatan Penjualan - typically 4200
-                $creditCoa = Coa::where('tenant_id', $penjualan->tenant_id)
-                    ->where('tipe', 'Revenue')
-                    ->where('nama_akun', 'like', '%Penjualan%')
-                    ->first();
-
-                // Only proceed if both accounts exist
-                if (!$debitCoa || !$creditCoa) {
-                    return;
-                }
-
-                // Create journal header
-                $jurnalHeader = JurnalHeader::create([
-                    'tenant_id' => $penjualan->tenant_id,
-                    'tanggal' => $penjualan->tanggal,
-                    'referensi_type' => Penjualan::class,
-                    'referensi_id' => $penjualan->id,
-                    'deskripsi' => "Penjualan {$penjualan->jenis_produk} seberat {$penjualan->berat_kg}kg kepada {$penjualan->klien->nama_klien}",
-                ]);
-
-                // Create debit entry (Piutang/Kas)
-                $jurnalHeader->jurnalDetails()->create([
-                    'coa_id' => $debitCoa->id,
-                    'debit' => $penjualan->total_harga,
-                    'kredit' => 0,
-                ]);
-
-                // Create credit entry (Pendapatan Penjualan)
-                $jurnalHeader->jurnalDetails()->create([
-                    'coa_id' => $creditCoa->id,
-                    'debit' => 0,
-                    'kredit' => $penjualan->total_harga,
-                ]);
-            });
-        } catch (\Exception $e) {
-            // Log the error but don't fail the penjualan creation
-            \Log::error('Failed to create journal entry for penjualan', [
-                'penjualan_id' => $penjualan->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        // Moved to InvoiceObserver for consolidated journaling
     }
 
     /**
@@ -91,6 +34,18 @@ class PenjualanObserver
      */
     public function deleted(Penjualan $penjualan): void
     {
-        // Optional: Handle deletion of related journal entries
+        JurnalHeader::where('referensi_type', Penjualan::class)
+            ->where('referensi_id', $penjualan->id)
+            ->get()->each->delete();
+
+        // Update parent invoice total
+        if ($penjualan->invoice_id) {
+            $invoice = \App\Models\Invoice::find($penjualan->invoice_id);
+            if ($invoice) {
+                $totalRitase = $invoice->ritase()->sum('biaya_tipping');
+                $totalPenjualan = $invoice->penjualan()->sum('total_harga');
+                $invoice->update(['total_tagihan' => $totalRitase + $totalPenjualan]);
+            }
+        }
     }
 }

@@ -30,9 +30,26 @@
                 <label class="form-label">Akun (COA) <span class="text-danger">*</span></label>
                 <select name="coa_id" class="form-select @error('coa_id') is-invalid @enderror" required>
                     <option value="">-- Pilih --</option>
-                    @foreach($coas as $c)<option value="{{ $c->id }}" {{ old('coa_id', $jurnalKas->coa_id ?? '') == $c->id ? 'selected' : '' }}>{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach
+                    @foreach($coas as $c)<option value="{{ $c->id }}" {{ old('coa_id', $jurnalKas->coa_id ?? ($jurnalKas->coa_lawan_id ?? '')) == $c->id ? 'selected' : '' }}>{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach
                 </select>
                 @error('coa_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Mitra (Opsional)</label>
+                <select name="contactable_type_id" class="form-select @error('contactable_type_id') is-invalid @enderror">
+                    <option value="">-- Tanpa Mitra --</option>
+                    <optgroup label="Klien">
+                        @foreach($kliens as $k)
+                            <option value="App\Models\Klien:{{ $k->id }}" {{ (isset($jurnalKas) && $jurnalKas->contactable_type === 'App\Models\Klien' && $jurnalKas->contactable_id == $k->id) ? 'selected' : '' }}>{{ $k->nama_klien }}</option>
+                        @endforeach
+                    </optgroup>
+                    <optgroup label="Vendor">
+                        @foreach($vendors as $v)
+                            <option value="App\Models\Vendor:{{ $v->id }}" {{ (isset($jurnalKas) && $jurnalKas->contactable_type === 'App\Models\Vendor' && $jurnalKas->contactable_id == $v->id) ? 'selected' : '' }}>{{ $v->nama_vendor }}</option>
+                        @endforeach
+                    </optgroup>
+                </select>
+                @error('contactable_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6">
                 <label class="form-label">Jumlah (Rp) <span class="text-danger">*</span></label>

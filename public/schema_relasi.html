@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skema Relasi Modul - TPST App</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .mermaid { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card { border: none; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .badge-piutang { background-color: #0d6efd; }
+        .badge-jurnal { background-color: #6f42c1; }
+        .badge-operasional { background-color: #198754; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-primary">Skema Relasi Kontrol Akuntansi</h1>
+            <p class="lead text-muted">Visualisasi aliran data dari Operasional ke Buku Besar & Pembantu</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-12">
+                <div class="mermaid text-center">
+                    graph TD
+                        subgraph "Modul Operasional"
+                            R[Ritase]
+                            P[Penjualan]
+                        end
+
+                        subgraph "Modul Penagihan (AR Hub)"
+                            I[Invoice]
+                        end
+
+                        subgraph "Modul Akuntansi (General Ledger)"
+                            JH[Jurnal Header]
+                            JD[Jurnal Detail]
+                        end
+
+                        subgraph "Modul Pembantu (Subsidiary Ledger)"
+                            BP[Buku Pembantu Piutang/Utang]
+                        end
+
+                        %% Relasi
+                        R -- "N : 1 (Invoiced)" --> I
+                        P -- "N : 1 (Invoiced)" --> I
+                        
+                        I -- "1 : 1 (Polymorphic Ref)" --> JH
+                        JH -- "1 : N" --> JD
+                        JD -- "1 : 1 (Triggers)" --> BP
+
+                        %% Aliran Pelunasan
+                        PK[Jurnal Kas / Bank] -- "Settles" --> BP
+                        BP -- "Syncs Status" --> I
+                        I -- "Syncs Status" --> R
+                        I -- "Syncs Status" --> P
+                        
+                        %% Styling
+                        style I fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+                        style JH fill:#e2d9f3,stroke:#6f42c1,stroke-width:2px
+                        style BP fill:#d1e7dd,stroke:#198754,stroke-width:2px
+                        style R fill:#fff3cd,stroke:#ffc107
+                        style P fill:#fff3cd,stroke:#ffc107
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">1. Operasional</h5>
+                        <p class="card-text text-muted small">Ritase dan Penjualan adalah data mentah transaksi. Sekarang tidak lagi mencatat jurnal langsung untuk menjaga kebersihan buku.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">2. Hub Penagihan</h5>
+                        <p class="card-text text-muted small"><strong>Invoice</strong> bertindak sebagai konsolidator. Jurnal Piutang baru dibuat satu kali per Invoice (Sent/Paid).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-purple" style="color:#6f42c1">3. Buku Pembantu</h5>
+                        <p class="card-text text-muted small">Setiap baris jurnal Piutang/Hutang otomatis membuat satu baris di Buku Pembantu untuk tracking saldo per klien/mitra.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 p-4 bg-white rounded shadow-sm">
+            <h4 class="mb-3">Alur Sinkronisasi Status</h4>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Pelunasan Otomatis (FIFO)</div>
+                        Jurnal Kas masuk akan memotong saldo Piutang tertua di Buku Pembantu secara otomatis.
+                    </div>
+                    <span class="badge bg-primary rounded-pill">FIFO</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Sinkronisasi Downstream</div>
+                        Buku Pembantu "Lunas" &rarr; Invoice "Paid" &rarr; Ritase/Penjualan "Paid".
+                    </div>
+                    <span class="badge bg-success rounded-pill">Sync</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Keamanan Data (Cascading)</div>
+                        Menghapus Invoice akan otomatis menghapus Jurnal dan baris Buku Pembantu terkait.
+                    </div>
+                    <span class="badge bg-danger rounded-pill">Safe</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

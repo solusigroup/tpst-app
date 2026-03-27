@@ -86,7 +86,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Biaya Tipping (Rp)</label>
-                        <input type="number" name="biaya_tipping" class="form-control" value="{{ old('biaya_tipping', $ritase->biaya_tipping ?? '') }}">
+                        <input type="number" name="biaya_tipping" id="biaya_tipping" class="form-control" value="{{ old('biaya_tipping', $ritase->biaya_tipping ?? '') }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Status <span class="text-danger">*</span></label>
@@ -143,7 +143,15 @@
 function calcNetto() {
     const bruto = parseFloat(document.getElementById('berat_bruto').value) || 0;
     const tarra = parseFloat(document.getElementById('berat_tarra').value) || 0;
-    document.getElementById('berat_netto').value = (bruto - tarra).toFixed(2);
+    const netto = bruto - tarra;
+    document.getElementById('berat_netto').value = netto.toFixed(2);
+    
+    // Auto-calculate tipping fee: netto * 80
+    const tippingInput = document.getElementById('biaya_tipping');
+    // Only auto-fill if empty or is a new record
+    @if(!isset($ritase))
+        tippingInput.value = Math.round(netto * 80);
+    @endif
 }
 
 function previewImage(input) {

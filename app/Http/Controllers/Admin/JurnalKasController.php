@@ -32,7 +32,9 @@ class JurnalKasController extends Controller
     {
         Gate::authorize('create_jurnal_kas');
         $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
-        return view('admin.jurnal-kas.form', compact('coas'));
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+        $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
+        return view('admin.jurnal-kas.form', compact('coas', 'kliens', 'vendors'));
     }
 
     public function store(Request $request)
@@ -46,10 +48,16 @@ class JurnalKasController extends Controller
             'jumlah' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'bukti_transaksi' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'contactable_type_id' => 'nullable|string',
         ]);
 
         $data = $validated;
         unset($data['coa_id']);
+        unset($data['contactable_type_id']);
+
+        if (!empty($validated['contactable_type_id'])) {
+            [$data['contactable_type'], $data['contactable_id']] = explode(':', $validated['contactable_type_id']);
+        }
         $data['coa_lawan_id'] = $validated['coa_id'];
         
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
@@ -81,7 +89,9 @@ class JurnalKasController extends Controller
     {
         Gate::authorize('update_jurnal_kas');
         $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
-        return view('admin.jurnal-kas.form', compact('jurnalKas', 'coas'));
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+        $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
+        return view('admin.jurnal-kas.form', compact('jurnalKas', 'coas', 'kliens', 'vendors'));
     }
 
     public function update(Request $request, JurnalKas $jurnalKas)
@@ -95,10 +105,19 @@ class JurnalKasController extends Controller
             'jumlah' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'bukti_transaksi' => ($jurnalKas->bukti_transaksi ? 'nullable' : 'required') . '|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'contactable_type_id' => 'nullable|string',
         ]);
 
         $data = $validated;
         unset($data['coa_id']);
+        unset($data['contactable_type_id']);
+
+        if (!empty($validated['contactable_type_id'])) {
+            [$data['contactable_type'], $data['contactable_id']] = explode(':', $validated['contactable_type_id']);
+        } else {
+            $data['contactable_type'] = null;
+            $data['contactable_id'] = null;
+        }
         $data['coa_lawan_id'] = $validated['coa_id'];
         
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();

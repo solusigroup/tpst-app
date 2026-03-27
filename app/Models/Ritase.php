@@ -39,6 +39,8 @@ class Ritase extends Model
         'biaya_tipping',
         'status',
         'status_invoice',
+        'is_approved',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -50,6 +52,8 @@ class Ritase extends Model
         'biaya_tipping' => 'decimal:2',
         'status' => 'string',
         'invoice_id' => 'integer',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
     ];
 
     /**

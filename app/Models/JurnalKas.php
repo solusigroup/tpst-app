@@ -31,7 +31,17 @@ class JurnalKas extends Model
         'deskripsi',
         'bukti_transaksi',
         'status',
+        'contactable_type',
+        'contactable_id',
     ];
+
+    /**
+     * Get the parent contactable model (Klien or Vendor).
+     */
+    public function contactable(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
+    }
 
     protected $casts = [
         'tanggal' => 'date',
@@ -82,6 +92,8 @@ class JurnalKas extends Model
                 'coa_id' => $this->coa_lawan_id,
                 'debit' => 0,
                 'kredit' => $this->nominal,
+                'contactable_type' => $this->contactable_type,
+                'contactable_id' => $this->contactable_id,
             ]);
         } else {
             // Pengeluaran
@@ -90,6 +102,8 @@ class JurnalKas extends Model
                 'coa_id' => $this->coa_lawan_id,
                 'debit' => $this->nominal,
                 'kredit' => 0,
+                'contactable_type' => $this->contactable_type,
+                'contactable_id' => $this->contactable_id,
             ]);
             $jurnalHeader->jurnalDetails()->create([
                 'coa_id' => $this->coa_kas_id,

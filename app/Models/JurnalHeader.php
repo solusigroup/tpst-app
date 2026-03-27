@@ -64,6 +64,10 @@ class JurnalHeader extends Model
                 $header->nomor_referensi = $prefix . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
             }
         });
+
+        static::deleting(function (JurnalHeader $header) {
+            $header->jurnalDetails()->get()->each->delete();
+        });
     }
 
     /**

@@ -30,6 +30,7 @@ class Penjualan extends Model
         'berat_kg',
         'harga_satuan',
         'total_harga',
+        'jumlah_bayar',
         'invoice_id',
         'status_invoice',
     ];
@@ -39,6 +40,7 @@ class Penjualan extends Model
         'berat_kg' => 'decimal:2',
         'harga_satuan' => 'decimal:2',
         'total_harga' => 'decimal:2',
+        'jumlah_bayar' => 'decimal:2',
     ];
 
     /**

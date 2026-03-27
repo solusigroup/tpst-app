@@ -6,8 +6,12 @@ use Illuminate\Support\Facades\URL;
 
 use App\Models\Penjualan;
 use App\Models\Ritase;
+use App\Models\Invoice;
+use App\Models\JurnalDetail;
+use App\Observers\InvoiceObserver;
 use App\Observers\PenjualanObserver;
 use App\Observers\RitaseObserver;
+use App\Observers\JurnalDetailObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
         // Register Eloquent Observers for automatic accounting
         Ritase::observe(RitaseObserver::class);
         Penjualan::observe(PenjualanObserver::class);
+        Invoice::observe(InvoiceObserver::class);
+        JurnalDetail::observe(JurnalDetailObserver::class);
 
         // Force HTTPS in production (Fixes issues with Cloudflare Flexible SSL)
         if (config('app.env') === 'production') {

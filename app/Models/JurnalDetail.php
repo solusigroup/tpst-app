@@ -14,7 +14,17 @@ class JurnalDetail extends Model
         'coa_id',
         'debit',
         'kredit',
+        'contactable_type',
+        'contactable_id',
     ];
+
+    /**
+     * Get the parent contactable model (Klien or Vendor).
+     */
+    public function contactable(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
+    }
 
     protected $casts = [
         'debit' => 'decimal:2',

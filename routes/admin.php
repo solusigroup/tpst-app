@@ -36,6 +36,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Operasional
     Route::get('ritase/export-rekap', [RitaseController::class, 'exportRekap'])->name('ritase.export-rekap');
     Route::resource('ritase', RitaseController::class);
+    Route::post('ritase/{ritase}/approve', [RitaseController::class, 'approve'])->name('ritase.approve');
     Route::post('ritase/{ritase}/post', [RitaseController::class, 'post'])->name('ritase.post');
     Route::resource('klien', KlienController::class);
     Route::resource('armada', ArmadaController::class);
@@ -44,12 +45,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Keuangan
     Route::resource('coa', CoaController::class);
+    Route::resource('vendor', \App\Http\Controllers\Admin\VendorController::class);
     Route::resource('jurnal', JurnalController::class);
     Route::post('jurnal/{jurnal}/post', [JurnalController::class, 'post'])->name('jurnal.post');
     Route::post('jurnal/{jurnal}/unpost', [JurnalController::class, 'unpost'])->name('jurnal.unpost');
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
     Route::resource('invoice', InvoiceAdminController::class);
+
+    // Buku Pembantu
+    Route::get('buku-pembantu/piutang', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'piutang'])->name('buku-pembantu.piutang');
+    Route::get('buku-pembantu/utang', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'utang'])->name('buku-pembantu.utang');
 
     // PENGATURAN
     Route::resource('users', UserController::class);

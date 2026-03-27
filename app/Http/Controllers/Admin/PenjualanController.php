@@ -74,6 +74,7 @@ class PenjualanController extends Controller
             'jenis_produk' => 'required|string',
             'berat_kg' => 'required|numeric|min:0',
             'harga_satuan' => 'required|numeric|min:0',
+            'jumlah_bayar' => 'nullable|numeric|min:0',
         ]);
 
         $stokTersedia = $this->calculateAvailableStock();
@@ -85,6 +86,7 @@ class PenjualanController extends Controller
         }
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
+        $validated['jumlah_bayar'] = $validated['jumlah_bayar'] ?? 0;
 
         $tenantId = auth()->user()->tenant_id;
         if (!$tenantId) {
@@ -118,6 +120,7 @@ class PenjualanController extends Controller
             'jenis_produk' => 'required|string',
             'berat_kg' => 'required|numeric|min:0',
             'harga_satuan' => 'required|numeric|min:0',
+            'jumlah_bayar' => 'nullable|numeric|min:0',
         ]);
 
         $stokTersedia = $this->calculateAvailableStock($penjualan->id);
@@ -129,6 +132,7 @@ class PenjualanController extends Controller
         }
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
+        $validated['jumlah_bayar'] = $validated['jumlah_bayar'] ?? 0;
 
         if (empty($penjualan->tenant_id)) {
             $tenantId = auth()->user()->tenant_id;
