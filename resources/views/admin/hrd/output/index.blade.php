@@ -48,7 +48,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr><th>Tanggal</th><th>Karyawan</th><th>Kategori</th><th>Jumlah</th><th>Catatan</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
@@ -62,9 +62,9 @@
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.hrd.output.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
-                                <form method="POST" action="{{ route('admin.hrd.output.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin hapus output ini?')">
+                                <form method="POST" action="{{ route('admin.hrd.output.destroy', $item) }}" class="d-inline" >
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-outline-danger"><i class="cil-trash"></i></button>
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Yakin ingin menghapus data ini?')"><i class="cil-trash"></i></button>
                                 </form>
                             </div>
                         </td>

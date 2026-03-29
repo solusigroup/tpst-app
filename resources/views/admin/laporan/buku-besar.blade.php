@@ -46,7 +46,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>Tanggal</th><th>Kode Akun</th><th>Nama Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kode Akun</th><th>Nama Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>

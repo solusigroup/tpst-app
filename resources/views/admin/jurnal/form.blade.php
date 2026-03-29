@@ -55,8 +55,8 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table align-middle mb-0" id="detail-table">
-                            <thead class="bg-light">
-                            <thead class="bg-light">
+                            <thead class="table-light">
+                            <thead class="table-light">
                                 <tr><th>Akun</th><th>Mitra (Opsional)</th><th style="width:180px;">Debit</th><th style="width:180px;">Kredit</th><th style="width:50px;"></th></tr>
                             </thead>
                             <tbody id="detail-body">

@@ -15,6 +15,8 @@ class HasilPilahan extends Model
 
     protected $fillable = [
         'tenant_id',
+        'user_id',
+        'waste_category_id',
         'tanggal',
         'kategori',
         'jenis',
@@ -42,5 +44,21 @@ class HasilPilahan extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Get the user (petugas pemilah).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the waste category (jenis sampah).
+     */
+    public function wasteCategory(): BelongsTo
+    {
+        return $this->belongsTo(WasteCategory::class);
     }
 }

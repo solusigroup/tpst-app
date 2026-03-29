@@ -79,7 +79,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr><th>Tanggal</th><th>Karyawan</th><th>Check In</th><th>Check Out</th><th>Status</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
@@ -100,9 +100,9 @@
                             @hasanyrole('manajemen|hrd|super_admin')
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.hrd.attendance.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
-                                <form method="POST" action="{{ route('admin.hrd.attendance.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin hapus kehadiran ini?')">
+                                <form method="POST" action="{{ route('admin.hrd.attendance.destroy', $item) }}" class="d-inline" >
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-outline-danger"><i class="cil-trash"></i></button>
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Yakin ingin menghapus data ini?')"><i class="cil-trash"></i></button>
                                 </form>
                             </div>
                             @endhasanyrole

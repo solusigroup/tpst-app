@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\URL;
+use Illuminate\Pagination\Paginator;
 
+use App\Models\HasilPilahan;
 use App\Models\Penjualan;
 use App\Models\Ritase;
 use App\Models\Invoice;
 use App\Models\JurnalDetail;
+use App\Observers\HasilPilahanObserver;
 use App\Observers\InvoiceObserver;
 use App\Observers\PenjualanObserver;
 use App\Observers\RitaseObserver;
@@ -32,11 +35,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         // Register Eloquent Observers for automatic accounting
         Ritase::observe(RitaseObserver::class);
         Penjualan::observe(PenjualanObserver::class);
         Invoice::observe(InvoiceObserver::class);
         JurnalDetail::observe(JurnalDetailObserver::class);
+        HasilPilahan::observe(HasilPilahanObserver::class);
 
         // Force HTTPS in production (Fixes issues with Cloudflare Flexible SSL)
         if (config('app.env') === 'production') {

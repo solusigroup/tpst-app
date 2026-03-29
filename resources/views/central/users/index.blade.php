@@ -49,8 +49,8 @@
                         <td class="text-end">
                             <a href="{{ route('central.users.edit', $u->id) }}" class="btn btn-sm btn-warning"><i class="cil-pencil"></i></a>
                             @if($u->id !== auth()->id())
-                            <form action="{{ route('central.users.destroy', $u->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus user ini?')">
-                                @csrf @method('DELETE') <button class="btn btn-sm btn-danger"><i class="cil-trash"></i></button>
+                            <form action="{{ route('central.users.destroy', $u->id) }}" method="POST" class="d-inline" >
+                                @csrf @method('DELETE') <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data ini?')"><i class="cil-trash"></i></button>
                             </form>
                             @endif
                         </td>

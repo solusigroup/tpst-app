@@ -20,7 +20,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>Tanggal</th><th>Klien</th><th>Jenis Produk</th><th class="text-end">Berat</th><th class="text-end">Harga Satuan</th><th class="text-end">Total Harga</th><th>Status Invoice</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Klien</th><th>Jenis Produk</th><th class="text-end">Berat</th><th class="text-end">Harga Satuan</th><th class="text-end">Total Harga</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>

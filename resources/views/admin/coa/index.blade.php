@@ -27,7 +27,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>Kode Akun</th><th>Nama Akun</th><th>Tipe</th><th>Klasifikasi</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Kode Akun</th><th>Nama Akun</th><th>Tipe</th><th>Klasifikasi</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($coas as $item)
                     <tr>
@@ -38,7 +38,7 @@
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.coa.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
-                                <form method="POST" action="{{ route('admin.coa.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin hapus?')">@csrf @method('DELETE')<button class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                <form method="POST" action="{{ route('admin.coa.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                             </div>
                         </td>
                     </tr>

@@ -6,13 +6,14 @@ namespace App\Models;
 use App\Scopes\TenantScope;
 use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TenantTrait, \Spatie\Activitylog\Traits\LogsActivity, \Spatie\Permission\Traits\HasRoles;
+    use HasFactory, Notifiable, TenantTrait, SoftDeletes, \Spatie\Activitylog\Traits\LogsActivity, \Spatie\Permission\Traits\HasRoles;
 
     public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
     {

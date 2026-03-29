@@ -23,7 +23,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>No. Invoice</th><th>Klien</th><th>Periode</th><th>Total</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>No. Invoice</th><th>Klien</th><th>Periode</th><th>Total</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($invoices as $item)
                     <tr>
@@ -41,7 +41,7 @@
                                 <a href="{{ route('invoices.print', $item) }}" target="_blank" class="btn btn-outline-success" title="Cetak"><i class="cil-print"></i></a>
                                 <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->id]) }}" class="btn btn-outline-info" title="Buat Jurnal"><i class="cil-book"></i></a>
                                 <a href="{{ route('admin.invoice.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
-                                <form method="POST" action="{{ route('admin.invoice.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin hapus?')">@csrf @method('DELETE')<button class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                <form method="POST" action="{{ route('admin.invoice.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                             </div>
                         </td>
                     </tr>

@@ -8,6 +8,7 @@ use App\Models\Klien;
 use App\Models\HasilPilahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 
 class PenjualanController extends Controller
 {
@@ -97,7 +98,9 @@ class PenjualanController extends Controller
         }
         $validated['tenant_id'] = $tenantId;
 
-        Penjualan::create($validated);
+        DB::transaction(function () use ($validated) {
+            Penjualan::create($validated);
+        });
 
         return redirect()->route('admin.penjualan.index')->with('success', 'Penjualan berhasil ditambahkan.');
     }
@@ -145,7 +148,9 @@ class PenjualanController extends Controller
             $validated['tenant_id'] = $tenantId;
         }
 
-        $penjualan->update($validated);
+        DB::transaction(function () use ($penjualan, $validated) {
+            $penjualan->update($validated);
+        });
 
         return redirect()->route('admin.penjualan.index')->with('success', 'Penjualan berhasil diperbarui.');
     }
@@ -153,7 +158,9 @@ class PenjualanController extends Controller
     public function destroy(Penjualan $penjualan)
     {
         Gate::authorize('delete_penjualan');
-        $penjualan->delete();
+        DB::transaction(function () use ($penjualan) {
+            $penjualan->delete();
+        });
         return redirect()->route('admin.penjualan.index')->with('success', 'Penjualan berhasil dihapus.');
     }
 }

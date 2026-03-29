@@ -29,8 +29,8 @@
                         <td>{{ $t->created_at->format('d M Y H:i') }}</td>
                         <td class="text-end">
                             <a href="{{ route('central.tenants.edit', $t->id) }}" class="btn btn-sm btn-warning"><i class="cil-pencil"></i></a>
-                            <form action="{{ route('central.tenants.destroy', $t->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus tenant beserta SATUAN data di dalamnya? Ini tidak bisa dikembalikan.')">
-                                @csrf @method('DELETE') <button class="btn btn-sm btn-danger"><i class="cil-trash"></i></button>
+                            <form action="{{ route('central.tenants.destroy', $t->id) }}" method="POST" class="d-inline" >
+                                @csrf @method('DELETE') <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data ini?')"><i class="cil-trash"></i></button>
                             </form>
                         </td>
                     </tr>

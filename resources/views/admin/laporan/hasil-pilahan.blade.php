@@ -31,7 +31,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr>
                         <th>Kategori</th>
                         <th>Jenis</th>
@@ -77,7 +77,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Petugas</th><th class="text-end">Tonase</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Petugas</th><th class="text-end">Tonase</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>

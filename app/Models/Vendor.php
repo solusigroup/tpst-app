@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Scopes\TenantScope;
 use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Vendor extends Model
 {
-    use TenantTrait, \Spatie\Activitylog\Traits\LogsActivity;
+    use TenantTrait, SoftDeletes, \Spatie\Activitylog\Traits\LogsActivity;
 
     public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
     {

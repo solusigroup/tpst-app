@@ -28,7 +28,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr>
                         <th style="width: 15%">Waktu</th>
                         <th style="width: 15%">User</th>

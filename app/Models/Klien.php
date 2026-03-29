@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Scopes\TenantScope;
 use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Klien extends Model
 {
-    use TenantTrait;
+    use TenantTrait, SoftDeletes;
 
     protected $table = 'klien';
 

@@ -81,7 +81,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr><th>Oleh</th><th>Periode Mingguan</th><th>Total Upah</th><th>Total Output</th><th>Status</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>

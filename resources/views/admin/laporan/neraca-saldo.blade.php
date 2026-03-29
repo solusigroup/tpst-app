@@ -38,7 +38,7 @@
 
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light"><tr><th>Kode Akun</th><th>Nama Akun</th><th>Tipe</th><th class="text-end">Debit</th><th class="text-end">Kredit</th><th class="text-end">Saldo</th></tr></thead>
+            <thead class="table-light"><tr><th>Kode Akun</th><th>Nama Akun</th><th>Tipe</th><th class="text-end">Debit</th><th class="text-end">Kredit</th><th class="text-end">Saldo</th></tr></thead>
             <tbody>
                 @foreach($rows as $r)
                 <tr>

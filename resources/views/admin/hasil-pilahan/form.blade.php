@@ -28,14 +28,15 @@
                 @error('kategori') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-12">
-                <label class="form-label">Jenis <span class="text-danger">*</span></label>
-                <select name="jenis" class="form-select @error('jenis') is-invalid @enderror" required>
+                <label class="form-label">Jenis (Waste Category) <span class="text-danger">*</span></label>
+                <select name="waste_category_id" class="form-select @error('waste_category_id') is-invalid @enderror" required>
                     <option value="">-- Pilih Jenis --</option>
-                    @foreach($wasteCategories as $catName)
-                        <option value="{{ $catName }}" {{ old('jenis', $hasilPilahan->jenis ?? '') == $catName ? 'selected' : '' }}>{{ $catName }}</option>
+                    @foreach($wasteCategories as $cat)
+                        <option value="{{ $cat->id }}" {{ old('waste_category_id', $hasilPilahan->waste_category_id ?? '') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                     @endforeach
                 </select>
-                @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                @error('waste_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <small class="text-muted">Jenis ini akan otomatis ditautkan ke modul Employee Output (HRD)</small>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Tonase (kg) <span class="text-danger">*</span></label>
@@ -44,18 +45,29 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Petugas <span class="text-danger">*</span></label>
-                <select name="officer" class="form-select @error('officer') is-invalid @enderror" required>
+                <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
                     <option value="">-- Pilih Petugas --</option>
                     @foreach($petugas as $p)
-                        <option value="{{ $p }}" {{ old('officer', $hasilPilahan->officer ?? '') == $p ? 'selected' : '' }}>{{ $p }}</option>
+                        <option value="{{ $p->id }}" {{ old('user_id', $hasilPilahan->user_id ?? '') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
                     @endforeach
                 </select>
-                @error('officer') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                @error('user_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <small class="text-muted">Data output karyawan ini akan otomatis ter-update di modul HRD</small>
             </div>
             <div class="col-12">
                 <label class="form-label">Keterangan</label>
                 <textarea name="keterangan" class="form-control" rows="3">{{ old('keterangan', $hasilPilahan->keterangan ?? '') }}</textarea>
             </div>
+
+            {{-- Info box integrasi --}}
+            <div class="col-12">
+                <div class="alert alert-info mb-0">
+                    <i class="cil-sync me-1"></i>
+                    <strong>Integrasi Otomatis:</strong> Data hasil pilahan ini akan otomatis di-sinkronkan ke modul <strong>Employee Output (HRD)</strong>.
+                    Total tonase per petugas per jenis per hari akan diagregasikan menjadi satu record output karyawan.
+                </div>
+            </div>
+
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> {{ isset($hasilPilahan) ? 'Perbarui' : 'Simpan' }}</button>
                 <a href="{{ route('admin.hasil-pilahan.index') }}" class="btn btn-outline-secondary">Kembali</a>

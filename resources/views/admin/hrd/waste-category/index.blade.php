@@ -14,7 +14,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr><th>Nama Kategori</th><th>Deskripsi</th><th>Satuan</th><th>Status</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
@@ -31,9 +31,9 @@
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.hrd.waste-category.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
                                 @if($item->is_active)
-                                <form method="POST" action="{{ route('admin.hrd.waste-category.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin non-aktifkan kategori ini?')">
+                                <form method="POST" action="{{ route('admin.hrd.waste-category.destroy', $item) }}" class="d-inline" >
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-outline-danger"><i class="cil-trash"></i></button>
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Yakin ingin menghapus data ini?')"><i class="cil-trash"></i></button>
                                 </form>
                                 @endif
                             </div>

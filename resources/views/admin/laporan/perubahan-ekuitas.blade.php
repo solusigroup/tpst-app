@@ -38,7 +38,7 @@
 
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light"><tr><th>Akun Ekuitas</th><th class="text-end">Saldo Awal</th><th class="text-end">Penambahan</th><th class="text-end">Pengurangan</th><th class="text-end">Saldo Akhir</th></tr></thead>
+            <thead class="table-light"><tr><th>Akun Ekuitas</th><th class="text-end">Saldo Awal</th><th class="text-end">Penambahan</th><th class="text-end">Pengurangan</th><th class="text-end">Saldo Akhir</th></tr></thead>
             <tbody>
                 @foreach($rows as $r)
                 <tr>
