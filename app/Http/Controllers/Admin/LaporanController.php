@@ -91,7 +91,7 @@ class LaporanController extends Controller
             ->where('jh.status', 'posted')
             ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
-            ->groupBy('coa.id', 'coa.tenant_id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi', 'coa.created_at', 'coa.updated_at')
+            ->groupBy('coa.id', 'coa.tenant_id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi', 'coa.created_at', 'coa.updated_at', 'coa.deleted_at')
             ->orderBy('coa.kode_akun')
             ->get();
 
