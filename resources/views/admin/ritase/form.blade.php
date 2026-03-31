@@ -81,7 +81,7 @@
                 <div class="card-header bg-white"><h6 class="mb-0 fw-semibold">Detail</h6></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Jenis Sampah</label>
+                        <label class="form-label">Asal Sampah</label>
                         <input type="text" name="jenis_sampah" class="form-control" value="{{ old('jenis_sampah', $ritase->jenis_sampah ?? '') }}">
                     </div>
                     <div class="mb-3">

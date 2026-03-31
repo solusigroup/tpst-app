@@ -78,7 +78,7 @@
                     <td style="border: none; padding: 2px 0;">{{ $ritase->waktu_keluar?->format('d/m/Y H:i') ?? '-' }}</td>
                 </tr>
                 <tr style="border: none;">
-                    <td style="border: none; padding: 2px 0; font-weight: bold;">JENIS SAMPAH</td>
+                    <td style="border: none; padding: 2px 0; font-weight: bold;">ASAL SAMPAH</td>
                     <td style="border: none; padding: 2px 0;">:</td>
                     <td style="border: none; padding: 2px 0;">{{ $ritase->jenis_sampah ?? '-' }}</td>
                     

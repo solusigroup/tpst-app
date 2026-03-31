@@ -101,7 +101,7 @@
                         <th class="text-center">TANGGAL</th>
                         <th class="text-center">NO. TIKET</th>
                         <th class="text-center">ARMADA</th>
-                        <th class="text-center">SAMPAH</th>
+                        <th class="text-center">ASAL SAMPAH</th>
                         <th class="text-right">NETTO (KG)</th>
                         <th class="text-right">BIAYA (RP)</th>
                     </tr>

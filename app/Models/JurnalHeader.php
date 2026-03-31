@@ -67,6 +67,10 @@ class JurnalHeader extends Model
 
         static::deleting(function (JurnalHeader $header) {
             $header->jurnalDetails()->get()->each->delete();
+            
+            // Aggressive cleanup: delete any BukuPembantu entries linked to this header
+            // This ensures no orphaned data remains if source is deleted
+            \App\Models\BukuPembantu::where('jurnal_header_id', $header->id)->delete();
         });
     }
 
