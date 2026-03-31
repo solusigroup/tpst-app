@@ -39,6 +39,20 @@
             @endif
         </form>
     </div>
+    <div class="card-body border-bottom bg-primary bg-opacity-10 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-semibold text-primary">
+                <i class="cil-money me-2"></i> TOTAL PIUTANG 
+                @if(request('search'))
+                    (Pencarian: "{{ request('search') }}")
+                @endif
+                @if(request('status'))
+                    - Status: {{ ucfirst(request('status')) }}
+                @endif
+            </div>
+            <div class="fs-4 fw-bold text-primary">Rp {{ number_format($totalJumlah ?? 0, 0, ',', '.') }}</div>
+        </div>
+    </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">

@@ -49,7 +49,8 @@
                                 @else
                                     <form method="POST" action="{{ route('admin.jurnal.unpost', $item) }}" class="d-inline" >@csrf<button class="btn btn-outline-warning" title="Unpost"><i class="cil-x-circle"></i></button></form>
                                 @endif
-                                <a href="{{ route('admin.jurnal.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
+                                <a href="{{ route('admin.jurnal.show', $item) }}" class="btn btn-outline-info" title="Lihat"><i class="cil-search"></i></a>
+                                <a href="{{ route('admin.jurnal.edit', $item) }}" class="btn btn-outline-primary" title="Edit"><i class="cil-pencil"></i></a>
                                 <form method="POST" action="{{ route('admin.jurnal.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                             </div>
                         </td>

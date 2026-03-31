@@ -34,6 +34,13 @@ class JurnalController extends Controller
         return view('admin.jurnal.index', compact('jurnals'));
     }
 
+    public function show(JurnalHeader $jurnal)
+    {
+        Gate::authorize('view_jurnal');
+        $jurnal->load(['jurnalDetails.coa', 'jurnalDetails.contactable']);
+        return view('admin.jurnal.show', compact('jurnal'));
+    }
+
     public function create(Request $request)
     {
         Gate::authorize('create_jurnal');

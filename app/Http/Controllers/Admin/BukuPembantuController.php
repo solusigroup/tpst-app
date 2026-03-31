@@ -32,9 +32,10 @@ class BukuPembantuController extends Controller
                 $query->where('status', $request->status);
             }
 
+            $totalJumlah = (clone $query)->sum('jumlah');
             $entries = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
-            return view('admin.buku_pembantu.piutang', compact('entries'));
+            return view('admin.buku_pembantu.piutang', compact('entries', 'totalJumlah'));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -63,9 +64,10 @@ class BukuPembantuController extends Controller
                 $query->where('status', $request->status);
             }
 
+            $totalJumlah = (clone $query)->sum('jumlah');
             $entries = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
-            return view('admin.buku_pembantu.utang', compact('entries'));
+            return view('admin.buku_pembantu.utang', compact('entries', 'totalJumlah'));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
