@@ -22,9 +22,15 @@ class BukuPembantuController extends Controller
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->whereHasMorph('contactable', ['App\Models\Klien', 'App\Models\Vendor'], function ($q) use ($search) {
-                    $q->where('nama_klien', 'like', "%{$search}%")
-                      ->orWhere('nama_vendor', 'like', "%{$search}%");
+                $query->whereHasMorph('contactable', [
+                    \App\Models\Klien::class, 
+                    \App\Models\Vendor::class
+                ], function ($q, $type) use ($search) {
+                    if ($type === \App\Models\Klien::class) {
+                        $q->where('nama_klien', 'like', "%{$search}%");
+                    } else {
+                        $q->where('nama_vendor', 'like', "%{$search}%");
+                    }
                 });
             }
 
@@ -54,9 +60,15 @@ class BukuPembantuController extends Controller
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->whereHasMorph('contactable', ['App\Models\Klien', 'App\Models\Vendor'], function ($q) use ($search) {
-                    $q->where('nama_klien', 'like', "%{$search}%")
-                      ->orWhere('nama_vendor', 'like', "%{$search}%");
+                $query->whereHasMorph('contactable', [
+                    \App\Models\Klien::class, 
+                    \App\Models\Vendor::class
+                ], function ($q, $type) use ($search) {
+                    if ($type === \App\Models\Klien::class) {
+                        $q->where('nama_klien', 'like', "%{$search}%");
+                    } else {
+                        $q->where('nama_vendor', 'like', "%{$search}%");
+                    }
                 });
             }
 
