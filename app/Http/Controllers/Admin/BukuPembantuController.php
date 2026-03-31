@@ -17,6 +17,7 @@ class BukuPembantuController extends Controller
         try {
             Gate::authorize('view_buku_pembantu');
             $query = BukuPembantu::with(['contactable', 'jurnalHeader'])
+                ->whereNotNull('jurnal_header_id')
                 ->where('tipe', 'piutang');
 
             if ($request->filled('search')) {
@@ -47,6 +48,7 @@ class BukuPembantuController extends Controller
         try {
             Gate::authorize('view_buku_pembantu');
             $query = BukuPembantu::with(['contactable', 'jurnalHeader'])
+                ->whereNotNull('jurnal_header_id')
                 ->where('tipe', 'utang');
 
             if ($request->filled('search')) {
