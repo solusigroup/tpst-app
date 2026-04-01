@@ -53,7 +53,7 @@ class EmployeeController extends Controller
             'ktp_number' => 'nullable|string|max:50',
             'salary_type' => 'nullable|in:bulanan,borongan',
             'monthly_salary' => 'nullable|numeric|min:0',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image',
         ]);
         
         if ($validated['salary_type'] !== 'bulanan') {
@@ -104,7 +104,7 @@ class EmployeeController extends Controller
             'ktp_number' => 'nullable|string|max:50',
             'salary_type' => 'nullable|in:bulanan,borongan',
             'monthly_salary' => 'nullable|numeric|min:0',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image',
         ]);
 
         if ($validated['salary_type'] !== 'bulanan') {

@@ -76,7 +76,7 @@
                     <div class="mb-3">
                         <label class="form-label">Foto Profil (Gunakan Kamera / Galeri)</label>
                         <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
-                        <small class="text-muted">Format gambar: jpg, png, jpeg. Maks 2MB.</small>
+                        <small class="text-muted">Format gambar: jpg, png, jpeg.</small>
                         @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 

@@ -82,7 +82,7 @@
                             </div>
                         @endif
                         <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
-                        <small class="text-muted">Format gambar: jpg, png, jpeg. Maks 2MB. Biarkan kosong jika tidak ingin mengubah foto.</small>
+                        <small class="text-muted">Format gambar: jpg, png, jpeg. Biarkan kosong jika tidak ingin mengubah foto.</small>
                         @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
