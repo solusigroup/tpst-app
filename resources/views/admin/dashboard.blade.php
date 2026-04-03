@@ -32,6 +32,46 @@
             </div>
         </div>
     </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-success">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-success-light me-3">
+                    <i class="cil-balance-scale"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Tonase Bulan Ini</div>
+                    <div class="fs-4 fw-bold">{{ number_format($tonaseBulanIni, 2, ',', '.') }} kg</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-primary">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-primary-light me-3">
+                    <i class="cil-truck"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Hari Ini</div>
+                    <div class="fs-4 fw-bold">{{ $jumlahRitaseHariIni }} unit</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-primary">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-primary-light me-3">
+                    <i class="cil-truck"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Bulan Ini</div>
+                    <div class="fs-4 fw-bold">{{ $jumlahRitaseBulanIni }} unit</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if(!auth()->user()->hasRole('ritase_only'))
     <div class="col-sm-6 col-xl-3">
         <div class="card stat-card stat-info">
@@ -60,19 +100,6 @@
         </div>
     </div>
     @endif
-    <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card stat-primary">
-            <div class="card-body d-flex align-items-center">
-                <div class="stat-icon bg-primary-light me-3">
-                    <i class="cil-truck"></i>
-                </div>
-                <div>
-                    <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Hari Ini</div>
-                    <div class="fs-4 fw-bold">{{ $jumlahRitaseHariIni }} unit</div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 {{-- Charts --}}

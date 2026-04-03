@@ -24,13 +24,20 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Jenis <span class="text-danger">*</span></label>
-                            <select name="jenis" class="form-select @error('jenis') is-invalid @enderror" required>
+                            <select name="jenis" id="jenis_select" class="form-select @error('jenis') is-invalid @enderror" required>
                                 <option value="">-- Pilih --</option>
-                                @foreach(['DLH'=>'DLH','Swasta'=>'Swasta','Offtaker'=>'Offtaker'] as $val => $label)
+                                @foreach(['DLH'=>'DLH','Swasta'=>'Swasta','Offtaker'=>'Offtaker','Internal'=>'Internal'] as $val => $label)
                                     <option value="{{ $val }}" {{ old('jenis', $klien->jenis ?? '') == $val ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
                             @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6" id="tarif_container" style="display: {{ old('jenis', $klien->jenis ?? '') == 'Swasta' ? 'block' : 'none' }}">
+                            <label class="form-label">Tarif Bulanan</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" name="tarif_bulanan" class="form-control" value="{{ old('tarif_bulanan', $klien->tarif_bulanan ?? '') }}" min="0">
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Kontak</label>
@@ -50,4 +57,19 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisSelect = document.getElementById('jenis_select');
+    const tarifContainer = document.getElementById('tarif_container');
+
+    jenisSelect.addEventListener('change', function() {
+        if (this.value === 'Swasta') {
+            tarifContainer.style.display = 'block';
+        } else {
+            tarifContainer.style.display = 'none';
+        }
+    });
+});
+</script>
 @endsection

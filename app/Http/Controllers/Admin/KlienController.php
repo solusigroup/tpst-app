@@ -49,10 +49,15 @@ class KlienController extends Controller
             
             $validated = $request->validate([
                 'nama_klien' => 'required|string|max:255',
-                'jenis' => 'required|in:DLH,Swasta,Offtaker',
+                'jenis' => 'required|in:DLH,Swasta,Offtaker,Internal',
+                'tarif_bulanan' => 'nullable|numeric|min:0',
                 'kontak' => 'nullable|string',
                 'alamat' => 'nullable|string',
             ]);
+
+            if (($validated['jenis'] ?? '') !== 'Swasta') {
+                $validated['tarif_bulanan'] = null;
+            }
 
             $tenantId = auth()->user()->tenant_id;
             if (!$tenantId) {
@@ -89,10 +94,15 @@ class KlienController extends Controller
         
         $validated = $request->validate([
             'nama_klien' => 'required|string|max:255',
-            'jenis' => 'required|in:DLH,Swasta,Offtaker',
+            'jenis' => 'required|in:DLH,Swasta,Offtaker,Internal',
+            'tarif_bulanan' => 'nullable|numeric|min:0',
             'kontak' => 'nullable|string',
             'alamat' => 'nullable|string',
         ]);
+
+        if (($validated['jenis'] ?? '') !== 'Swasta') {
+            $validated['tarif_bulanan'] = null;
+        }
 
         if (empty($klien->tenant_id)) {
             $tenantId = auth()->user()->tenant_id;

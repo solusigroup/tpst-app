@@ -19,7 +19,7 @@
             <div class="col-auto">
                 <select name="jenis" class="form-select">
                     <option value="">Semua Jenis</option>
-                    @foreach(['DLH','Swasta','Offtaker'] as $j)
+                    @foreach(['DLH','Swasta','Offtaker','Internal'] as $j)
                         <option value="{{ $j }}" {{ request('jenis') == $j ? 'selected' : '' }}>{{ $j }}</option>
                     @endforeach
                 </select>
@@ -34,13 +34,31 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Nama Klien</th><th>Jenis</th><th>Kontak</th><th>Dibuat</th><th class="text-end">Aksi</th></tr>
+                    <tr><th>Nama Klien</th><th>Jenis</th><th>Tarif Bulanan</th><th>Kontak</th><th>Dibuat</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
                     @forelse($kliens as $item)
                     <tr>
                         <td><strong>{{ $item->nama_klien }}</strong></td>
-                        <td><span class="badge bg-primary">{{ $item->jenis }}</span></td>
+                        <td>
+                            @php
+                                $badgeColor = match($item->jenis) {
+                                    'DLH' => 'bg-info',
+                                    'Swasta' => 'bg-primary',
+                                    'Offtaker' => 'bg-success',
+                                    'Internal' => 'bg-warning text-dark',
+                                    default => 'bg-secondary'
+                                };
+                            @endphp
+                            <span class="badge {{ $badgeColor }}">{{ $item->jenis }}</span>
+                        </td>
+                        <td>
+                            @if($item->jenis == 'Swasta')
+                                {{ $item->tarif_bulanan ? 'Rp ' . number_format($item->tarif_bulanan, 0, ',', '.') : '-' }}
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td>{{ $item->kontak ?? '-' }}</td>
                         <td>{{ $item->created_at?->format('d/m/Y H:i') }}</td>
                         <td class="text-end">
@@ -51,7 +69,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="text-center py-4 text-body-secondary">Belum ada data klien.</td></tr>
+                    <tr><td colspan="6" class="text-center py-4 text-body-secondary">Belum ada data klien.</td></tr>
                     @endforelse
                 </tbody>
             </table>

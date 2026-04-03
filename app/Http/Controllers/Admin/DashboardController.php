@@ -25,7 +25,10 @@ class DashboardController extends Controller
 
         // Stats
         $tonaseHariIni = Ritase::whereDate('waktu_masuk', $today)->sum('berat_netto');
+        $tonaseBulanIni = Ritase::whereBetween('waktu_masuk', [$monthStart, $monthEnd])->sum('berat_netto');
+        
         $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
+        $jumlahRitaseBulanIni = Ritase::whereBetween('waktu_masuk', [$monthStart, $monthEnd])->count();
 
         if (!auth()->user()->hasRole('ritase_only')) {
             $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
@@ -37,7 +40,7 @@ class DashboardController extends Controller
             $pendapatanTipping = 0;
             $penjualanBulanIni = 0;
         }
-        $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
+
 
         // Chart data: Daily tonnage for last 30 days
         $dailyTonnage = collect();
@@ -67,9 +70,11 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'tonaseHariIni',
+            'tonaseBulanIni',
             'pendapatanTipping',
             'penjualanBulanIni',
             'jumlahRitaseHariIni',
+            'jumlahRitaseBulanIni',
             'dailyTonnage',
             'monthlyRevenue'
         ));
