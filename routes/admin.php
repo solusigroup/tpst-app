@@ -42,6 +42,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('armada', ArmadaController::class);
     Route::resource('hasil-pilahan', HasilPilahanController::class)->parameters(['hasil-pilahan' => 'hasilPilahan']);
     Route::resource('penjualan', PenjualanController::class);
+    Route::resource('machines', \App\Http\Controllers\Admin\MachineController::class);
+    Route::resource('machine-logs', \App\Http\Controllers\Admin\MachineLogController::class);
 
     // Keuangan
     Route::resource('coa', CoaController::class);

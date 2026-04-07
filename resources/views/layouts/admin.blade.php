@@ -386,9 +386,31 @@
             @endif
 
             {{-- Operasional --}}
-            @canany(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan'])
+            @hasanyrole('operator|super_admin|manajemen')
             <li class="nav-title">Operasional</li>
-            @endcan
+            @endhasanyrole
+
+            {{-- Mesin & Logbook --}}
+            @hasanyrole('operator|super_admin|manajemen')
+            <li class="nav-group {{ request()->routeIs('admin.machines.*') || request()->routeIs('admin.machine-logs.*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-memory"></i> Master & Log Mesin
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.machines.*') ? 'active' : '' }}" href="{{ route('admin.machines.index') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Data Mesin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.machine-logs.*') ? 'active' : '' }}" href="{{ route('admin.machine-logs.index') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Logbook Mesin
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            @endhasanyrole
+
             @can('view_ritase')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.ritase.*') ? 'active' : '' }}" href="{{ route('admin.ritase.index') }}">
