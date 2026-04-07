@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,10 +10,13 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <style>
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -66,15 +70,25 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(ellipse at 20% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
-                        radial-gradient(ellipse at 40% 80%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+                radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 80%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
             animation: bgShift 20s ease-in-out infinite;
         }
 
         @keyframes bgShift {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(2%, -2%) rotate(1deg); }
-            66% { transform: translate(-1%, 1%) rotate(-0.5deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(2%, -2%) rotate(1deg);
+            }
+
+            66% {
+                transform: translate(-1%, 1%) rotate(-0.5deg);
+            }
         }
 
         /* Floating Particles */
@@ -98,29 +112,126 @@
             animation: floatUp linear infinite;
         }
 
-        .particle:nth-child(1) { left: 10%; animation-duration: 12s; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 20%; animation-duration: 15s; animation-delay: 2s; }
-        .particle:nth-child(3) { left: 35%; animation-duration: 10s; animation-delay: 4s; }
-        .particle:nth-child(4) { left: 50%; animation-duration: 14s; animation-delay: 1s; }
-        .particle:nth-child(5) { left: 65%; animation-duration: 11s; animation-delay: 3s; }
-        .particle:nth-child(6) { left: 75%; animation-duration: 13s; animation-delay: 5s; }
-        .particle:nth-child(7) { left: 85%; animation-duration: 16s; animation-delay: 2.5s; }
-        .particle:nth-child(8) { left: 92%; animation-duration: 9s; animation-delay: 6s; }
+        .particle:nth-child(1) {
+            left: 10%;
+            animation-duration: 12s;
+            animation-delay: 0s;
+        }
+
+        .particle:nth-child(2) {
+            left: 20%;
+            animation-duration: 15s;
+            animation-delay: 2s;
+        }
+
+        .particle:nth-child(3) {
+            left: 35%;
+            animation-duration: 10s;
+            animation-delay: 4s;
+        }
+
+        .particle:nth-child(4) {
+            left: 50%;
+            animation-duration: 14s;
+            animation-delay: 1s;
+        }
+
+        .particle:nth-child(5) {
+            left: 65%;
+            animation-duration: 11s;
+            animation-delay: 3s;
+        }
+
+        .particle:nth-child(6) {
+            left: 75%;
+            animation-duration: 13s;
+            animation-delay: 5s;
+        }
+
+        .particle:nth-child(7) {
+            left: 85%;
+            animation-duration: 16s;
+            animation-delay: 2.5s;
+        }
+
+        .particle:nth-child(8) {
+            left: 92%;
+            animation-duration: 9s;
+            animation-delay: 6s;
+        }
 
         @keyframes floatUp {
             0% {
                 transform: translateY(100vh) scale(0);
                 opacity: 0;
             }
+
             10% {
                 opacity: 0.6;
             }
+
             90% {
                 opacity: 0.2;
             }
+
             100% {
                 transform: translateY(-10vh) scale(1);
                 opacity: 0;
+            }
+        }
+
+        /* Floating Logo Update */
+        .hero-main-logo {
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+            animation: floatLogo 6s ease-in-out infinite;
+        }
+
+        .hero-main-logo img {
+            width: 130px;
+            height: auto;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.4));
+        }
+
+        .logo-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            z-index: 1;
+            opacity: 0.3;
+            filter: blur(25px);
+            animation: pulseGlow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                opacity: 0.2;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+
+            100% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1.1);
             }
         }
 
@@ -133,8 +244,8 @@
             height: 100%;
             z-index: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
             background-size: 60px 60px;
             pointer-events: none;
         }
@@ -300,7 +411,7 @@
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             box-shadow: var(--shadow-glow),
-                        0 32px 64px rgba(0, 0, 0, 0.3);
+                0 32px 64px rgba(0, 0, 0, 0.3);
             animation: fadeInUp 0.8s ease-out 0.2s both;
         }
 
@@ -379,7 +490,7 @@
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
         }
 
-        .form-input:focus ~ .input-icon,
+        .form-input:focus~.input-icon,
         .input-wrapper:focus-within .input-icon {
             stroke: var(--accent-primary);
         }
@@ -513,7 +624,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s ease;
         }
 
@@ -574,6 +685,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -640,6 +752,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Background Effects -->
     <div class="bg-animation"></div>
@@ -659,11 +772,14 @@
         <!-- Hero Side -->
         <div class="hero-side">
             <div class="hero-content">
+                <div class="hero-main-logo">
+                    <div class="logo-glow"></div>
+                    <img src="{{ asset('logo-lamongan.png') }}" alt="Logo Kabupaten Lamongan"
+                        onerror="this.src='{{ asset('favicon.png') }}'">
+                </div>
+
                 <div class="brand">
-                    <div class="brand-icon">
-                        <img src="{{ asset('favicon.png') }}" alt="Logo TPST App" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
-                    </div>
-                    <div class="brand-text">TPST App</div>
+                    <div class="brand-text">TPST Megilan Lamongan</div>
                 </div>
 
                 <h1 class="hero-title">
@@ -680,25 +796,42 @@
                 <div class="hero-features">
                     <div class="feature-item">
                         <div class="feature-icon">
-                            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M9 11l3 3L22 4" />
+                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                            </svg>
                         </div>
                         <span>Manajemen ritase & produksi harian</span>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">
-                            <svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 20V10" />
+                                <path d="M18 20V4" />
+                                <path d="M6 20v-4" />
+                            </svg>
                         </div>
                         <span>Laporan keuangan real-time</span>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">
-                            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                                <path d="M16 3.13a4 4 0 010 7.75" />
+                            </svg>
                         </div>
                         <span>Multi-tenant, multi-user</span>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                                </path>
+                            </svg>
                         </div>
                         <span>Dibuat oleh Kurniawan with ❤️ untuk membantu bisnis lebih berkembang.</span>
                     </div>
@@ -717,9 +850,9 @@
                 @if ($errors->any())
                     <div class="alert alert-error">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="15" y1="9" x2="9" y2="15"/>
-                            <line x1="9" y1="9" x2="15" y2="15"/>
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
                         </svg>
                         <span>{{ $errors->first() }}</span>
                     </div>
@@ -728,8 +861,8 @@
                 @if (session('status'))
                     <div class="alert alert-success">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-                            <polyline points="22 4 12 14.01 9 11.01"/>
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
                         </svg>
                         <span>{{ session('status') }}</span>
                     </div>
@@ -741,19 +874,12 @@
                     <div class="form-group">
                         <label class="form-label" for="login">Email / Username</label>
                         <div class="input-wrapper">
-                            <input
-                                type="text"
-                                id="login"
-                                name="login"
-                                class="form-input"
-                                placeholder="Masukkan email atau username"
-                                value="{{ old('login') }}"
-                                required
-                                autofocus
-                            >
+                            <input type="text" id="login" name="login" class="form-input"
+                                placeholder="Masukkan email atau username" value="{{ old('login') }}" required
+                                autofocus>
                             <svg class="input-icon" viewBox="0 0 24 24">
-                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
+                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2" />
+                                <circle cx="12" cy="7" r="4" />
                             </svg>
                         </div>
                     </div>
@@ -761,22 +887,17 @@
                     <div class="form-group">
                         <label class="form-label" for="password">Password</label>
                         <div class="input-wrapper">
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                class="form-input"
-                                placeholder="Masukkan password"
-                                required
-                            >
+                            <input type="password" id="password" name="password" class="form-input"
+                                placeholder="Masukkan password" required>
                             <svg class="input-icon" viewBox="0 0 24 24">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0110 0v4" />
                             </svg>
-                            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password visibility">
+                            <button type="button" class="password-toggle" onclick="togglePassword()"
+                                aria-label="Toggle password visibility">
                                 <svg id="eyeIcon" viewBox="0 0 24 24">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
                                 </svg>
                             </button>
                         </div>
@@ -798,7 +919,8 @@
 
 
                 <div class="login-footer">
-                    &copy; {{ date('Y') }} <a href="https://simpleakunting.biz.id/SolusiConsult.html">SimpleAkunting by Kurniawan with ❤️</a>. All rights reserved.
+                    &copy; {{ date('Y') }} <a href="https://simpleakunting.biz.id/SolusiConsult.html">SimpleAkunting by
+                        Kurniawan with ❤️</a>. All rights reserved.
                 </div>
             </div>
         </div>
@@ -822,11 +944,12 @@
         const form = document.getElementById('loginForm');
         const submitBtn = document.getElementById('submitBtn');
 
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', function () {
             submitBtn.textContent = 'Memproses...';
             submitBtn.style.opacity = '0.7';
             submitBtn.disabled = true;
         });
     </script>
 </body>
+
 </html>
