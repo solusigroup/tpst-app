@@ -50,6 +50,7 @@ class KlienController extends Controller
             $validated = $request->validate([
                 'nama_klien' => 'required|string|max:255',
                 'jenis' => 'required|in:DLH,Swasta,Offtaker,Internal',
+                'jenis_tarif' => 'nullable|in:Bulanan,Per Ritase',
                 'tarif_bulanan' => 'nullable|numeric|min:0',
                 'kontak' => 'nullable|string',
                 'alamat' => 'nullable|string',
@@ -95,6 +96,7 @@ class KlienController extends Controller
         $validated = $request->validate([
             'nama_klien' => 'required|string|max:255',
             'jenis' => 'required|in:DLH,Swasta,Offtaker,Internal',
+            'jenis_tarif' => 'nullable|in:Bulanan,Per Ritase',
             'tarif_bulanan' => 'nullable|numeric|min:0',
             'kontak' => 'nullable|string',
             'alamat' => 'nullable|string',
@@ -125,5 +127,12 @@ class KlienController extends Controller
         Gate::authorize('delete_klien');
         $klien->delete();
         return redirect()->route('admin.klien.index')->with('success', 'Klien berhasil dihapus.');
+    }
+
+    public function show(Klien $klien)
+    {
+        Gate::authorize('view_klien');
+        $klien->load('armada');
+        return view('admin.klien.show', compact('klien'));
     }
 }

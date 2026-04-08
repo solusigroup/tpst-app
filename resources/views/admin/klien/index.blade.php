@@ -39,7 +39,7 @@
                 <tbody>
                     @forelse($kliens as $item)
                     <tr>
-                        <td><strong>{{ $item->nama_klien }}</strong></td>
+                        <td><strong><a href="{{ route('admin.klien.show', $item) }}" class="text-decoration-none">{{ $item->nama_klien }}</a></strong></td>
                         <td>
                             @php
                                 $badgeColor = match($item->jenis) {
@@ -54,6 +54,7 @@
                         </td>
                         <td>
                             @if($item->jenis == 'Swasta')
+                                @if($item->jenis_tarif) <span class="badge bg-light text-dark border me-1">{{ $item->jenis_tarif }}</span> @endif
                                 {{ $item->tarif_bulanan ? 'Rp ' . number_format($item->tarif_bulanan, 0, ',', '.') : '-' }}
                             @else
                                 -

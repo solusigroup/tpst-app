@@ -360,11 +360,14 @@
 </head>
 <body>
     <div class="sidebar sidebar-dark sidebar-fixed" id="sidebar">
-        <div class="sidebar-brand d-none d-md-flex">
-            <span class="sidebar-brand-full fw-bold fs-5">
-                <i class="cil-recycle me-2"></i>TPST App
+        <div class="sidebar-brand d-none d-md-flex" style="background: rgba(0,0,0,0.15); padding: 1rem 0;">
+            <span class="sidebar-brand-full fw-bold fs-5 d-flex align-items-center justify-content-center">
+                <img src="<?php echo e(asset('favicon.png')); ?>" alt="Logo TPST" class="me-2" style="height: 36px; width: auto; object-fit: contain; border-radius: 4px;">
+                TPST App
             </span>
-            <span class="sidebar-brand-narrow fw-bold">TP</span>
+            <span class="sidebar-brand-narrow fw-bold d-flex align-items-center justify-content-center">
+                <img src="<?php echo e(asset('favicon.png')); ?>" alt="Logo TPST" style="height: 28px; width: auto; object-fit: contain; border-radius: 4px;">
+            </span>
         </div>
         <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
             
@@ -383,9 +386,31 @@
             <?php endif; ?>
 
             
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan'])): ?>
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'operator|super_admin|manajemen')): ?>
             <li class="nav-title">Operasional</li>
             <?php endif; ?>
+
+            
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'operator|super_admin|manajemen')): ?>
+            <li class="nav-group <?php echo e(request()->routeIs('admin.machines.*') || request()->routeIs('admin.machine-logs.*') ? 'show' : ''); ?>">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-memory"></i> Master & Log Mesin
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.machines.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.machines.index')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Data Mesin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.machine-logs.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.machine-logs.index')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Logbook Mesin
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <?php endif; ?>
+
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_ritase')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.ritase.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.ritase.index')); ?>">

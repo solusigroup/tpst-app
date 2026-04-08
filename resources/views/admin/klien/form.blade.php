@@ -33,10 +33,23 @@
                             @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6" id="tarif_container" style="display: {{ old('jenis', $klien->jenis ?? '') == 'Swasta' ? 'block' : 'none' }}">
-                            <label class="form-label">Tarif Bulanan</label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" name="tarif_bulanan" class="form-control" value="{{ old('tarif_bulanan', $klien->tarif_bulanan ?? '') }}" min="0">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label">Jenis Tarif</label>
+                                    <select name="jenis_tarif" class="form-select @error('jenis_tarif') is-invalid @enderror">
+                                        <option value="">-- Pilih --</option>
+                                        <option value="Bulanan" {{ old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Bulanan' ? 'selected' : '' }}>Bulanan</option>
+                                        <option value="Per Ritase" {{ old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Per Ritase' ? 'selected' : '' }}>Per Ritase</option>
+                                    </select>
+                                    @error('jenis_tarif') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Tarif</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" name="tarif_bulanan" class="form-control" value="{{ old('tarif_bulanan', $klien->tarif_bulanan ?? '') }}" min="0">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">

@@ -110,6 +110,7 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
+                                <a href="{{ route('admin.ritase.show', $item) }}" class="btn btn-outline-info" title="Lihat"><i class="cil-magnifying-glass"></i></a>
                                 <a href="{{ route('admin.ritase.edit', $item) }}" class="btn btn-outline-primary" title="Edit"><i class="cil-pencil"></i></a>
                                 <form method="POST" action="{{ route('admin.ritase.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Yakin hapus?')">
                                     @csrf @method('DELETE')

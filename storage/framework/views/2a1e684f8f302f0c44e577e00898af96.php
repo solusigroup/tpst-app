@@ -85,16 +85,17 @@
 <body>
     <div class="header">
         <h2>Laporan Rekapitulasi Ritase</h2>
-        <p>Tanggal Cetak: {{ now()->translatedFormat('d F Y H:i') }}</p>
-        @if(request('start_date') || request('end_date'))
+        <p>Tanggal Cetak: <?php echo e(now()->translatedFormat('d F Y H:i')); ?></p>
+        <?php if(request('start_date') || request('end_date')): ?>
             <p>Periode: 
-                {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d F Y') : 'Awal' }} 
+                <?php echo e(request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d F Y') : 'Awal'); ?> 
                 s/d 
-                {{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->translatedFormat('d F Y') : 'Sekarang' }}
+                <?php echo e(request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->translatedFormat('d F Y') : 'Sekarang'); ?>
+
             </p>
-        @else
+        <?php else: ?>
             <p>Periode: Semua Waktu</p>
-        @endif
+        <?php endif; ?>
     </div>
 
     <table>
@@ -112,25 +113,25 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($ritase as $index => $item)
+            <?php $__empty_1 = true; $__currentLoopData = $ritase; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td><strong>{{ $item->nomor_tiket ?? '-' }}</strong></td>
-                    <td>{{ $item->tiket ?? '-' }}</td>
-                    <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
-                    <td>{{ $item->jenis_sampah ?? '-' }}</td>
-                    <td>{{ $item->armada->plat_nomor ?? '-' }}</td>
-                    <td>{{ $item->klien->nama_klien ?? '-' }}</td>
+                    <td class="text-center"><?php echo e($index + 1); ?></td>
+                    <td><strong><?php echo e($item->nomor_tiket ?? '-'); ?></strong></td>
+                    <td><?php echo e($item->tiket ?? '-'); ?></td>
+                    <td><?php echo e($item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-'); ?></td>
+                    <td><?php echo e($item->jenis_sampah ?? '-'); ?></td>
+                    <td><?php echo e($item->armada->plat_nomor ?? '-'); ?></td>
+                    <td><?php echo e($item->klien->nama_klien ?? '-'); ?></td>
                     <td class="text-center">
-                        <span class="badge badge-{{ $item->status ?? 'default' }}">{{ ucfirst($item->status) }}</span>
+                        <span class="badge badge-<?php echo e($item->status ?? 'default'); ?>"><?php echo e(ucfirst($item->status)); ?></span>
                     </td>
-                    <td class="text-right">{{ number_format($item->berat_netto, 2, ',', '.') }}</td>
+                    <td class="text-right"><?php echo e(number_format($item->berat_netto, 2, ',', '.')); ?></td>
                 </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <tr>
                     <td colspan="8" class="text-center">Tidak ada data ritase pada periode ini.</td>
                 </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
@@ -138,11 +139,11 @@
         <table>
             <tr>
                 <th>Total Ritase</th>
-                <td class="text-right">: {{ $ritase->count() }} unit</td>
+                <td class="text-right">: <?php echo e($ritase->count()); ?> unit</td>
             </tr>
             <tr>
                 <th>Total Berat Netto</th>
-                <td class="text-right">: <strong>{{ number_format($totalBeratNetto, 2, ',', '.') }} kg</strong></td>
+                <td class="text-right">: <strong><?php echo e(number_format($totalBeratNetto, 2, ',', '.')); ?> kg</strong></td>
             </tr>
         </table>
     </div>
@@ -153,8 +154,9 @@
         <div class="signature-box">
             <p>Mengetahui,</p>
             <div class="signature-line"></div>
-            <p><strong>{{ auth()->user()->name }}</strong><br>Admin / Operator</p>
+            <p><strong><?php echo e(auth()->user()->name); ?></strong><br>Admin / Operator</p>
         </div>
     </div>
 </body>
 </html>
+<?php /**PATH D:\PROJECT_HERD\tpst-app\resources\views/admin/ritase/pdf-rekap.blade.php ENDPATH**/ ?>

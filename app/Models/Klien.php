@@ -19,6 +19,7 @@ class Klien extends Model
         'tenant_id',
         'nama_klien',
         'jenis',
+        'jenis_tarif',
         'tarif_bulanan',
         'kontak',
         'alamat',

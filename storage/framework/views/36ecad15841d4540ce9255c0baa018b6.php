@@ -30,6 +30,46 @@
             </div>
         </div>
     </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-success">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-success-light me-3">
+                    <i class="cil-balance-scale"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Tonase Bulan Ini</div>
+                    <div class="fs-4 fw-bold"><?php echo e(number_format($tonaseBulanIni, 2, ',', '.')); ?> kg</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-primary">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-primary-light me-3">
+                    <i class="cil-truck"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Hari Ini</div>
+                    <div class="fs-4 fw-bold"><?php echo e($jumlahRitaseHariIni); ?> unit</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-primary">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-primary-light me-3">
+                    <i class="cil-truck"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Bulan Ini</div>
+                    <div class="fs-4 fw-bold"><?php echo e($jumlahRitaseBulanIni); ?> unit</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php if(!auth()->user()->hasRole('ritase_only')): ?>
     <div class="col-sm-6 col-xl-3">
         <div class="card stat-card stat-info">
@@ -58,19 +98,6 @@
         </div>
     </div>
     <?php endif; ?>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card stat-primary">
-            <div class="card-body d-flex align-items-center">
-                <div class="stat-icon bg-primary-light me-3">
-                    <i class="cil-truck"></i>
-                </div>
-                <div>
-                    <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Hari Ini</div>
-                    <div class="fs-4 fw-bold"><?php echo e($jumlahRitaseHariIni); ?> unit</div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 

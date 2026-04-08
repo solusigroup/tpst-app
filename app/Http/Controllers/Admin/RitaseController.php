@@ -227,4 +227,11 @@ class RitaseController extends Controller
 
         return redirect()->back()->with('success', 'Ritase berhasil di-approve dan ditambahkan ke Invoice Draft.');
     }
+
+    public function show(Ritase $ritase)
+    {
+        Gate::authorize('view_ritase');
+        $ritase->load(['armada', 'klien']);
+        return view('admin.ritase.show', compact('ritase'));
+    }
 }
