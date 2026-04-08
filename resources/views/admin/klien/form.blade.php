@@ -51,6 +51,7 @@
                                             <option value="">-- Pilih --</option>
                                             <option value="Bulanan" {{ old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Bulanan' ? 'selected' : '' }}>Bulanan</option>
                                             <option value="Per Ritase" {{ old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Per Ritase' ? 'selected' : '' }}>Per Ritase</option>
+                                            <option value="Per Ton" {{ old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Per Ton' ? 'selected' : '' }}>Per Ton</option>
                                         </select>
                                         @error('jenis_tarif') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>

@@ -50,7 +50,7 @@ class KlienController extends Controller
             $validated = $request->validate([
                 'nama_klien' => 'required|string|max:255',
                 'jenis' => 'required|in:DLH,Swasta,Offtaker,Internal',
-                'jenis_tarif' => 'nullable|in:Bulanan,Per Ritase',
+                'jenis_tarif' => 'nullable|in:Bulanan,Per Ritase,Per Ton',
                 'besaran_tarif' => 'nullable|numeric|min:0',
                 'kontak' => 'nullable|string',
                 'alamat' => 'nullable|string',
@@ -94,7 +94,7 @@ class KlienController extends Controller
         $validated = $request->validate([
             'nama_klien' => 'required|string|max:255',
             'jenis' => 'required|in:DLH,Swasta,Offtaker,Internal',
-            'jenis_tarif' => 'nullable|in:Bulanan,Per Ritase',
+            'jenis_tarif' => 'nullable|in:Bulanan,Per Ritase,Per Ton',
             'besaran_tarif' => 'nullable|numeric|min:0',
             'kontak' => 'nullable|string',
             'alamat' => 'nullable|string',
