@@ -20,7 +20,7 @@ class Klien extends Model
         'nama_klien',
         'jenis',
         'jenis_tarif',
-        'tarif_bulanan',
+        'besaran_tarif',
         'kontak',
         'alamat',
     ];

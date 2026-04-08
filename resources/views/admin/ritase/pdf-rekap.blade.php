@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Rekap Ritase</title>
@@ -9,49 +10,81 @@
             font-size: 11px;
             color: #333;
         }
+
         .header {
             text-align: center;
             margin-bottom: 20px;
             border-bottom: 2px solid #333;
             padding-bottom: 10px;
         }
+
         .header h2 {
             margin: 0 0 5px 0;
             font-size: 16px;
         }
+
         .header p {
             margin: 0;
             color: #666;
         }
+
         .info-section {
             margin-bottom: 15px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 6px 8px;
             text-align: left;
         }
+
         th {
             background-color: #f8f9fa;
             font-weight: bold;
         }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
         .badge {
             padding: 3px 6px;
             border-radius: 4px;
             font-size: 9px;
             text-transform: uppercase;
         }
-        .badge-masuk { background-color: #17a2b8; color: white; }
-        .badge-timbang { background-color: #ffc107; color: #000; }
-        .badge-keluar { background-color: #0d6efd; color: white; }
-        .badge-selesai { background-color: #198754; color: white; }
+
+        .badge-masuk {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .badge-timbang {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .badge-keluar {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .badge-selesai {
+            background-color: #198754;
+            color: white;
+        }
+
         .summary-box {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
@@ -59,37 +92,47 @@
             width: 300px;
             float: right;
         }
+
         .summary-box table {
             margin-bottom: 0;
         }
-        .summary-box th, .summary-box td {
+
+        .summary-box th,
+        .summary-box td {
             border: none;
             padding: 4px;
         }
+
         .footer {
             margin-top: 50px;
             clear: both;
         }
+
         .signature-box {
             float: right;
             width: 200px;
             text-align: center;
         }
+
         .signature-line {
             margin-top: 60px;
             border-bottom: 1px solid #333;
         }
-        .clear { clear: both; }
+
+        .clear {
+            clear: both;
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h2>Laporan Rekapitulasi Ritase</h2>
         <p>Tanggal Cetak: {{ now()->translatedFormat('d F Y H:i') }}</p>
         @if(request('start_date') || request('end_date'))
-            <p>Periode: 
-                {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d F Y') : 'Awal' }} 
-                s/d 
+            <p>Periode:
+                {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d F Y') : 'Awal' }}
+                s/d
                 {{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->translatedFormat('d F Y') : 'Sekarang' }}
             </p>
         @else
@@ -146,15 +189,16 @@
             </tr>
         </table>
     </div>
-    
+
     <div class="clear"></div>
 
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
             <div class="signature-line"></div>
-            <p><strong>{{ auth()->user()->name }}</strong><br>Admin / Operator</p>
+            <p><strong>{{ auth()->user()->name }}</strong><br>Petugas</p>
         </div>
     </div>
 </body>
+
 </html>

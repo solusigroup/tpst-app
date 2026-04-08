@@ -46,16 +46,14 @@
                             <span class="badge {{ $badgeColor }}">{{ $klien->jenis }}</span>
                         </td>
                     </tr>
-                    @if($klien->jenis == 'Swasta')
                     <tr>
                         <th>Jenis Tarif</th>
                         <td>: {{ $klien->jenis_tarif ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <th>Tarif Bulanan</th>
-                        <td>: {{ $klien->tarif_bulanan ? 'Rp ' . number_format($klien->tarif_bulanan, 0, ',', '.') : '-' }}</td>
+                        <th>Besaran Tarif</th>
+                        <td>: {{ $klien->besaran_tarif ? 'Rp ' . number_format($klien->besaran_tarif, 0, ',', '.') : '-' }}</td>
                     </tr>
-                    @endif
                     <tr>
                         <th>Kontak</th>
                         <td>: {{ $klien->kontak ?? '-' }}</td>

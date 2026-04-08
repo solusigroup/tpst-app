@@ -33,7 +33,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Nama Klien</th><th>Jenis</th><th>Tarif Bulanan</th><th>Kontak</th><th>Dibuat</th><th class="text-end">Aksi</th></tr>
+                    <tr><th>Nama Klien</th><th>Jenis</th><th>Jenis Tarif</th><th>Besaran Tarif</th><th>Kontak</th><th>Dibuat</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $kliens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
@@ -52,13 +52,15 @@
                             <span class="badge <?php echo e($badgeColor); ?>"><?php echo e($item->jenis); ?></span>
                         </td>
                         <td>
-                            <?php if($item->jenis == 'Swasta'): ?>
-                                <?php if($item->jenis_tarif): ?> <span class="badge bg-light text-dark border me-1"><?php echo e($item->jenis_tarif); ?></span> <?php endif; ?>
-                                <?php echo e($item->tarif_bulanan ? 'Rp ' . number_format($item->tarif_bulanan, 0, ',', '.') : '-'); ?>
-
+                            <?php if($item->jenis_tarif): ?> 
+                                <span class="badge border border-secondary text-secondary"><?php echo e($item->jenis_tarif); ?></span> 
                             <?php else: ?>
                                 -
                             <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php echo e($item->besaran_tarif ? 'Rp ' . number_format($item->besaran_tarif, 0, ',', '.') : '-'); ?>
+
                         </td>
                         <td><?php echo e($item->kontak ?? '-'); ?></td>
                         <td><?php echo e($item->created_at?->format('d/m/Y H:i')); ?></td>
@@ -70,7 +72,7 @@
                         </td>
                     </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <tr><td colspan="6" class="text-center py-4 text-body-secondary">Belum ada data klien.</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data klien.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
