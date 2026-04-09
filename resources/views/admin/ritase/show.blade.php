@@ -113,7 +113,7 @@
     <div class="col-md-6">
         <div class="card mb-4">
             <div class="card-header bg-white pb-0">
-                <h5 class="card-title">Foto Tiket</h5>
+                <h5 class="card-title">Foto Tiket Umum</h5>
             </div>
             <div class="card-body text-center bg-light">
                 @if($ritase->foto_tiket)
@@ -122,6 +122,38 @@
                     <div class="py-5 text-muted">
                         <i class="cil-image" style="font-size: 4rem;"></i>
                         <p class="mt-3">Tidak ada foto tiket yang diunggah.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-white pb-0">
+                <h5 class="card-title">Foto Timbangan Bruto</h5>
+            </div>
+            <div class="card-body text-center bg-light">
+                @if($ritase->foto_tiket_bruto)
+                    <img src="{{ asset('storage/' . $ritase->foto_tiket_bruto) }}" alt="Foto Timbangan Bruto" class="img-fluid rounded border shadow-sm" style="max-height: 450px; object-fit: contain;">
+                @else
+                    <div class="py-5 text-muted">
+                        <i class="cil-image" style="font-size: 4rem;"></i>
+                        <p class="mt-3">Tidak ada foto timbangan bruto yang diunggah.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-white pb-0">
+                <h5 class="card-title">Foto Timbangan Tarra</h5>
+            </div>
+            <div class="card-body text-center bg-light">
+                @if($ritase->foto_tiket_tarra)
+                    <img src="{{ asset('storage/' . $ritase->foto_tiket_tarra) }}" alt="Foto Timbangan Tarra" class="img-fluid rounded border shadow-sm" style="max-height: 450px; object-fit: contain;">
+                @else
+                    <div class="py-5 text-muted">
+                        <i class="cil-image" style="font-size: 4rem;"></i>
+                        <p class="mt-3">Tidak ada foto timbangan tarra yang diunggah.</p>
                     </div>
                 @endif
             </div>

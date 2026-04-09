@@ -184,7 +184,7 @@ unset($__errorArgs, $__bag); ?>
                         <input type="text" name="tiket" class="form-control" value="<?php echo e(old('tiket', $ritase->tiket ?? '')); ?>">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Foto Tiket Bruto (Maks 2MB)</label>
+                        <label class="form-label">Foto Timbangan Bruto (Maks 2MB)</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_bruto').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
@@ -218,12 +218,12 @@ unset($__errorArgs, $__bag); ?>
                                     <img src="" id="preview-img-bruto" class="img-fluid rounded" style="max-height: 200px;">
                                 </a>
                             <?php endif; ?>
-                            <p class="small text-muted mt-1 mb-0">Preview foto tiket bruto</p>
+                            <p class="small text-muted mt-1 mb-0">Preview foto timbangan bruto</p>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Foto Tiket Tarra (Maks 2MB)</label>
+                        <label class="form-label">Foto Timbangan Tarra (Maks 2MB)</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_tarra').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
@@ -257,7 +257,7 @@ unset($__errorArgs, $__bag); ?>
                                     <img src="" id="preview-img-tarra" class="img-fluid rounded" style="max-height: 200px;">
                                 </a>
                             <?php endif; ?>
-                            <p class="small text-muted mt-1 mb-0">Preview foto tiket tarra</p>
+                            <p class="small text-muted mt-1 mb-0">Preview foto timbangan tarra</p>
                         </div>
                     </div>
 
