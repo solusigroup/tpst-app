@@ -17,7 +17,13 @@ class InvoiceAdminController extends Controller
         $query = Invoice::with('klien');
 
         if ($request->filled('search')) {
-            $query->where('nomor_invoice', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_invoice', 'like', '%' . $search . '%')
+                  ->orWhereHas('klien', function($qKlien) use ($search) {
+                      $qKlien->where('nama_klien', 'like', '%' . $search . '%');
+                  });
+            });
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);

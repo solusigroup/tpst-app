@@ -20,7 +20,7 @@
 <div class="card">
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
-            <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari no. invoice..." value="{{ request('search') }}"></div>
+            <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari No. Invoice / Klien..." value="{{ request('search') }}" style="min-width: 250px;"></div>
             <div class="col-auto">
                 <select name="status" class="form-select"><option value="">Semua Status</option>@foreach(['Draft','Sent','Paid','Canceled'] as $s)<option value="{{ $s }}" {{ request('status')==$s?'selected':'' }}>{{ $s }}</option>@endforeach</select>
             </div>
