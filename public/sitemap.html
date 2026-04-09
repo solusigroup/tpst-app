@@ -192,8 +192,8 @@
 
     <div class="content">
         <div class="header-main" id="sitemap">
-            <h1 style="margin-top: 0; color: var(--primary);">Sitemap & Panduan Modul TPST-App</h1>
-            <p>Dokumen ini merinci struktur aplikasi dan fungsi utama dari setiap modul yang tersedia dalam sistem pengelolaan sampah TPST.</p>
+            <h1 style="margin-top: 0; color: var(--primary);">Sitemap & Rangkuman Modul TPST-App</h1>
+            <p>Dokumen ini merinci struktur alur kerja (workflow) dari aplikasi pengelolaan sampah TPST secara visual beserta hak akses masing-masing perannya.</p>
         </div>
 
         <div class="mermaid-container">
@@ -202,30 +202,32 @@
                     Dashboard["🏠 Dashboard<br/>(Analytics & Stats)"]
                     
                     subgraph Operasional
-                        Ritase["🚚 Ritase<br/>(Penerimaan Sampah)"]
-                        Produksi["🏭 Produksi Harian<br/>(RDF, Plastik, Kompos)"]
-                        Penjualan["💰 Penjualan<br/>(Produk & Offtaker)"]
+                        Ritase["🚚 Ritase<br/>(Tipping Fee)"]
+                        Produksi["🏭 Pemilahan<br/>(Dasar Gaji Borongan)"]
+                        Penjualan["💰 Penjualan B2B<br/>(Offtaker)"]
+                        MesinLog["⚙️ Logbook Mesin<br/>(OEE)"]
                     end
                     
                     subgraph HRD["👥 HRD (Manajemen SDM)"]
-                        Attendance["📅 Kehadiran<br/>(Check-in/Out)"]
-                        Output["⚖️ Output Karyawan<br/>(Hasil Pilahan)"]
-                        WageCalc["💵 Perhitungan Upah<br/>(Borongan Mingguan)"]
+                        DataSDM["👤 Pegawai"]
+                        Attendance["📅 Absensi"]
+                        WageCalc["💵 Rekap Gaji & Slip<br/>(Borongan/Bulanan)"]
                     end
                     
                     subgraph Keuangan["🏦 Keuangan & Akuntansi"]
                         COA["📖 Chart of Accounts"]
+                        Invoice["🧾 Invoice<br/>(Auto Generate)"]
+                        Kasir["🛒 Transaksi Kasir"]
                         Jurnal["📝 Jurnal Umum"]
-                        BukuPembantu["📗 Buku Pembantu"]
-                        Laporan["📊 Laporan Keuangan"]
+                        Laporan["📊 Laporan Akuntansi"]
                     end
                     
                     subgraph MasterData["⚙️ Master Data / Setup"]
-                        Klien["🏢 Manajemen Klien"]
-                        Armada["🚛 Manajemen Armada"]
+                        Klien["🏢 Klien"]
+                        Armada["🚛 Armada"]
                         WasteCat["♻️ Kategori Sampah"]
+                        Mesin["⚙️ Data Mesin"]
                         WageRate["🏷️ Tarif Upah"]
-                        Users["👤 Manajemen User"]
                     end
 
                     Dashboard --> Operasional
@@ -236,38 +238,40 @@
         </div>
 
         <div class="section-card" id="operasional">
-            <h2>1. Modul Operasional</h2>
+            <h2 style="border-left-color: var(--success);">1. Modul Operasional</h2>
             <ul class="step-list">
-                <li><strong>Ritase (Penerimaan)</strong>: Mencatat setiap armada yang masuk, mengukur berat bruto/tarra, serta menghitung biaya tipping secara otomatis.</li>
-                <li><strong>Produksi Harian</strong>: Mencatat hasil pengolahan sampah menjadi produk (RDF, Plastik, Kompos) dan residu yang dibuang ke TPA.</li>
-                <li><strong>Penjualan</strong>: Mencatat transaksi penjualan hasil produksi kepada offtaker/pembeli.</li>
+                <li><strong>Ritase (Tipping)</strong>: Fungsi penerimaan armada masuk. Menyimpan berat Timbangan Bruto dan Timbangan Tarra. Terkoneksi otomatis dengan modul Kasir untuk pembayaran tunai atau Invoice untuk tagihan bulanan.</li>
+                <li><strong>Hasil Pilahan</strong>: Tempat merekap kiloan sampah (Kardus, PET, dll) dari hasil sortir. Merupakan dasar perkalian tarif gaji borongan bagi pemilah bersangkutan.</li>
+                <li><strong>Logbook Mesin</strong>: Untuk mencatat histori pemakaian / menyalakan mesin harian per shift. Termasuk notifikasi darurat.</li>
+                <li><strong>Penjualan B2B</strong>: Tempat mencatat penjualan rongsok. Otomatis mengurangi stok gudang dan siap diterbitkan Invoicenya ke offtaker.</li>
             </ul>
         </div>
 
         <div class="section-card" id="hrd">
-            <h2 style="border-left-color: var(--success);">2. Modul HRD (Manajemen SDM)</h2>
+            <h2 style="border-left-color: var(--warning);">2. Modul HRD (Manajemen SDM)</h2>
             <ul class="step-list">
-                <li><strong>Kehadiran</strong>: Sistem absensi karyawan (hadir, sakit, ijin, cuti) dengan fitur quick check-in/out.</li>
-                <li><strong>Output Karyawan</strong>: Mencatat jumlah perolehan pilahan sampah (dalam kg) per karyawan per kategori sampah.</li>
-                <li><strong>Perhitungan Upah</strong>: Sistem payroll otomatis berbasis upah borongan (Jumlah Pilah × Tarif). Mendukung workflow persetujuan (Draft → Approved → Paid).</li>
+                <li><strong>Data Pegawai</strong>: Pengelompokan NIK, foto, serta jenis pembayaran pegawai (borongan atau tetap bulan).</li>
+                <li><strong>Absensi</strong>: Catatan log harian presensi (Hadir, Ijin, Alpa, Sakit).</li>
+                <li><strong>Perhitungan Upah</strong>: Mesin penggajian otomatis untuk periode mingguan maupun bulanan. Menyediakan integrasi One-Click ke Jurnal Kas saat uang gaji dicairkan (dibayarkan).</li>
             </ul>
         </div>
 
         <div class="section-card" id="keuangan">
             <h2 style="border-left-color: var(--danger);">3. Modul Keuangan & Akuntansi</h2>
             <ul class="step-list">
-                <li><strong>Chart of Accounts (COA)</strong>: Pengaturan kode akun akuntansi (Kas, Piutang, Pendapatan, dll).</li>
-                <li><strong>Jurnal Umum</strong>: Pencatatan transaksi keuangan. Terintegrasi otomatis (via Observers) saat ada transaksi Ritase atau Penjualan.</li>
-                <li><strong>Laporan Keuangan</strong>: Menghasilkan laporan otomatis seperti Laba Rugi, Posisi Keuangan (Neraca), Arus Kas, Perubahan Ekuitas, dan Neraca Saldo.</li>
+                <li><strong>Invoice Penagihan</strong>: Pembuatan faktur otomatis dari koleksi hutang ritase dan hutang penjualan Klien (fitur check-box penagihan gabungan). Terintegrasi fitur auto-Jurnal Penerimaan.</li>
+                <li><strong>Transaksi Kasir</strong>: Layar ramah pengguna untuk mencatat biaya sehari-hari tanpa harus mengerti debet/kredit.</li>
+                <li><strong>Jurnal Umum & COA</strong>: Fitur buku akuntansi standar, Chart of Account dinamis mengikuti profil perusahaan, dan posting neraca.</li>
+                <li><strong>Laporan Keuangan</strong>: Menyajikan Laba/Rugi, Neraca Posisi Keuangan, Buku Besar, dan Dashboard Analytics.</li>
             </ul>
         </div>
 
         <div class="section-card" id="master">
-            <h2 style="border-left-color: var(--warning);">4. Master Data & Konfigurasi</h2>
+            <h2 style="border-left-color: var(--info);">4. Master Data & Konfigurasi</h2>
             <ul class="step-list">
-                <li><strong>Klien & Armada</strong>: Manajemen data vendor/klien dan kendaraan pengangkut.</li>
-                <li><strong>Kategori & Tarif</strong>: Pengaturan jenis sampah (Plastik, Kertas, dll) serta tarif upah borongan yang berlaku per kategori.</li>
-                <li><strong>Manajemen User</strong>: Pengaturan hak akses berdasarkan Role (Admin, HRD, Keuangan, Timbangan).</li>
+                <li><strong>Klien & Armada</strong>: Mendata daftar offtaker dan armada pengangkut termasuk supir (untuk tracking plat nomor ritase).</li>
+                <li><strong>Kategori & Tarif Mesin</strong>: Pengaturan tipe rongsok dan mesin TPST yang digunakan.</li>
+                <li><strong>Pengaturan Perusahaan (KSO)</strong>: Berfungsi menyesuaikan COA (Bagan Akun) mengikuti bidang bisnis (Jasa / Manufaktur).</li>
             </ul>
         </div>
 
@@ -277,26 +281,24 @@
                 <thead>
                     <tr>
                         <th>Modul</th>
-                        <th>Admin</th>
-                        <th>Timbangan</th>
-                        <th>Keuangan</th>
+                        <th>Admin (Super)</th>
+                        <th>Manajer Operasi</th>
+                        <th>Keuangan / Kasir</th>
                         <th>HRD</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>Dashboard</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-                    <tr><td>Ritase</td><td>✅</td><td>✅</td><td>👁️</td><td>❌</td></tr>
-                    <tr><td>Produksi</td><td>✅</td><td>✅</td><td>👁️</td><td>❌</td></tr>
-                    <tr><td>Penjualan</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
-                    <tr><td>Kehadiran</td><td>✅</td><td>❌</td><td>👁️</td><td>✅</td></tr>
-                    <tr><td>Output Pilahan</td><td>✅</td><td>❌</td><td>👁️</td><td>✅</td></tr>
-                    <tr><td>Perhitungan Upah</td><td>✅</td><td>❌</td><td>✅</td><td>✅</td></tr>
-                    <tr><td>Jurnal & Laporan</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
-                    <tr><td>Master Data</td><td>✅</td><td>❌</td><td>👁️</td><td>👁️</td></tr>
+                    <tr><td>Dashboard</td><td>✅ Full</td><td>✅ Operational</td><td>✅ Finance</td><td>✅ Minimal</td></tr>
+                    <tr><td>Operasional (Ritase, Pilahan)</td><td>✅</td><td>✅</td><td>👁️ View Only</td><td>❌</td></tr>
+                    <tr><td>Penjualan Invoice</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                    <tr><td>HRD (Gaji, Pegawai)</td><td>✅</td><td>❌</td><td>👁️ View Only</td><td>✅</td></tr>
+                    <tr><td>Kasir / Jurnal</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                    <tr><td>Laporan Keuangan</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                    <tr><td>Settings / Master</td><td>✅</td><td>👁️ View Only</td><td>👁️ View Only</td><td>❌</td></tr>
                 </tbody>
             </table>
             <div class="note-box">
-                ✅ = Full Access (CRUD) | 👁️ = Read Only | ❌ = No Access
+                Super Admin dapat menyesuaikan perizinan spesifik melalui fitur "Role Management" di dalam sistem sewaktu-waktu.
             </div>
         </div>
 
