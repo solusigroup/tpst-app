@@ -30,6 +30,8 @@ class Ritase extends Model
         'nomor_tiket',
         'tiket',
         'foto_tiket',
+        'foto_tiket_bruto',
+        'foto_tiket_tarra',
         'waktu_masuk',
         'waktu_keluar',
         'berat_bruto',

@@ -19,6 +19,7 @@ class Armada extends Model
         'tenant_id',
         'klien_id',
         'plat_nomor',
+        'nama_sopir',
         'kapasitas_maksimal',
     ];
 

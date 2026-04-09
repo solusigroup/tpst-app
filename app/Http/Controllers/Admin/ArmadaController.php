@@ -38,6 +38,7 @@ class ArmadaController extends Controller
         $validated = $request->validate([
             'klien_id' => 'required|exists:klien,id',
             'plat_nomor' => 'required|string|unique:armada,plat_nomor',
+            'nama_sopir' => 'nullable|string',
             'kapasitas_maksimal' => 'required|numeric|min:0',
         ]);
 
@@ -69,6 +70,7 @@ class ArmadaController extends Controller
         $validated = $request->validate([
             'klien_id' => 'required|exists:klien,id',
             'plat_nomor' => 'required|string|unique:armada,plat_nomor,' . $armada->id,
+            'nama_sopir' => 'nullable|string',
             'kapasitas_maksimal' => 'required|numeric|min:0',
         ]);
 

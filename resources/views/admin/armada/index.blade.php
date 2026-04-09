@@ -21,11 +21,12 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Plat Nomor</th><th>Klien</th><th>Kapasitas Maks</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Plat Nomor</th><th>Nama Sopir</th><th>Klien</th><th>Kapasitas Maks</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($armadas as $item)
                     <tr>
                         <td><strong>{{ $item->plat_nomor }}</strong></td>
+                        <td>{{ $item->nama_sopir ?? '-' }}</td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
                         <td>{{ number_format($item->kapasitas_maksimal, 0, ',', '.') }} kg</td>
                         <td class="text-end">
@@ -36,7 +37,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="text-center py-4 text-body-secondary">Belum ada data armada.</td></tr>
+                    <tr><td colspan="5" class="text-center py-4 text-body-secondary">Belum ada data armada.</td></tr>
                     @endforelse
                 </tbody>
             </table>

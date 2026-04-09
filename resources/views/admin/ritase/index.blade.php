@@ -60,6 +60,7 @@
                         <th>No. Tiket</th>
                         <th>Armada</th>
                         <th>Klien</th>
+                        <th>Asal Sampah</th>
                         <th>Berat Netto</th>
                         <th>Status</th>
                         <th>Waktu Masuk</th>
@@ -76,6 +77,7 @@
                         <td><strong>{{ $item->nomor_tiket ?? '-' }}</strong></td>
                         <td>{{ $item->armada->plat_nomor ?? '-' }}</td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
+                        <td>{{ $item->jenis_sampah ?? '-' }}</td>
                         <td>{{ number_format($item->berat_netto, 2, ',', '.') }} kg</td>
                         <td>
                             @php $statusColors = ['masuk'=>'info','timbang'=>'warning','keluar'=>'primary','selesai'=>'success']; @endphp
