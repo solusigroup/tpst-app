@@ -184,7 +184,85 @@ unset($__errorArgs, $__bag); ?>
                         <input type="text" name="tiket" class="form-control" value="<?php echo e(old('tiket', $ritase->tiket ?? '')); ?>">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Foto Tiket</label>
+                        <label class="form-label">Foto Tiket Bruto (Maks 2MB)</label>
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_bruto').click()">
+                                <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
+                            </button>
+                        </div>
+                        <input type="file" name="foto_tiket_bruto" id="foto_tiket_bruto" class="form-control d-none <?php $__errorArgs = ['foto_tiket_bruto'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" accept="image/*" capture="environment" onchange="previewImageBruto(this)">
+                        <div id="file-name-display-bruto" class="small text-muted mb-2"></div>
+                        <?php $__errorArgs = ['foto_tiket_bruto'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback d-block"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                        
+                        <div id="image-preview-bruto" class="mt-2 text-center border p-2 rounded <?php echo e((isset($ritase) && $ritase->foto_tiket_bruto) ? '' : 'd-none'); ?>">
+                            <?php if(isset($ritase) && $ritase->foto_tiket_bruto): ?>
+                                <a href="<?php echo e(asset('storage/' . $ritase->foto_tiket_bruto)); ?>" target="_blank" id="preview-link-bruto">
+                                    <img src="<?php echo e(asset('storage/' . $ritase->foto_tiket_bruto)); ?>" id="preview-img-bruto" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            <?php else: ?>
+                                <a href="#" target="_blank" id="preview-link-bruto">
+                                    <img src="" id="preview-img-bruto" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            <?php endif; ?>
+                            <p class="small text-muted mt-1 mb-0">Preview foto tiket bruto</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Foto Tiket Tarra (Maks 2MB)</label>
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_tarra').click()">
+                                <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
+                            </button>
+                        </div>
+                        <input type="file" name="foto_tiket_tarra" id="foto_tiket_tarra" class="form-control d-none <?php $__errorArgs = ['foto_tiket_tarra'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" accept="image/*" capture="environment" onchange="previewImageTarra(this)">
+                        <div id="file-name-display-tarra" class="small text-muted mb-2"></div>
+                        <?php $__errorArgs = ['foto_tiket_tarra'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback d-block"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                        
+                        <div id="image-preview-tarra" class="mt-2 text-center border p-2 rounded <?php echo e((isset($ritase) && $ritase->foto_tiket_tarra) ? '' : 'd-none'); ?>">
+                            <?php if(isset($ritase) && $ritase->foto_tiket_tarra): ?>
+                                <a href="<?php echo e(asset('storage/' . $ritase->foto_tiket_tarra)); ?>" target="_blank" id="preview-link-tarra">
+                                    <img src="<?php echo e(asset('storage/' . $ritase->foto_tiket_tarra)); ?>" id="preview-img-tarra" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            <?php else: ?>
+                                <a href="#" target="_blank" id="preview-link-tarra">
+                                    <img src="" id="preview-img-tarra" class="img-fluid rounded" style="max-height: 200px;">
+                                </a>
+                            <?php endif; ?>
+                            <p class="small text-muted mt-1 mb-0">Preview foto tiket tarra</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Foto Tiket Umum</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
@@ -262,6 +340,40 @@ function previewImage(input) {
             document.getElementById('image-preview').classList.remove('d-none');
             document.getElementById('preview-img').src = e.target.result;
             document.getElementById('preview-link').href = e.target.result;
+        }
+        
+        reader.readAsDataURL(file);
+    }
+}
+
+function previewImageBruto(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        document.getElementById('file-name-display-bruto').textContent = 'File terpilih: ' + file.name;
+        
+        reader.onload = function(e) {
+            document.getElementById('image-preview-bruto').classList.remove('d-none');
+            document.getElementById('preview-img-bruto').src = e.target.result;
+            document.getElementById('preview-link-bruto').href = e.target.result;
+        }
+        
+        reader.readAsDataURL(file);
+    }
+}
+
+function previewImageTarra(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        document.getElementById('file-name-display-tarra').textContent = 'File terpilih: ' + file.name;
+        
+        reader.onload = function(e) {
+            document.getElementById('image-preview-tarra').classList.remove('d-none');
+            document.getElementById('preview-img-tarra').src = e.target.result;
+            document.getElementById('preview-link-tarra').href = e.target.result;
         }
         
         reader.readAsDataURL(file);
