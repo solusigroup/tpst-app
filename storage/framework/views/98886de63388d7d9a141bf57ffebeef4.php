@@ -12,7 +12,7 @@
 <div class="card">
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
-            <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari plat nomor..." value="<?php echo e(request('search')); ?>"></div>
+            <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari Plat, Sopir, Klien..." value="<?php echo e(request('search')); ?>" style="min-width: 250px;"></div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button></div>
             <?php if(request('search')): ?><div class="col-auto"><a href="<?php echo e(route('admin.armada.index')); ?>" class="btn btn-outline-secondary">Reset</a></div><?php endif; ?>
         </form>

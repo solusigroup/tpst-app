@@ -16,7 +16,14 @@ class ArmadaController extends Controller
         $query = Armada::with('klien');
 
         if ($request->filled('search')) {
-            $query->where('plat_nomor', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('plat_nomor', 'like', '%' . $search . '%')
+                  ->orWhere('nama_sopir', 'like', '%' . $search . '%')
+                  ->orWhereHas('klien', function($qKlien) use ($search) {
+                      $qKlien->where('nama_klien', 'like', '%' . $search . '%');
+                  });
+            });
         }
 
         $armadas = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
