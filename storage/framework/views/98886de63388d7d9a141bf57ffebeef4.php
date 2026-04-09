@@ -20,7 +20,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Plat Nomor</th><th>Nama Sopir</th><th>Klien</th><th>Kapasitas Maks</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Plat Nomor</th><th>Nama Sopir</th><th>Klien</th><th>Kapasitas Maks</th><th>Berat Kosong</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $armadas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
@@ -28,6 +28,7 @@
                         <td><?php echo e($item->nama_sopir ?? '-'); ?></td>
                         <td><?php echo e($item->klien->nama_klien ?? '-'); ?></td>
                         <td><?php echo e(number_format($item->kapasitas_maksimal, 0, ',', '.')); ?> kg</td>
+                        <td><?php echo e($item->berat_kosong ? number_format($item->berat_kosong, 0, ',', '.') . ' kg' : '-'); ?></td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="<?php echo e(route('admin.armada.edit', $item)); ?>" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>

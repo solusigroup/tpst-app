@@ -7,7 +7,15 @@
         <h1>Invoice</h1>
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Invoice</li></ol></nav>
     </div>
-    <a href="{{ route('admin.invoice.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Buat Invoice</a>
+    <div class="d-flex gap-2">
+        <form method="POST" action="{{ route('admin.invoice.merge-drafts') }}" class="m-0">
+            @csrf
+            <button type="submit" class="btn btn-warning text-dark" onclick="return confirm('Apakah Anda yakin ingin menggabungkan semua Invoice Draft dari Klien yang sama?')">
+                <i class="cil-object-group me-1"></i> Gabung Draft
+            </button>
+        </form>
+        <a href="{{ route('admin.invoice.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Buat Invoice</a>
+    </div>
 </div>
 <div class="card">
     <div class="card-header bg-white py-3">

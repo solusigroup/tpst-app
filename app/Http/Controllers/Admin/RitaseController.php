@@ -18,10 +18,26 @@ class RitaseController extends Controller
         $query = Ritase::with(['armada', 'klien']);
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nomor_tiket', 'like', '%' . $request->search . '%')
-                  ->orWhere('tiket', 'like', '%' . $request->search . '%');
-            });
+            $searchBy = $request->search_by ?? 'tiket';
+            $searchValue = $request->search;
+
+            if ($searchBy == 'armada') {
+                $query->whereHas('armada', function($q) use ($searchValue) {
+                    $q->where('plat_nomor', 'like', '%' . $searchValue . '%')
+                      ->orWhere('nama_sopir', 'like', '%' . $searchValue . '%');
+                });
+            } elseif ($searchBy == 'klien') {
+                $query->whereHas('klien', function($q) use ($searchValue) {
+                    $q->where('nama_klien', 'like', '%' . $searchValue . '%');
+                });
+            } elseif ($searchBy == 'status_invoice') {
+                $query->where('status_invoice', 'like', '%' . $searchValue . '%');
+            } else {
+                $query->where(function($q) use ($searchValue) {
+                    $q->where('nomor_tiket', 'like', '%' . $searchValue . '%')
+                      ->orWhere('tiket', 'like', '%' . $searchValue . '%');
+                });
+            }
         }
 
         if ($request->filled('start_date')) {
@@ -44,10 +60,26 @@ class RitaseController extends Controller
         $query = Ritase::with(['armada', 'klien']);
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nomor_tiket', 'like', '%' . $request->search . '%')
-                  ->orWhere('tiket', 'like', '%' . $request->search . '%');
-            });
+            $searchBy = $request->search_by ?? 'tiket';
+            $searchValue = $request->search;
+
+            if ($searchBy == 'armada') {
+                $query->whereHas('armada', function($q) use ($searchValue) {
+                    $q->where('plat_nomor', 'like', '%' . $searchValue . '%')
+                      ->orWhere('nama_sopir', 'like', '%' . $searchValue . '%');
+                });
+            } elseif ($searchBy == 'klien') {
+                $query->whereHas('klien', function($q) use ($searchValue) {
+                    $q->where('nama_klien', 'like', '%' . $searchValue . '%');
+                });
+            } elseif ($searchBy == 'status_invoice') {
+                $query->where('status_invoice', 'like', '%' . $searchValue . '%');
+            } else {
+                $query->where(function($q) use ($searchValue) {
+                    $q->where('nomor_tiket', 'like', '%' . $searchValue . '%')
+                      ->orWhere('tiket', 'like', '%' . $searchValue . '%');
+                });
+            }
         }
 
         if ($request->filled('start_date')) {

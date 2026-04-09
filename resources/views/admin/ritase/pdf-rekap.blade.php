@@ -138,20 +138,24 @@
         @else
             <p>Periode: Semua Waktu</p>
         @endif
+        @if(request('search'))
+            <p>Pencarian: "{{ request('search') }}" (Berdasarkan: {{ ucfirst(str_replace('_', ' ', request('search_by', 'tiket'))) }})</p>
+        @endif
     </div>
 
     <table>
         <thead>
             <tr>
                 <th width="3%">No</th>
-                <th width="12%">No. Tiket</th>
-                <th width="10%">Tiket</th>
+                <th width="11%">No. Tiket</th>
+                <th width="8%">Tiket</th>
                 <th width="12%">Waktu Masuk</th>
-                <th width="12%">Asal Sampah</th>
-                <th width="13%">Armada</th>
-                <th width="15%">Klien</th>
+                <th width="10%">Asal Sampah</th>
+                <th width="12%">Armada</th>
+                <th width="14%">Klien</th>
                 <th width="10%">Status</th>
-                <th width="13%" class="text-right">Berat Netto (kg)</th>
+                <th width="10%">Status Invoice</th>
+                <th width="10%" class="text-right">Berat Netto (kg)</th>
             </tr>
         </thead>
         <tbody>
@@ -167,11 +171,14 @@
                     <td class="text-center">
                         <span class="badge badge-{{ $item->status ?? 'default' }}">{{ ucfirst($item->status) }}</span>
                     </td>
+                    <td class="text-center">
+                        <span class="badge badge-{{ strtolower($item->status_invoice) == 'paid' ? 'selesai' : (strtolower($item->status_invoice) == 'sent' ? 'masuk' : (strtolower($item->status_invoice) == 'canceled' ? 'default' : 'timbang')) }}">{{ $item->status_invoice ?? 'Unbilled' }}</span>
+                    </td>
                     <td class="text-right">{{ number_format($item->berat_netto, 2, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center">Tidak ada data ritase pada periode ini.</td>
+                    <td colspan="10" class="text-center">Tidak ada data ritase pada periode dan filter ini.</td>
                 </tr>
             @endforelse
         </tbody>

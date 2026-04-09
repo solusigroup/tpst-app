@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Klien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceAdminController extends Controller
 {
@@ -132,5 +133,48 @@ class InvoiceAdminController extends Controller
         Gate::authorize('delete_invoice');
         $invoice->delete();
         return redirect()->route('admin.invoice.index')->with('success', 'Invoice berhasil dihapus.');
+    }
+
+    public function mergeDrafts()
+    {
+        Gate::authorize('update_invoice');
+        
+        $draftInvoices = Invoice::where('status', 'Draft')->get()->groupBy('klien_id');
+        
+        $mergedCount = 0;
+        DB::transaction(function () use ($draftInvoices, &$mergedCount) {
+            foreach ($draftInvoices as $klienId => $invoices) {
+                if ($invoices->count() > 1) {
+                    $master = $invoices->first();
+                    $others = $invoices->slice(1);
+                    
+                    foreach ($others as $other) {
+                        \App\Models\Ritase::where('invoice_id', $other->id)->update([
+                            'invoice_id' => $master->id
+                        ]);
+                        
+                        \App\Models\Penjualan::where('invoice_id', $other->id)->update([
+                            'invoice_id' => $master->id
+                        ]);
+                        
+                        $other->delete();
+                        $mergedCount++;
+                    }
+                    
+                    $totalRitase = \App\Models\Ritase::where('invoice_id', $master->id)->sum('biaya_tipping');
+                    $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('total_harga');
+                    
+                    $master->update([
+                        'total_tagihan' => $totalRitase + $totalPenjualan,
+                        'keterangan' => empty($master->keterangan) ? 'Merged with other drafts' : $master->keterangan . ' (Merged)'
+                    ]);
+                }
+            }
+        });
+
+        if ($mergedCount > 0) {
+            return redirect()->route('admin.invoice.index')->with('success', "$mergedCount invoice draft berhasil digabungkan.");
+        }
+        return redirect()->route('admin.invoice.index')->with('info', 'Tidak ada draft invoice untuk klien yang sama yang perlu digabungkan.');
     }
 }

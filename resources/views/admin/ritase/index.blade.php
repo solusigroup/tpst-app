@@ -18,7 +18,15 @@
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto">
-                <input type="text" name="search" class="form-control" placeholder="Cari nomor tiket / tiket manual..." value="{{ request('search') }}">
+                <select name="search_by" class="form-select" title="Cari Berdasarkan">
+                    <option value="tiket" {{ request('search_by') == 'tiket' ? 'selected' : '' }}>Tiket</option>
+                    <option value="armada" {{ request('search_by') == 'armada' ? 'selected' : '' }}>Armada</option>
+                    <option value="klien" {{ request('search_by') == 'klien' ? 'selected' : '' }}>Klien</option>
+                    <option value="status_invoice" {{ request('search_by') == 'status_invoice' ? 'selected' : '' }}>Status Invoice</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <input type="text" name="search" class="form-control" placeholder="Teks pencarian..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
                 <input type="date" name="start_date" class="form-control" title="Tanggal Mulai" value="{{ request('start_date') }}">

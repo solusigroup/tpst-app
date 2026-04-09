@@ -17,7 +17,15 @@
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto">
-                <input type="text" name="search" class="form-control" placeholder="Cari nomor tiket / tiket manual..." value="<?php echo e(request('search')); ?>">
+                <select name="search_by" class="form-select" title="Cari Berdasarkan">
+                    <option value="tiket" <?php echo e(request('search_by') == 'tiket' ? 'selected' : ''); ?>>Tiket</option>
+                    <option value="armada" <?php echo e(request('search_by') == 'armada' ? 'selected' : ''); ?>>Armada</option>
+                    <option value="klien" <?php echo e(request('search_by') == 'klien' ? 'selected' : ''); ?>>Klien</option>
+                    <option value="status_invoice" <?php echo e(request('search_by') == 'status_invoice' ? 'selected' : ''); ?>>Status Invoice</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <input type="text" name="search" class="form-control" placeholder="Teks pencarian..." value="<?php echo e(request('search')); ?>">
             </div>
             <div class="col-auto">
                 <input type="date" name="start_date" class="form-control" title="Tanggal Mulai" value="<?php echo e(request('start_date')); ?>">

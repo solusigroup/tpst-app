@@ -91,6 +91,25 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
             </div>
+            <div class="col-md-6">
+                <label class="form-label">Berat Kosong (kg)</label>
+                <input type="number" step="0.01" name="berat_kosong" class="form-control <?php $__errorArgs = ['berat_kosong'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('berat_kosong', $armada->berat_kosong ?? '')); ?>">
+                <?php $__errorArgs = ['berat_kosong'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> <?php echo e(isset($armada) ? 'Perbarui' : 'Simpan'); ?></button>
                 <a href="<?php echo e(route('admin.armada.index')); ?>" class="btn btn-outline-secondary">Kembali</a>
