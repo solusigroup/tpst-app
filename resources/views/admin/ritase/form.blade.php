@@ -24,7 +24,7 @@
                             <select name="armada_id" class="form-select @error('armada_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Armada --</option>
                                 @foreach($armadas as $a)
-                                    <option value="{{ $a->id }}" {{ old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : '' }}>{{ $a->plat_nomor }}</option>
+                                    <option value="{{ $a->id }}" data-berat-kosong="{{ $a->berat_kosong }}" {{ old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : '' }}>{{ $a->plat_nomor }}</option>
                                 @endforeach
                             </select>
                             @error('armada_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -203,6 +203,20 @@ function calcNetto() {
         tippingInput.value = Math.round(netto * 80);
     @endif
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const armadaSelect = document.querySelector('select[name="armada_id"]');
+    if (armadaSelect) {
+        armadaSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.dataset.beratKosong) {
+                const beratTarra = document.getElementById('berat_tarra');
+                beratTarra.value = selectedOption.dataset.beratKosong;
+                calcNetto();
+            }
+        });
+    }
+});
 
 function previewImage(input) {
     if (input.files && input.files[0]) {

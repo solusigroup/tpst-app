@@ -40,6 +40,7 @@ class ArmadaController extends Controller
             'plat_nomor' => 'required|string|unique:armada,plat_nomor',
             'nama_sopir' => 'nullable|string',
             'kapasitas_maksimal' => 'required|numeric|min:0',
+            'berat_kosong' => 'nullable|numeric|min:0',
         ]);
 
         $tenantId = auth()->user()->tenant_id;
@@ -72,6 +73,7 @@ class ArmadaController extends Controller
             'plat_nomor' => 'required|string|unique:armada,plat_nomor,' . $armada->id,
             'nama_sopir' => 'nullable|string',
             'kapasitas_maksimal' => 'required|numeric|min:0',
+            'berat_kosong' => 'nullable|numeric|min:0',
         ]);
 
         if (empty($armada->tenant_id)) {

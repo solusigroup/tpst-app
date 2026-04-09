@@ -21,10 +21,12 @@ class Armada extends Model
         'plat_nomor',
         'nama_sopir',
         'kapasitas_maksimal',
+        'berat_kosong',
     ];
 
     protected $casts = [
         'kapasitas_maksimal' => 'decimal:2',
+        'berat_kosong' => 'decimal:2',
     ];
 
     /**

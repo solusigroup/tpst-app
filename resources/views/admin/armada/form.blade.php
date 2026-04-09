@@ -36,6 +36,11 @@
                 <input type="number" name="kapasitas_maksimal" class="form-control @error('kapasitas_maksimal') is-invalid @enderror" value="{{ old('kapasitas_maksimal', $armada->kapasitas_maksimal ?? '') }}" required>
                 @error('kapasitas_maksimal') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
+            <div class="col-md-6">
+                <label class="form-label">Berat Kosong (kg)</label>
+                <input type="number" step="0.01" name="berat_kosong" class="form-control @error('berat_kosong') is-invalid @enderror" value="{{ old('berat_kosong', $armada->berat_kosong ?? '') }}">
+                @error('berat_kosong') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> {{ isset($armada) ? 'Perbarui' : 'Simpan' }}</button>
                 <a href="{{ route('admin.armada.index') }}" class="btn btn-outline-secondary">Kembali</a>

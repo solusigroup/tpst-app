@@ -21,7 +21,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Plat Nomor</th><th>Nama Sopir</th><th>Klien</th><th>Kapasitas Maks</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Plat Nomor</th><th>Nama Sopir</th><th>Klien</th><th>Kapasitas Maks</th><th>Berat Kosong</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($armadas as $item)
                     <tr>
@@ -29,6 +29,7 @@
                         <td>{{ $item->nama_sopir ?? '-' }}</td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
                         <td>{{ number_format($item->kapasitas_maksimal, 0, ',', '.') }} kg</td>
+                        <td>{{ $item->berat_kosong ? number_format($item->berat_kosong, 0, ',', '.') . ' kg' : '-' }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.armada.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>

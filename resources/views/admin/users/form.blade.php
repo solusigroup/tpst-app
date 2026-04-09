@@ -34,8 +34,13 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Password {{ isset($user) ? '(kosongkan jika tidak diubah)' : '' }} @unless(isset($user))<span class="text-danger">*</span>@endunless</label>
-                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" {{ isset($user) ? '' : 'required' }}>
-                        @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="input-group">
+                            <input type="password" id="passwordInput" name="password" class="form-control @error('password') is-invalid @enderror" {{ isset($user) ? '' : 'required' }}>
+                            <button class="btn btn-outline-secondary" type="button" onclick="const p = document.getElementById('passwordInput'); if(p.type==='password'){p.type='text';this.innerHTML='<i class=\'cil-eye\'></i>';}else{p.type='password';this.innerHTML='<i class=\'cil-low-vision\'></i>';}">
+                                <i class="cil-low-vision"></i>
+                            </button>
+                            @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Tenant</label>
