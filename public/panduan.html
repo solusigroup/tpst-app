@@ -58,6 +58,7 @@
             color: #bdc3c7;
             text-decoration: none;
             border-left: 3px solid transparent;
+            strong { color: white; display:block; padding-bottom: 5px; }
             transition: all 0.3s;
         }
 
@@ -72,7 +73,7 @@
             padding: 40px;
             width: calc(100% - 250px);
             box-sizing: border-box;
-            max-width: 1000px;
+            max-width: 1100px;
         }
 
         .header-main {
@@ -105,8 +106,13 @@
             margin-top: 0;
         }
 
+        .section-card h3 {
+            color: var(--primary);
+            margin-top: 25px;
+        }
+
         .step-list {
-            margin-top: 20px;
+            margin-top: 15px;
             padding-left: 20px;
         }
 
@@ -124,27 +130,12 @@
             margin-right: 5px;
         }
 
-        .bg-primary {
-            background-color: var(--primary);
-        }
-
-        .bg-success {
-            background-color: var(--success);
-        }
-
-        .bg-warning {
-            background-color: var(--warning);
-            color: #000;
-        }
-
-        .bg-danger {
-            background-color: var(--danger);
-        }
-
-        .bg-info {
-            background-color: var(--info);
-            color: #000;
-        }
+        .bg-primary { background-color: var(--primary); }
+        .bg-success { background-color: var(--success); }
+        .bg-warning { background-color: var(--warning); color: #000; }
+        .bg-danger { background-color: var(--danger); }
+        .bg-info { background-color: var(--info); color: #000; }
+        .bg-dark { background-color: var(--dark); }
 
         .note-box {
             background-color: #e8f4fd;
@@ -154,22 +145,17 @@
             border-radius: 0 4px 4px 0;
         }
 
+        code {
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--danger);
+        }
+
         @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-
-            .content {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .content { margin-left: 0; width: 100%; padding: 20px; }
         }
     </style>
 </head>
@@ -180,131 +166,186 @@
         <h2>TPST SimpleAkunting</h2>
         <ul>
             <li><a href="#pendahuluan">Pendahuluan</a></li>
-            <li><a href="#siapkan-master">1. Persiapan Master Data</a></li>
-            <li><a href="#alur-operasional">2. Alur Operasional Sampah</a></li>
-            <li><a href="#alur-hrd">3. Penggajian SDM</a></li>
-            <li><a href="#alur-keuangan">4. Penagihan & Keuangan</a></li>
-            <li><a href="#laporan">5. Analisis & Laporan</a></li>
+            <li><a href="#master-data">1. Modul Master Data</a></li>
+            <li><a href="#operasional">2. Modul Operasional</a></li>
+            <li><a href="#hrd-sdm">3. Modul SDM & Gaji</a></li>
+            <li><a href="#keuangan">4. Modul Keuangan</a></li>
+            <li><a href="#laporan">5. Modul Laporan</a></li>
+            <li><a href="#pengaturan">6. Pengaturan Sistem</a></li>
         </ul>
     </div>
 
     <div class="content">
         <div class="header-main" id="pendahuluan">
-            <h1 style="margin-top: 0; color: var(--primary);">Panduan Pengoperasian TPST-App SimpleAkunting</h1>
-            <p>Aplikasi ini dirancang untuk mensinergikan kegiatan operasional pengelolaan sampah di TPST (Tempat
-                Pengelolaan Sampah Terpadu) dengan pencatatan akuntansi otomatis dan manajemen SDM terpadu.</p>
+            <h1 style="margin-top: 0; color: var(--primary);">Panduan Lengkap Pengoperasian TPST-App</h1>
+            <p>Aplikasi TPST dirancang untuk mencatat seluruh aktivitas pengolahan sampah dari mulai truk timbang masuk, proses pemilahan, penggajian borongan pegawai, hingga menghasilkan faktur penagihan (Invoice) dan laporan jurnal akuntansi lengkap.</p>
         </div>
 
         <div class="note-box">
-            <strong>Catatan Penting:</strong> Aplikasi ini menggunakan sistem <em>Multi-Tenant</em>. Pastikan Bapak/Ibu
-            masuk (login) dengan akun yang memiliki hak akses Perusahaan (KSO) yang tepat agar datanya tidak bercampur.
+            <strong>Catatan Penting (Multi-Tenant):</strong> Pastikan Anda menggunakan akun pada <em>Tenant (Perusahaan)</em> yang tepat. Jangan lupa mengatur Profil Perusahaan Anda di menu Settings sebelum memulai penggunaan!
         </div>
 
-        <!-- Bagian 1 -->
-        <div class="section-card" id="siapkan-master">
-            <h2 style="border-left-color: var(--info);">Langkah 1: Persiapan Master Data</h2>
-            <p>Sebelum menjalankan operasional harian, lengkapi data dasar berikut dari menu sidebar kiri:</p>
-            <ul class="step-list">
-                <li><span class="badge bg-primary">Master Data > Klien</span> Daftarkan sumber sampah/pelanggan yang
-                    bermitra dengan TPST Anda. Klien ini nantinya akan digunakan saat menagih Tipping Fee dan membeli
-                    hasil rongsok.</li>
-                <li><span class="badge bg-primary">Master Data > Armada</span> Daftarkan mobil angkut dan nopolnya untuk
-                    pelacakan alur masuk jembatan timbang.</li>
-                <li><span class="badge bg-primary">Master Data > Kategori Sampah</span> Tambahkan daftar tipe daur ulang
-                    (Misal: Plastik HD, Kardus, Botol PET) yang akan dihasilkan oleh area produksi/pemilahan.</li>
-                <li><span class="badge bg-primary">SDM > Data Pegawai</span> Masukkan nama-nama karyawan. Tetapkan tipe
-                    gajinya, apakah <strong>Bulanan</strong> atau <strong>Borongan</strong>.</li>
-            </ul>
-        </div>
+        <!-- MASTER DATA -->
+        <div class="section-card" id="master-data">
+            <h2 style="border-left-color: var(--primary);">1. Modul Master Data</h2>
+            <p>Input data-data di bawah ini sebelum Anda bisa melakukan transaksi harian.</p>
 
-        <!-- Bagian 2 -->
-        <div class="section-card" id="alur-operasional">
-            <h2 style="border-left-color: var(--success);">Langkah 2: Alur Operasional Sampah (Harian)</h2>
-            <p>Siklus fisik barang yang terjadi setiap harinya dicatat pada dua modul berikut:</p>
-
-            <h3>A. Penerimaan Sampah (Ritase / Tipping Fee)</h3>
+            <h3>How To: Menambahkan Klien / Klien Swasta</h3>
             <ol>
-                <li>Buka menu <span class="badge bg-success">Operasional > Ritase Masuk</span>.</li>
-                <li>Buat data baru saat truk masuk. Pilih Klien, Armada, lalu isi <strong>Berat Bruto / Tarra</strong>.
-                    Sistem akan otomatis menghitung <strong>Berat Netto</strong>.</li>
-                <li>Masukkan Harga <em>Tipping Fee</em> jika ada biaya layanan bongkar.</li>
+                <li>Buka menu <span class="badge bg-primary">Master Data > Klien</span>.</li>
+                <li>Klik tombol <strong>Tambah Klien</strong>.</li>
+                <li>Pilih <strong>Jenis Klien</strong> (Misalnya Swasta atau Internal). Fitur otomatis: Jika Anda memilih "Swasta", sistem memunculkan input field <strong>Jenis Tarif</strong> dan <strong>Besaran Tarif</strong> bulanan/per ritase secara otomatis.</li>
+                <li>Isi nama, kontak, dan simpan. Klien ini nanti akan ditagih tipping fee/invoice lainnya.</li>
             </ol>
 
-            <h3>B. Produksi / Pemilahan & Penjualan</h3>
+            <h3>How To: Daftarkan Kendaraan Armada</h3>
             <ol>
-                <li>Sampah yang diproses pemilah akan dicatat di <span class="badge bg-success">Operasional > Hasil
-                        Pilahan</span>. Pilih "Kategori Sampah", isi nominal Kiloan, dan pilih nama petugas yang
-                    memilahnya (Penting untuk perhitungan gaji borongan nanti).</li>
-                <li>Ketika barang laku terjual ke pabrik/pengepul, buka menu <span class="badge bg-success">Operasional
-                        > Penjualan B2B</span>. Pilih Klien dan kuantitas barang.</li>
-                <li>Sistem akan menolak penjualan jika stok barang di gudang (kalkulasi: Total Pilahan - Total
-                    Penjualan) tidak mencukupi (Terkunci Murni).</li>
+                <li>Menu <span class="badge bg-primary">Master Data > Armada</span>. Klik Tambah Armada.</li>
+                <li>Pilih Armada ini milik <strong>Klien</strong> mana, lalu masukkan <strong>Plat Nomor</strong>, nama sopir (bila ada), dan kapasitas bawaannya.</li>
+            </ol>
+
+            <h3>How To: Tambah Kategori Penjualan (Kategori Sampah)</h3>
+            <ol>
+                <li>Menu <span class="badge bg-primary">Master Data > Kategori Sampah</span>.</li>
+                <li>Masukkan hasil sortiran TPST, misalnya: Botol PET, Plastik Hitam, Kardus Bekas, dsb.</li>
+            </ol>
+
+            <h3>How To: Daftarkan Mesin-mesin TPST</h3>
+            <ol>
+                <li>Menu <span class="badge bg-primary">Master Data > Mesin</span>. Ini dibutuhkan untuk pelacakan log aktivitas harian mesin briket/Gibrig.</li>
+                <li>Klik Tambah, masukkan kode mesin, nama (misal: "Mesin Gibrig 1"), dan spesifikasinya.</li>
             </ol>
         </div>
 
-        <!-- Bagian 3 -->
-        <div class="section-card" id="alur-hrd">
-            <h2 style="border-left-color: var(--warning);">Langkah 3: Menghitung Gaji Karyawan (SDM)</h2>
-            <p>Bagi karyawan bertipe Borongan, gajinya dibayar berdasarkan hasil Tonase sampah yang mereka pilah.</p>
-            <ul class="step-list">
-                <li>Buka menu <span class="badge bg-warning">SDM > Pengaturan Tarif Upah</span>. Pastikan Anda sudah
-                    menyetel berapa rupiah upah per Kilogram sampah.</li>
-                <li>Masuk ke <span class="badge bg-warning">SDM > Perhitungan Upah</span>.</li>
-                <li>Klik tombol <strong>Hitung Upah Mingguan</strong>. Pilih tanggal. Sistem akan merekap otomatis total
-                    KG dan Upah seluruh karyawan selama 7 hari kalender.</li>
-                <li><b class="text-danger">Integrasi Akuntansi:</b> Di tabel Rekap Gaji, terdapat tombol <span
-                        class="badge bg-info">Buat Jurnal</span>. Saat Gaji dibayarkan, klik tombol tersebut. Sistem
-                    akan otomatis mengisi angka <em>Debit: Beban Gaji</em> dan nilainya, Anda tinggal memilih akun Kas
-                    yang mengeluarkan uang.</li>
-            </ul>
-        </div>
 
-        <!-- Bagian 4 -->
-        <div class="section-card" id="alur-keuangan">
-            <h2 style="border-left-color: var(--danger);">Langkah 4: Penagihan (Invoice) & Manajemen Akuntansi</h2>
+        <!-- OPERASIONAL -->
+        <div class="section-card" id="operasional">
+            <h2 style="border-left-color: var(--success);">2. Modul Operasional</h2>
+            <p>Tempat pencatatan seluruh kegiatan lapangan setiap hari.</p>
 
-            <h3>Membuat Tagihan Kolektif</h3>
+            <h3>How To: Merekam Tiket Ritase Masuk (Tipping)</h3>
             <ol>
-                <li>Buka <span class="badge bg-danger">Keuangan > Invoice</span> lalu klik Buat Invoice.</li>
-                <li>Pilih <strong>Klien (Customer)</strong>. Ajaibnya, di bawah dropdown tersebut akan langsung muncul
-                    daftar centang seluruh transaksi <strong>Ritase (Tipping)</strong> dan <strong>Penjualan
-                        Rongsok</strong> yang belum pernah ditagih ke Klien tersebut!</li>
-                <li>Centang hutang-hutang operasi mereka. Total Tagihan akan dihitung secara Real-Time. Simpan dan Cetak
-                    ke PDF.</li>
-                <li><b class="text-danger">Integrasi Akuntansi:</b> Sama seperti SDM, di halaman list Invoice terdapat
-                    tombol <span class="badge bg-info">Buat Jurnal</span> untuk mempermudah Kasir mencatat Pemasukan
-                    Piutang. Nominal dan format referensi akan menempel secara akurat di Buku Besar.</li>
+                <li>Buka <span class="badge bg-success">Operasional > Ritase Masuk</span>, klik <strong>Tambah Ritase</strong>.</li>
+                <li>Pilih <strong>Armada</strong> (truk yang masuk), maka otomatis nama klien akan terhubung.</li>
+                <li>Pilih Waktu Masuk truk.</li>
+                <li>Masukkan nominal <strong>Berat Bruto</strong> dan <strong>Berat Tarra</strong>. Sistem menghitung otomatis <strong>Berat Netto</strong> di layar. (Sistem juga otomatis mengisi usulan Biaya Tipping Anda).</li>
+                <li>Masukkan info tambahan seperti <strong>Asal Sampah</strong> dan upload <strong>Foto Timbangan Bruto / Tarra</strong> maksimal 2MB. </li>
+                <li>Pilih <strong>Status: Selesai</strong> apabila truk sudah keluar, lalu Simpan.</li>
+                <li><em>Persetujuan:</em> Di tabel, ritase dapat Anda <strong>Approve</strong>. Bila diapprove, ritase ini resmi masuk sebagai unbilled transaction untuk tagihan Invoice.</li>
             </ol>
 
-            <h3>Jurnal Tambahan</h3>
-            <p>Untuk transaksi pengeluaran (Beli bensin, bayar listrik) Anda bisa menggunakan menu <span
-                    class="badge bg-danger">Keuangan > Transaksi Kasir</span> yang *User-Friendly* atau masuk ke <span
-                    class="badge bg-danger">Keuangan > Jurnal Umum</span> bagi akuntan mahir (Format Debit - Kredit
-                manual).</p>
-        </div>
-
-        <!-- Bagian 5 -->
-        <div class="section-card" id="laporan">
-            <h2 style="border-left-color: var(--dark);">Langkah 5: Membaca Laporan & Analitik Akhir</h2>
-            <p>Semua data yang masuk dari Operasi dan Keuangan dapat dipantau dari menu <strong>Laporan</strong>.</p>
-            <ul class="step-list">
-                <li><strong>Operasional:</strong> Anda dapat mencetak rekap Ritase Bulanan, Log Penjualan, dan Rekap
-                    Stok Hasil Pilahan (Gross vs Penjualan).</li>
-                <li><strong>Keuangan:</strong>
-                    Terdapat Buku Besar untuk audit transaksi per akun COA, Laba Rugi untuk memantau untung bisnis, dan
-                    **Laporan Posisi Keuangan (Balance Sheet)** untuk memantau kesehatan Aset vs (Liabilitas +
-                    Modal/Laba).
+            <h3>How To: Rekap Hasil Pilahan & Stok Akhir</h3>
+            <ol>
+                <li>Menu <span class="badge bg-success">Operasional > Hasil Pilahan</span>. Klik Tambah.</li>
+                <li>Pilih "Kategori Sampah" (misal Kardus), lalu masukkan <strong>Berat</strong> kiloannya, dan <strong>Pilih Pegawai</strong> yang melakukan sortir.</li>
+                <li>Data hasil sortir ini akan masuk sebagai:
+                    <ul>
+                        <li>Penambah stok gudang agar nanti bisa dijual ke luar.</li>
+                        <li>Dasar gaji borongan bagi pegawai tersebut.</li>
+                    </ul>
                 </li>
+            </ol>
+
+            <h3>How To: Tulis Logbook Operasional Mesin</h3>
+            <ol>
+                <li>Operator pemilah diwajibkan menulis laporan melalui <span class="badge bg-success">Operasional > Logbook Mesin</span>.</li>
+                <li>Pilih mesin, pilih Shift dan Waktu (Masuk - Keluar), dan warna status (Hijau = Normal, Merah = Rusak).</li>
+                <li>Jika berstatus Breakdown/Emergency (Merah), notifikasi WhatsApp darurat dapat diintegrasikan!</li>
+            </ol>
+
+            <h3>How To: Menjual Hasil Pilahan (B2B)</h3>
+            <ol>
+                <li>Menu <span class="badge bg-success">Operasional > Penjualan B2B</span>. Klik Jual Rongsok.</li>
+                <li>Pilih Klien pengepul, Kategori Sampah yang dijual, kuantitas, dan harganya. <em>Catatan:</em> Sistem akan melarang bila kuantitas jual melebihi total persediaan gudang.</li>
+            </ol>
+        </div>
+
+
+        <!-- SDM & GAJI -->
+        <div class="section-card" id="hrd-sdm">
+            <h2 style="border-left-color: var(--warning);">3. Modul SDM & Penggajian</h2>
+            <p>Untuk mengelola pegawai dan slip gaji mereka.</p>
+
+            <h3>How To: Daftarkan Pegawai & Absen</h3>
+            <ol>
+                <li>Masuk ke <span class="badge bg-warning">SDM > Data Pegawai</span>. Input NIK, Nama, dan Foto (tanpa batas ukuran limit). Tentukan apakah ia Tipe: <strong>Bulanan</strong> atau <strong>Borongan</strong>.</li>
+                <li>Apabila perusahaan mendata kehadiran presensi, catat pada <span class="badge bg-warning">SDM > Absensi</span> tiap hari (Hadir, Ijin, Alpa, Sakit).</li>
+            </ol>
+
+            <h3>How To: Menyetel Tarif Upah Borongan</h3>
+            <ol>
+                <li>Buka <span class="badge bg-warning">SDM > Pengaturan Tarif Upah</span>.</li>
+                <li>Masukkan nominal dasar misalnya: <strong>Rp 2.000 / Kg</strong>. Tanpa mengatur tarif ini, sistem tidak bisa mengalkulasi uang slip baginya.</li>
+            </ol>
+
+            <h3>How To: Hitung dan Cairkan Upah Gaji</h3>
+            <ol>
+                <li>Buka <span class="badge bg-warning">SDM > Perhitungan Upah</span>.</li>
+                <li>Pilih rentang tanggal (Misal 1 Minggu), lalu klik <strong>Generate Slip Gaji</strong>. Sistem menyedot data dari <em>Kiloan Hasil Pilahan</em> si pegawai, mengalikan dengan tarif di atas.</li>
+                <li>Setelah divalidasi, klik <strong>Auto-Jurnal Kas</strong> di baris slip gajinya. Anda tinggal pilih bank uang keluar (misal Bank BCA) dan sistem akuntansi otomatis mem-posting Jurnal Beban Gaji!</li>
+            </ol>
+        </div>
+
+
+        <!-- KEUANGAN -->
+        <div class="section-card" id="keuangan">
+            <h2 style="border-left-color: var(--danger);">4. Modul Keuangan & Akuntansi</h2>
+            
+            <h3>How To: Mengelola Master COA (Chart of Account)</h3>
+            <ol>
+                <li><span class="badge bg-danger">Keuangan > Bagan Akun (COA)</span>. Sistem telah menyediakan COA Default sesuai profil perusahaan Anda (Jasa/Dagang/Manufaktur) secara otomatis sewaktu mengubah profil.</li>
+                <li>Bisa ubah atau tambahkan klasifikasi kode bebas selama formatnya berjenjang (Misal 111-01).</li>
+            </ol>
+
+            <h3>How To: Menagihkan Piutang (Membuat Invoice) ke Klien</h3>
+            <ol>
+                <li>Masuk ke <span class="badge bg-danger">Keuangan > Daftar Invoice</span> -> <strong>Buat Invoice</strong>.</li>
+                <li>Pilih <strong>Pelanggan (Klien)</strong>. Saat Anda memilihnya, sebuah daftar "Hutang Tipping (Ritase)" dan "Hutang Rongsok (Penjualan)" mereka yang berstatus Unbilled akan muncul!</li>
+                <li>Ceklis transaksi mana saja yang mau ditagih periode ini bulan ini.</li>
+                <li>Sistem mengkalkulasi grand total. Simpan. Rubah status jadi <strong>Sent</strong>.</li>
+                <li>Saat pelanggan mentransfer uang, pada tabel klik tombol <strong>Bayar/Jurnalkan</strong>. Sistem akan menjurnal <em>Kas BSI pada Piutang Usaha</em> secara otomatis ke Buku Besar.</li>
+            </ol>
+            
+            <h3>How To: Pencatatan Transaksi Kasir Pengeluaran Ringan</h3>
+            <ol>
+                <li>Bila staf operasional membeli Token Listrik atau bensin, masukkan via <span class="badge bg-danger">Keuangan > Transaksi Kasir</span>.</li>
+                <li>Pilih format Pengeluaran, isi nominal, dan pilih akun biaya operasional COA yang dituju. Sangat mudah bagi non-akuntan.</li>
+            </ol>
+
+            <h3>How To: Jurnal Umum (Akuntan Pro)</h3>
+            <ol>
+                <li>Untuk jurnal penyesuaian/adjusment penyusutan aktiva, masuk ke <span class="badge bg-danger">Keuangan > Jurnal Umum</span>.</li>
+                <li>Tambahkan minimal 2 baris (Debit & Kredit). Nominal akhirnya (Total Balans) wajib sama rata kalau tidak sistem menolak Save.</li>
+            </ol>
+        </div>
+
+
+        <!-- LAPORAN -->
+        <div class="section-card" id="laporan">
+            <h2 style="border-left-color: var(--info);">5. Modul Laporan & Cetak PDF/Excel</h2>
+            <p>Untuk jajaran manajerial level C / Owner membaca hasil bisnis.</p>
+
+            <ul class="step-list">
+                <li><strong>Laporan Keuangan > Buku Besar:</strong> Mutasi pergerakan detil per COA (misal perputaran Saldo Bank BCA dari tanggal sekian sampai sekian).</li>
+                <li><strong>Laporan Keuangan > Laba Rugi (Profit & Loss):</strong> Menyajikan ringkasan total Pendapatan (Omzet) dikurangi Harga Pokok Penjualan (Bila ada) dan Total Beban/Pengeluaran untuk mencari Net Profit bulan tersebut.</li>
+                <li><strong>Laporan Keuangan > Posisi Keuangan (Neraca):</strong> Menyajikan posisi nilai Aset Lancar, Aktiva Tetap, dibandingkan dengan Kewajiban (Piutang Klien, Hutang Vendor) serta modal ekuitas. Diperbarui real time.</li>
+                <li><strong>Laporan Operasional > Rekap Ritase & Stok:</strong> Pantau performa TPS, drill down volume masuk berdasarkan tipe ritase klien vs tonase yang laku terjual. </li>
             </ul>
+
             <div class="note-box">
-                Semua output Laporan mendukung export dalam bentuk cetak Web, <strong>PDF Report</strong>, dan
-                <strong>Spreadsheet Excel</strong> secara asinkronus (Real-time update per klik tanpa harus memuat data
-                dari kemarin).
+                Semua laporan sudah disetel agar dapat diekspor langsung. Tombol cetak PDF warna merah pada tiap header halaman dapat digunakan.
             </div>
         </div>
 
-        <p style="text-align: center; color: var(--secondary); margin-top: 50px; font-size: 0.9em;">&copy; 2026 <a href="https://solusiconsulting.simpleakunting.biz.id/" target="_blank" style="color: inherit; text-decoration: none; font-weight: 600;">Solusi
-            Consult</a> - Panduan Aplikasi Terpadu TPST.</p>
+        <div class="section-card" id="pengaturan">
+            <h2 style="border-left-color: var(--dark);">6. Pengaturan Sistem</h2>
+            <ul class="step-list">
+                <li><span class="badge bg-dark">Pengaturan > Perusahaan</span> Atur profil nama, logo, serta Jenis Usaha anda. Bila Anda memindah jenis usaha dari <em>Jasa</em> menjadi <em>Manufaktur</em>, COA akuntansi akan otomatis terreposisi!</li>
+                <li><span class="badge bg-dark">Pengaturan > Role & Akses</span> Buat custom divisi (contoh: "Kasir HRD", "Kasir Timbang"). Setiap role bisa dicentang modul mana saja yang boleh mereka masuki agar privasi finansial aman di tangan owner dan finance manager.</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; color: var(--secondary); margin-top: 50px; font-size: 0.9em;">&copy; 2026 <a href="https://solusiconsulting.simpleakunting.biz.id/" target="_blank" style="color: inherit; text-decoration: none; font-weight: 600;">Solusi Consult</a> - Panduan Aplikasi Terpadu TPST.</p>
     </div>
 
 </body>
