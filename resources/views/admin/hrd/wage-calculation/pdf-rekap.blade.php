@@ -43,7 +43,7 @@
                     {{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}
                 @endif
             </td>
-            <td class="text-end">{{ number_format($item->total_output, 2, ',', '.') }} kg</td>
+            <td class="text-end">{{ number_format($item->total_quantity, 2, ',', '.') }} kg</td>
             <td class="text-end">Rp {{ number_format($item->total_wage, 2, ',', '.') }}</td>
             <td>
                 @if($item->status == 'pending') Pending

@@ -83,6 +83,14 @@ class WageCalculation extends Model
     }
 
     /**
+     * Get total_output as an alias for total_quantity for backward compatibility with views.
+     */
+    public function getTotalOutputAttribute()
+    {
+        return $this->total_quantity;
+    }
+
+    /**
      * Get associated jurnal headers.
      */
     public function jurnalHeaders()

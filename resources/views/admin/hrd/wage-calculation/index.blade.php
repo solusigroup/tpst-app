@@ -96,7 +96,7 @@
                             @endif
                         </td>
                         <td><strong>Rp {{ number_format($item->total_wage, 2, ',', '.') }}</strong></td>
-                        <td>{{ number_format($item->total_output, 2, ',', '.') }} kg</td>
+                        <td>{{ number_format($item->total_quantity, 2, ',', '.') }} kg</td>
                         <td>
                             @if($item->status == 'pending') <span class="badge bg-warning">Pending</span>
                             @elseif($item->status == 'approved') <span class="badge bg-info">Disetujui</span>

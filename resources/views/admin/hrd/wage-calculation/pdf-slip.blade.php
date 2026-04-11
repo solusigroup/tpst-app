@@ -82,8 +82,8 @@
 </table>
 
 <div class="total-box">
-    @if($wageCalculation->user->salary_type === 'borongan' || $wageCalculation->total_output > 0)
-    Total Keseluruhan Output: {{ number_format($wageCalculation->total_output, 2, ',', '.') }} kg<br><br>
+    @if($wageCalculation->user->salary_type === 'borongan' || $wageCalculation->total_quantity > 0)
+    Total Keseluruhan Output: {{ number_format($wageCalculation->total_quantity, 2, ',', '.') }} kg<br><br>
     @endif
     @if($wageCalculation->user->salary_type === 'bulanan')
     GAJI POKOK BULANAN: Rp {{ number_format($wageCalculation->user->monthly_salary ?? 0, 0, ',', '.') }}<br><br>
