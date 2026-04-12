@@ -44,6 +44,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('penjualan', PenjualanController::class);
     Route::resource('machines', \App\Http\Controllers\Admin\MachineController::class);
     Route::resource('machine-logs', \App\Http\Controllers\Admin\MachineLogController::class);
+    Route::resource('pengangkutan-residu', \App\Http\Controllers\Admin\PengangkutanResiduController::class);
 
     // Keuangan
     Route::resource('coa', CoaController::class);
@@ -84,6 +85,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('ritase', [LaporanController::class, 'laporanRitase'])->name('ritase');
         Route::get('penjualan', [LaporanController::class, 'laporanPenjualan'])->name('penjualan');
         Route::get('hasil-pilahan', [LaporanController::class, 'laporanHasilPilahan'])->name('hasil-pilahan');
+        Route::get('residu', [LaporanController::class, 'laporanResidu'])->name('residu');
     });
 
     // HRD

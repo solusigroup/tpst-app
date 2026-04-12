@@ -43,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         Invoice::observe(InvoiceObserver::class);
         JurnalDetail::observe(JurnalDetailObserver::class);
         HasilPilahan::observe(HasilPilahanObserver::class);
+        \App\Models\PengangkutanResidu::observe(\App\Observers\PengangkutanResiduObserver::class);
 
         // Force HTTPS in production (Fixes issues with Cloudflare Flexible SSL)
         if (config('app.env') === 'production') {

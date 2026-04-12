@@ -452,4 +452,22 @@ class LaporanController extends Controller
 
         return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'totals', 'stokSummary', 'summaryTotals'));
     }
+
+    public function laporanResidu(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+
+        $query = \App\Models\PengangkutanResidu::with('armada')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->orderByDesc('tanggal');
+
+        $rows = $query->paginate(20)->withQueryString();
+        $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_retribusi) as total_biaya, COUNT(*) as total_rows')->first();
+
+        return view('admin.laporan.residu', compact('rows', 'dari', 'sampai', 'totals'));
+    }
 }

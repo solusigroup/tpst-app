@@ -432,6 +432,11 @@
                 </a>
             </li>
             @endcan
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.pengangkutan-residu.*') ? 'active' : '' }}" href="{{ route('admin.pengangkutan-residu.index') }}">
+                    <i class="nav-icon cil-trash"></i> Pengangkutan Residu
+                </a>
+            </li>
             @can('view_hasil_pilahan')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hasil-pilahan.*') ? 'active' : '' }}" href="{{ route('admin.hasil-pilahan.index') }}">
@@ -553,6 +558,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.hasil-pilahan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
                     </li>
                 </ul>
             </li>
