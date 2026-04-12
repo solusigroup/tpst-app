@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\Attendance;
+use App\Models\EmployeeOutput;
+use Carbon\Carbon;
 
 class WageCalculation extends Model
 {
@@ -45,13 +49,16 @@ class WageCalculation extends Model
         $tenantId = $tenantId ?? auth()->user()->tenant_id;
         $user = User::find($userId);
         
+        // Ensure we have a Carbon instance for easier date manipulation
+        $carbonWeekStart = Carbon::instance($weekStart)->startOfDay();
+        
         // Determine pay period based on frequency
         $daysToAdd = ($user && $user->payment_frequency === 'Dua Mingguan') ? 13 : 6;
-        $weekEnd = $weekStart->copy()->addDays($daysToAdd);
+        $weekEnd = $carbonWeekStart->copy()->addDays($daysToAdd)->endOfDay();
 
         $outputs = EmployeeOutput::where('user_id', $userId)
             ->where('tenant_id', $tenantId)
-            ->whereBetween('output_date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
+            ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
             ->get();
 
         $totalQuantity = $outputs->sum('quantity');
@@ -64,8 +71,8 @@ class WageCalculation extends Model
                 // Count unique attendance days in this period
                 $attendanceCount = Attendance::where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->whereBetween('attendance_date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
-                    ->whereIn('status', ['present']) // Use lowercase as per AttendanceController
+                    ->whereBetween('attendance_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
+                    ->whereIn('status', ['present'])
                     ->count();
                 
                 $totalWage = $attendanceCount * ($user->daily_wage ?? 0);
@@ -75,25 +82,19 @@ class WageCalculation extends Model
             }
         }
 
-        $calculation = self::firstOrCreate(
+        $calculation = self::updateOrCreate(
             [
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
-                'week_start' => $weekStart,
+                'week_start' => $carbonWeekStart->toDateString(),
             ],
             [
-                'week_end' => $weekEnd,
+                'week_end' => $weekEnd->toDateString(),
                 'total_quantity' => $totalQuantity,
                 'total_wage' => $totalWage,
                 'status' => 'pending',
             ]
         );
-
-        $calculation->update([
-            'week_end' => $weekEnd,
-            'total_quantity' => $totalQuantity,
-            'total_wage' => $totalWage,
-        ]);
 
         return $calculation;
     }
