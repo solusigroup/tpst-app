@@ -62,7 +62,16 @@ class PenjualanController extends Controller
         Gate::authorize('create_penjualan');
         $kliens = Klien::orderBy('nama_klien')->get();
         $stokPilahan = $this->calculateAvailableStock();
-        return view('admin.penjualan.form', compact('kliens', 'stokPilahan'));
+        $coas = \App\Models\Coa::where('tipe', 'Asset')
+            ->where(function ($q) {
+                $q->where('kode_akun', 'like', '11%')
+                  ->orWhere('nama_akun', 'like', '%Kas%')
+                  ->orWhere('nama_akun', 'like', '%Bank%');
+            })
+            ->where('klasifikasi', 'Aset Lancar')
+            ->orderBy('kode_akun')
+            ->get();
+        return view('admin.penjualan.form', compact('kliens', 'stokPilahan', 'coas'));
     }
 
     public function store(Request $request)
@@ -76,6 +85,7 @@ class PenjualanController extends Controller
             'berat_kg' => 'required|numeric|min:0',
             'harga_satuan' => 'required|numeric|min:0',
             'jumlah_bayar' => 'nullable|numeric|min:0',
+            'coa_pembayaran_id' => 'nullable|exists:coa,id',
         ]);
 
         $stokTersedia = $this->calculateAvailableStock();
@@ -110,7 +120,16 @@ class PenjualanController extends Controller
         Gate::authorize('update_penjualan');
         $kliens = Klien::orderBy('nama_klien')->get();
         $stokPilahan = $this->calculateAvailableStock($penjualan->id);
-        return view('admin.penjualan.form', compact('penjualan', 'kliens', 'stokPilahan'));
+        $coas = \App\Models\Coa::where('tipe', 'Asset')
+            ->where(function ($q) {
+                $q->where('kode_akun', 'like', '11%')
+                  ->orWhere('nama_akun', 'like', '%Kas%')
+                  ->orWhere('nama_akun', 'like', '%Bank%');
+            })
+            ->where('klasifikasi', 'Aset Lancar')
+            ->orderBy('kode_akun')
+            ->get();
+        return view('admin.penjualan.form', compact('penjualan', 'kliens', 'stokPilahan', 'coas'));
     }
 
     public function update(Request $request, Penjualan $penjualan)
@@ -124,6 +143,7 @@ class PenjualanController extends Controller
             'berat_kg' => 'required|numeric|min:0',
             'harga_satuan' => 'required|numeric|min:0',
             'jumlah_bayar' => 'nullable|numeric|min:0',
+            'coa_pembayaran_id' => 'nullable|exists:coa,id',
         ]);
 
         $stokTersedia = $this->calculateAvailableStock($penjualan->id);

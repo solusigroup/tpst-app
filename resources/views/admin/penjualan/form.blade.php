@@ -60,6 +60,17 @@
                 <label class="form-label">Sisa (Piutang)</label>
                 <input type="text" id="sisa_bayar_display" class="form-control bg-light" value="Rp 0" readonly>
             </div>
+            <div class="col-md-6">
+                <label class="form-label">Akun Pembayaran (Kas/Bank) <span class="text-danger">*</span></label>
+                <select name="coa_pembayaran_id" class="form-select @error('coa_pembayaran_id') is-invalid @enderror" required>
+                    @foreach($coas as $c)
+                        <option value="{{ $c->id }}" {{ old('coa_pembayaran_id', $penjualan->coa_pembayaran_id ?? '') == $c->id ? 'selected' : ( !isset($penjualan) && str_contains($c->nama_akun, 'Bank') ? 'selected' : '' ) }}>
+                            {{ $c->kode_akun }} - {{ $c->nama_akun }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('coa_pembayaran_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> {{ isset($penjualan) ? 'Perbarui' : 'Simpan' }}</button>
                 <a href="{{ route('admin.penjualan.index') }}" class="btn btn-outline-secondary">Kembali</a>

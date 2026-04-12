@@ -38,7 +38,16 @@ class InvoiceAdminController extends Controller
     {
         Gate::authorize('create_invoice');
         $kliens = Klien::orderBy('nama_klien')->get();
-        return view('admin.invoice.form', compact('kliens'));
+        $coas = \App\Models\Coa::where('tipe', 'Asset')
+            ->where(function ($q) {
+                $q->where('kode_akun', 'like', '11%')
+                  ->orWhere('nama_akun', 'like', '%Kas%')
+                  ->orWhere('nama_akun', 'like', '%Bank%');
+            })
+            ->where('klasifikasi', 'Aset Lancar')
+            ->orderBy('kode_akun')
+            ->get();
+        return view('admin.invoice.form', compact('kliens', 'coas'));
     }
 
     public function store(Request $request)
@@ -60,6 +69,7 @@ class InvoiceAdminController extends Controller
             'selected_ritase.*' => 'exists:ritase,id',
             'selected_penjualan' => 'nullable|array',
             'selected_penjualan.*' => 'exists:penjualan,id',
+            'coa_pembayaran_id' => 'nullable|exists:coa,id',
         ]);
 
         $invoiceData = collect($validated)->except(['selected_ritase', 'selected_penjualan'])->toArray();
@@ -88,7 +98,16 @@ class InvoiceAdminController extends Controller
     {
         Gate::authorize('update_invoice');
         $kliens = Klien::orderBy('nama_klien')->get();
-        return view('admin.invoice.form', compact('invoice', 'kliens'));
+        $coas = \App\Models\Coa::where('tipe', 'Asset')
+            ->where(function ($q) {
+                $q->where('kode_akun', 'like', '11%')
+                  ->orWhere('nama_akun', 'like', '%Kas%')
+                  ->orWhere('nama_akun', 'like', '%Bank%');
+            })
+            ->where('klasifikasi', 'Aset Lancar')
+            ->orderBy('kode_akun')
+            ->get();
+        return view('admin.invoice.form', compact('invoice', 'kliens', 'coas'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -110,6 +129,7 @@ class InvoiceAdminController extends Controller
             'selected_ritase.*' => 'exists:ritase,id',
             'selected_penjualan' => 'nullable|array',
             'selected_penjualan.*' => 'exists:penjualan,id',
+            'coa_pembayaran_id' => 'nullable|exists:coa,id',
         ]);
 
         $invoiceData = collect($validated)->except(['selected_ritase', 'selected_penjualan'])->toArray();
@@ -176,6 +196,7 @@ class InvoiceAdminController extends Controller
                     $master->update([
                         'total_tagihan' => $totalRitase + $totalPenjualan,
                         'uang_muka' => $totalUangMuka,
+                        'coa_pembayaran_id' => $master->coa_pembayaran_id ?? \App\Models\Coa::where('kode_akun', '1102')->value('id'),
                         'keterangan' => empty($master->keterangan) ? 'Merged with other drafts' : $master->keterangan . ' (Merged)'
                     ]);
                 }

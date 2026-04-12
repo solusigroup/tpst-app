@@ -54,11 +54,22 @@
                 <input type="number" id="sisa_tagihan" class="form-control" value="{{ ($invoice->total_tagihan ?? 0) - ($invoice->uang_muka ?? 0) }}" readonly>
             </div>
             <div class="col-12"><small class="text-muted">Total Tagihan dan Uang Muka dihitung otomatis berdasarkan item yang dipilih.</small></div>
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <label class="form-label">Status <span class="text-danger">*</span></label>
                 <select name="status" class="form-select" required>
                     @foreach(['Draft','Sent','Paid','Canceled'] as $s)<option value="{{ $s }}" {{ old('status', $invoice->status ?? 'Draft') == $s ? 'selected' : '' }}>{{ $s }}</option>@endforeach
                 </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Akun Pembayaran (Kas/Bank) <span class="text-danger">*</span></label>
+                <select name="coa_pembayaran_id" class="form-select @error('coa_pembayaran_id') is-invalid @enderror" required>
+                    @foreach($coas as $c)
+                        <option value="{{ $c->id }}" {{ old('coa_pembayaran_id', $invoice->coa_pembayaran_id ?? '') == $c->id ? 'selected' : ( !isset($invoice) && str_contains($c->nama_akun, 'Bank') ? 'selected' : '' ) }}>
+                            {{ $c->kode_akun }} - {{ $c->nama_akun }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('coa_pembayaran_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-12 mt-4">
                 <h5 class="border-bottom pb-2">Item Tertagih</h5>
