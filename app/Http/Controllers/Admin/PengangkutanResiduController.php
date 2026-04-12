@@ -20,7 +20,7 @@ class PengangkutanResiduController extends Controller
         if ($request->search) {
             $query->where('nomor_tiket', 'like', "%{$request->search}%")
                   ->orWhereHas('armada', function($q) use ($request) {
-                      $q->where('nomor_plat', 'like', "%{$request->search}%");
+                      $q->where('plat_nomor', 'like', "%{$request->search}%");
                   });
         }
 
@@ -31,7 +31,7 @@ class PengangkutanResiduController extends Controller
 
     public function create()
     {
-        $armadas = Armada::orderBy('nomor_plat')->get();
+        $armadas = Armada::orderBy('plat_nomor')->get();
         return view('admin.pengangkutan_residu.create', compact('armadas'));
     }
 
@@ -62,7 +62,7 @@ class PengangkutanResiduController extends Controller
 
     public function edit(PengangkutanResidu $pengangkutanResidu)
     {
-        $armadas = Armada::orderBy('nomor_plat')->get();
+        $armadas = Armada::orderBy('plat_nomor')->get();
         return view('admin.pengangkutan_residu.edit', [
             'item' => $pengangkutanResidu,
             'armadas' => $armadas

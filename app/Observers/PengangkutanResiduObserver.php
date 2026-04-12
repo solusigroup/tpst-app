@@ -37,7 +37,7 @@ class PengangkutanResiduObserver
                         'tanggal' => $residu->tanggal->toDateString(),
                         'referensi_type' => PengangkutanResidu::class,
                         'referensi_id' => $residu->id,
-                        'deskripsi' => "Biaya Tipping TPA Residu {$residu->nomor_tiket} - {$residu->armada->nomor_plat}",
+                        'deskripsi' => "Biaya Tipping TPA Residu {$residu->nomor_tiket} - {$residu->armada->plat_nomor}",
                     ]);
 
                     // Link to residu

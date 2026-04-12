@@ -432,6 +432,11 @@
                 </a>
             </li>
             <?php endif; ?>
+            <li class="nav-item">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.pengangkutan-residu.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.pengangkutan-residu.index')); ?>">
+                    <i class="nav-icon cil-trash"></i> Pengangkutan Residu
+                </a>
+            </li>
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_hasil_pilahan')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.hasil-pilahan.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hasil-pilahan.index')); ?>">
@@ -553,6 +558,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.hasil-pilahan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.residu') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.residu')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
                     </li>
                 </ul>
             </li>

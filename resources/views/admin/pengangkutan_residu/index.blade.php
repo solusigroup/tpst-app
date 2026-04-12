@@ -57,7 +57,7 @@
                         <td><strong>{{ $item->nomor_tiket }}</strong></td>
                         <td>{{ $item->tanggal->format('d/m/Y') }}</td>
                         <td>
-                            <div>{{ $item->armada->nomor_plat }}</div>
+                            <div>{{ $item->armada->plat_nomor }}</div>
                             <small class="text-body-secondary">{{ $item->armada->nama_armada }}</small>
                         </td>
                         <td class="fw-bold">{{ number_format($item->berat_netto, 0, ',', '.') }}</td>

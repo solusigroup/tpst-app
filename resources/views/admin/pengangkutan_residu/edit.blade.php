@@ -40,7 +40,7 @@
                             <select name="armada_id" class="form-select @error('armada_id') is-invalid @enderror" required>
                                 @foreach($armadas as $armada)
                                     <option value="{{ $armada->id }}" {{ old('armada_id', $item->armada_id) == $armada->id ? 'selected' : '' }}>
-                                        {{ $armada->nomor_plat }} - {{ $armada->nama_armada }}
+                                        {{ $armada->plat_nomor }} - {{ $armada->nama_armada }}
                                     </option>
                                 @endforeach
                             </select>

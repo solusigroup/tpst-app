@@ -29,7 +29,7 @@
                                 <option value="">Pilih Armada...</option>
                                 @foreach($armadas as $armada)
                                     <option value="{{ $armada->id }}" {{ old('armada_id') == $armada->id ? 'selected' : '' }}>
-                                        {{ $armada->nomor_plat }} - {{ $armada->nama_armada }}
+                                        {{ $armada->plat_nomor }} - {{ $armada->nama_armada }}
                                     </option>
                                 @endforeach
                             </select>

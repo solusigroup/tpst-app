@@ -1,13 +1,12 @@
-@extends('layouts.admin')
-@section('title', 'Laporan Pengangkutan Residu')
+<?php $__env->startSection('title', 'Laporan Pengangkutan Residu'); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="page-header">
     <div>
         <h1>Laporan Pengangkutan Residu</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="<?php echo e(route('admin.dashboard')); ?>">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="#">Laporan Operasional</a></li>
                 <li class="breadcrumb-item active">Pengangkutan Residu</li>
             </ol>
@@ -20,11 +19,11 @@
         <form method="GET" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label small fw-bold">Dari Tanggal</label>
-                <input type="date" name="dari" class="form-control" value="{{ $dari }}">
+                <input type="date" name="dari" class="form-control" value="<?php echo e($dari); ?>">
             </div>
             <div class="col-md-3">
                 <label class="form-label small fw-bold">Sampai Tanggal</label>
-                <input type="date" name="sampai" class="form-control" value="{{ $sampai }}">
+                <input type="date" name="sampai" class="form-control" value="<?php echo e($sampai); ?>">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
@@ -32,7 +31,7 @@
                 </button>
             </div>
             <div class="col-md-2">
-                <a href="{{ route('admin.laporan-operasional.residu') }}" class="btn btn-outline-secondary w-100">Reset</a>
+                <a href="<?php echo e(route('admin.laporan-operasional.residu')); ?>" class="btn btn-outline-secondary w-100">Reset</a>
             </div>
         </form>
     </div>
@@ -53,42 +52,43 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($rows as $index => $row)
+                    <?php $__empty_1 = true; $__currentLoopData = $rows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
-                        <td class="text-center">{{ $rows->firstItem() + $index }}</td>
-                        <td>{{ $row->nomor_tiket }}</td>
-                        <td>{{ $row->tanggal->format('d/m/Y') }}</td>
-                        <td>{{ $row->armada->plat_nomor }}</td>
-                        <td class="text-end">{{ number_format($row->berat_bruto, 0, ',', '.') }}</td>
-                        <td class="text-end">{{ number_format($row->berat_tarra, 0, ',', '.') }}</td>
-                        <td class="text-end fw-bold">{{ number_format($row->berat_netto, 0, ',', '.') }}</td>
-                        <td class="text-end">Rp {{ number_format($row->biaya_retribusi, 0, ',', '.') }}</td>
-                        <td>{{ $row->tujuan }}</td>
+                        <td class="text-center"><?php echo e($rows->firstItem() + $index); ?></td>
+                        <td><?php echo e($row->nomor_tiket); ?></td>
+                        <td><?php echo e($row->tanggal->format('d/m/Y')); ?></td>
+                        <td><?php echo e($row->armada->nomor_plat); ?></td>
+                        <td class="text-end"><?php echo e(number_format($row->berat_bruto, 0, ',', '.')); ?></td>
+                        <td class="text-end"><?php echo e(number_format($row->berat_tarra, 0, ',', '.')); ?></td>
+                        <td class="text-end fw-bold"><?php echo e(number_format($row->berat_netto, 0, ',', '.')); ?></td>
+                        <td class="text-end">Rp <?php echo e(number_format($row->biaya_retribusi, 0, ',', '.')); ?></td>
+                        <td><?php echo e($row->tujuan); ?></td>
                     </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="9" class="text-center py-4 text-muted">Tidak ada data untuk periode ini.</td>
                     </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
-                @if($rows->count() > 0)
+                <?php if($rows->count() > 0): ?>
                 <tfoot class="table-light fw-bold">
                     <tr>
                         <td colspan="6" class="text-end">TOTAL</td>
-                        <td class="text-end text-primary">{{ number_format($totals->total_netto, 0, ',', '.') }}</td>
-                        <td class="text-end text-danger">Rp {{ number_format($totals->total_biaya, 0, ',', '.') }}</td>
+                        <td class="text-end text-primary"><?php echo e(number_format($totals->total_netto, 0, ',', '.')); ?></td>
+                        <td class="text-end text-danger">Rp <?php echo e(number_format($totals->total_biaya, 0, ',', '.')); ?></td>
                         <td></td>
                     </tr>
                 </tfoot>
-                @endif
+                <?php endif; ?>
             </table>
         </div>
     </div>
-    @if($rows->hasPages())
+    <?php if($rows->hasPages()): ?>
     <div class="card-footer bg-white">
-        {{ $rows->links() }}
+        <?php echo e($rows->links()); ?>
+
     </div>
-    @endif
+    <?php endif; ?>
 </div>
 
 <div class="row">
@@ -96,7 +96,7 @@
         <div class="card bg-primary text-white">
             <div class="card-body">
                 <div class="small opacity-75">Total Netto Residu</div>
-                <div class="fs-4 fw-bold">{{ number_format($totals->total_netto, 0, ',', '.') }} Kg</div>
+                <div class="fs-4 fw-bold"><?php echo e(number_format($totals->total_netto, 0, ',', '.')); ?> Kg</div>
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
         <div class="card bg-danger text-white">
             <div class="card-body">
                 <div class="small opacity-75">Total Biaya Tipping Fee</div>
-                <div class="fs-4 fw-bold">Rp {{ number_format($totals->total_biaya, 0, ',', '.') }}</div>
+                <div class="fs-4 fw-bold">Rp <?php echo e(number_format($totals->total_biaya, 0, ',', '.')); ?></div>
             </div>
         </div>
     </div>
@@ -112,9 +112,11 @@
         <div class="card bg-info text-white">
             <div class="card-body">
                 <div class="small opacity-75">Total Ritase</div>
-                <div class="fs-4 fw-bold">{{ $totals->total_rows }} Trip</div>
+                <div class="fs-4 fw-bold"><?php echo e($totals->total_rows); ?> Trip</div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\PROJECT_HERD\tpst-app\resources\views/admin/laporan/residu.blade.php ENDPATH**/ ?>

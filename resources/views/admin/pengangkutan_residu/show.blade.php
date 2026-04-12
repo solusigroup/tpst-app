@@ -31,7 +31,7 @@
                     </tr>
                     <tr>
                         <th>Armada</th>
-                        <td>: {{ $item->armada->nomor_plat }} ({{ $item->armada->nama_armada }})</td>
+                        <td>: {{ $item->armada->plat_nomor }} ({{ $item->armada->nama_armada }})</td>
                     </tr>
                     <tr>
                         <th>Waktu</th>
