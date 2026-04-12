@@ -30,40 +30,7 @@ class InvoiceObserver
 
         try {
             DB::transaction(function () use ($invoice) {
-                // Check if a JurnalHeader already exists for this Invoice
-                $jurnalHeader = JurnalHeader::where('tenant_id', $invoice->tenant_id)
-                    ->where('referensi_type', Invoice::class)
-                    ->where('referensi_id', $invoice->id)
-                    ->first();
-
                 if (!$jurnalHeader) {
-                    // Account lookup
-                    $piutangCoa = Coa::where('tenant_id', $invoice->tenant_id)
-                        ->where('tipe', 'Asset')
-                        ->where('kode_akun', 'like', '1103%') // Standardizing on the Piutang codes we used earlier
-                        ->first();
-
-                    if (!$piutangCoa) {
-                        $piutangCoa = Coa::where('tenant_id', $invoice->tenant_id)
-                            ->where('tipe', 'Asset')
-                            ->where('nama_akun', 'like', '%Piutang%')
-                            ->first();
-                    }
-
-                    $revenueCoa = Coa::where('tenant_id', $invoice->tenant_id)
-                        ->where('tipe', 'Revenue')
-                        ->where('nama_akun', 'like', '%Layanan%')
-                        ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
-                        ->where('tipe', 'Revenue')
-                        ->where('nama_akun', 'like', '%Tipping%')
-                        ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
-                        ->where('tipe', 'Revenue')
-                        ->first();
-
-                    if (!$piutangCoa || !$revenueCoa) {
-                        return;
-                    }
-
                     $jurnalHeader = JurnalHeader::create([
                         'tenant_id' => $invoice->tenant_id,
                         'tanggal' => $invoice->tanggal_invoice->toDateString(),
@@ -71,33 +38,74 @@ class InvoiceObserver
                         'referensi_id' => $invoice->id,
                         'deskripsi' => "Piutang Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
                     ]);
+                }
 
-                    // Debit: Piutang
+                // Account lookup
+                $piutangCoa = Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Asset')
+                    ->where('kode_akun', 'like', '1103%')
+                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Asset')
+                    ->where('nama_akun', 'like', '%Piutang%')
+                    ->first();
+
+                $revenueCoa = Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Revenue')
+                    ->where('nama_akun', 'like', '%Layanan%')
+                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Revenue')
+                    ->where('nama_akun', 'like', '%Tipping%')
+                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Revenue')
+                    ->first();
+
+                $bankCoa = Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Asset')
+                    ->where('kode_akun', '1102')
+                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where('tipe', 'Asset')
+                    ->where('nama_akun', 'like', '%Bank%')
+                    ->first();
+
+                if (!$piutangCoa || !$revenueCoa) {
+                    return;
+                }
+
+                // Delete existing details to recreate them (cleaner for multi-line journals)
+                $jurnalHeader->jurnalDetails()->delete();
+
+                $uangMuka = (float) ($invoice->uang_muka ?? 0);
+                $totalTagihan = (float) $invoice->total_tagihan;
+                $netPiutang = $totalTagihan - $uangMuka;
+
+                // 1. Debit: Piutang (Net)
+                if ($netPiutang > 0) {
                     $jurnalHeader->jurnalDetails()->create([
                         'coa_id' => $piutangCoa->id,
-                        'debit' => $invoice->total_tagihan,
+                        'debit' => $netPiutang,
                         'kredit' => 0,
                         'contactable_type' => \App\Models\Klien::class,
                         'contactable_id' => $invoice->klien_id,
                     ]);
-
-                    // Credit: Revenue
-                    $jurnalHeader->jurnalDetails()->create([
-                        'coa_id' => $revenueCoa->id,
-                        'debit' => 0,
-                        'kredit' => $invoice->total_tagihan,
-                    ]);
-                } else {
-                    // Update existing journal if amount changed
-                    // Loop through details to trigger observers (BukuPembantu update)
-                    foreach ($jurnalHeader->jurnalDetails as $detail) {
-                        if ($detail->debit > 0 && (float)$detail->debit != (float)$invoice->total_tagihan) {
-                            $detail->update(['debit' => $invoice->total_tagihan]);
-                        } elseif ($detail->kredit > 0 && (float)$detail->kredit != (float)$invoice->total_tagihan) {
-                            $detail->update(['kredit' => $invoice->total_tagihan]);
-                        }
-                    }
                 }
+
+                // 2. Debit: Bank (DP)
+                if ($uangMuka > 0 && $bankCoa) {
+                    $jurnalHeader->jurnalDetails()->create([
+                        'coa_id' => $bankCoa->id,
+                        'debit' => $uangMuka,
+                        'kredit' => 0,
+                        'contactable_type' => \App\Models\Klien::class,
+                        'contactable_id' => $invoice->klien_id,
+                    ]);
+                }
+
+                // 3. Credit: Revenue (Gross)
+                $jurnalHeader->jurnalDetails()->create([
+                    'coa_id' => $revenueCoa->id,
+                    'debit' => 0,
+                    'kredit' => $totalTagihan,
+                ]);
 
                 // Sync manual status transitions to ledger
                 $bp = \App\Models\BukuPembantu::where('jurnal_header_id', $jurnalHeader->id)->first();
@@ -105,10 +113,9 @@ class InvoiceObserver
                     if ($invoice->status === 'Paid' && $bp->status !== 'lunas') {
                         $bp->update([
                             'status' => 'lunas',
-                            'terbayar' => $invoice->total_tagihan
+                            'terbayar' => $netPiutang
                         ]);
                     } elseif ($invoice->status === 'Sent' && $bp->status === 'lunas' && is_null($bp->settled_by_jurnal_header_id)) {
-                        // Revert to pending ONLY if it was manually settled (no real payment journal linked)
                         $bp->update([
                             'status' => 'pending',
                             'terbayar' => 0
