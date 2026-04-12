@@ -46,7 +46,7 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Uang Muka / DP (Rp)</label>
-                <input type="number" id="uang_muka" name="uang_muka" class="form-control @error('uang_muka') is-invalid @enderror" value="{{ old('uang_muka', $invoice->uang_muka ?? '0') }}" required readonly>
+                <input type="number" id="uang_muka" name="uang_muka" class="form-control @error('uang_muka') is-invalid @enderror" value="{{ old('uang_muka', $invoice->uang_muka ?? '0') }}" required>
                 @error('uang_muka') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-4">
@@ -123,8 +123,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         totalTagihanInput.value = total;
         uangMukaInput.value = dp;
+        calculateBalance();
+    }
+
+    function calculateBalance() {
+        const total = parseFloat(totalTagihanInput.value || 0);
+        const dp = parseFloat(uangMukaInput.value || 0);
         sisaTagihanInput.value = total - dp;
     }
+
+    uangMukaInput.addEventListener('input', calculateBalance);
 
     function fetchItems() {
         const klienId = klienSelect.value;
