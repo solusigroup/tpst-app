@@ -45,6 +45,7 @@ class ArmadaController extends Controller
         $validated = $request->validate([
             'klien_id' => 'required|exists:klien,id',
             'plat_nomor' => 'required|string|unique:armada,plat_nomor',
+            'jenis_armada' => 'required|in:Dump Truk,Pick Up,Tossa,Gerobak,Lainnya',
             'nama_sopir' => 'nullable|string',
             'kapasitas_maksimal' => 'required|numeric|min:0',
             'berat_kosong' => 'nullable|numeric|min:0',
@@ -78,6 +79,7 @@ class ArmadaController extends Controller
         $validated = $request->validate([
             'klien_id' => 'required|exists:klien,id',
             'plat_nomor' => 'required|string|unique:armada,plat_nomor,' . $armada->id,
+            'jenis_armada' => 'required|in:Dump Truk,Pick Up,Tossa,Gerobak,Lainnya',
             'nama_sopir' => 'nullable|string',
             'kapasitas_maksimal' => 'required|numeric|min:0',
             'berat_kosong' => 'nullable|numeric|min:0',

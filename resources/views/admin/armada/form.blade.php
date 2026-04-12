@@ -27,6 +27,16 @@
                 @error('plat_nomor') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6">
+                <label class="form-label">Jenis Armada <span class="text-danger">*</span></label>
+                <select name="jenis_armada" class="form-select @error('jenis_armada') is-invalid @enderror" required>
+                    <option value="">-- Pilih --</option>
+                    @foreach(['Dump Truk','Pick Up','Tossa','Gerobak','Lainnya'] as $j)
+                        <option value="{{ $j }}" {{ old('jenis_armada', $armada->jenis_armada ?? '') == $j ? 'selected' : '' }}>{{ $j }}</option>
+                    @endforeach
+                </select>
+                @error('jenis_armada') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Nama Sopir / Driver</label>
                 <input type="text" name="nama_sopir" class="form-control @error('nama_sopir') is-invalid @enderror" value="{{ old('nama_sopir', $armada->nama_sopir ?? '') }}">
                 @error('nama_sopir') <div class="invalid-feedback">{{ $message }}</div> @enderror
