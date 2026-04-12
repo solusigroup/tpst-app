@@ -21,7 +21,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Klien</th><th>Tanggal</th><th>Jenis Produk</th><th>Berat (kg)</th><th>Total Harga</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Pembeli</th><th>Tanggal</th><th>Jenis Produk</th><th>Berat (kg)</th><th>Harga Satuan</th><th>Total Harga</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($penjualans as $item)
                     <tr>
@@ -29,6 +29,7 @@
                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                         <td>{{ $item->jenis_produk }}</td>
                         <td>{{ number_format($item->berat_kg, 2, ',', '.') }}</td>
+                        <td>Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                         <td><strong>Rp {{ number_format($item->total_harga, 0, ',', '.') }}</strong></td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
