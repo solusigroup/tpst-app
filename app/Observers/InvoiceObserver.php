@@ -30,6 +30,12 @@ class InvoiceObserver
 
         try {
             DB::transaction(function () use ($invoice) {
+                // Check if a JurnalHeader already exists for this Invoice
+                $jurnalHeader = JurnalHeader::where('tenant_id', $invoice->tenant_id)
+                    ->where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->first();
+
                 if (!$jurnalHeader) {
                     $jurnalHeader = JurnalHeader::create([
                         'tenant_id' => $invoice->tenant_id,
@@ -71,8 +77,8 @@ class InvoiceObserver
                     return;
                 }
 
-                // Delete existing details to recreate them (cleaner for multi-line journals)
-                $jurnalHeader->jurnalDetails()->delete();
+                // Delete existing details to recreate them (each->delete triggers observers)
+                $jurnalHeader->jurnalDetails->each->delete();
 
                 $uangMuka = (float) ($invoice->uang_muka ?? 0);
                 $totalTagihan = (float) $invoice->total_tagihan;
