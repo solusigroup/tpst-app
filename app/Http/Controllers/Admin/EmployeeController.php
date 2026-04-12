@@ -51,13 +51,22 @@ class EmployeeController extends Controller
             'position' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'ktp_number' => 'nullable|string|max:50',
-            'salary_type' => 'nullable|in:bulanan,borongan',
+            'gender' => 'required|in:Laki-laki,Perempuan',
+            'salary_type' => 'nullable|in:bulanan,borongan,harian',
             'monthly_salary' => 'nullable|numeric|min:0',
+            'daily_wage' => 'nullable|numeric|min:0',
+            'payment_frequency' => 'nullable|in:Mingguan,Dua Mingguan',
             'photo' => 'nullable|image',
         ]);
         
         if ($validated['salary_type'] !== 'bulanan') {
             $validated['monthly_salary'] = null;
+        } else {
+            $validated['payment_frequency'] = null;
+        }
+
+        if ($validated['salary_type'] !== 'harian') {
+            $validated['daily_wage'] = null;
         }
 
         $validated['tenant_id'] = $tenantId;
@@ -102,13 +111,22 @@ class EmployeeController extends Controller
             'position' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'ktp_number' => 'nullable|string|max:50',
-            'salary_type' => 'nullable|in:bulanan,borongan',
+            'gender' => 'required|in:Laki-laki,Perempuan',
+            'salary_type' => 'nullable|in:bulanan,borongan,harian',
             'monthly_salary' => 'nullable|numeric|min:0',
+            'daily_wage' => 'nullable|numeric|min:0',
+            'payment_frequency' => 'nullable|in:Mingguan,Dua Mingguan',
             'photo' => 'nullable|image',
         ]);
 
         if ($validated['salary_type'] !== 'bulanan') {
             $validated['monthly_salary'] = null;
+        } else {
+            $validated['payment_frequency'] = null;
+        }
+
+        if ($validated['salary_type'] !== 'harian') {
+            $validated['daily_wage'] = null;
         }
 
         if ($request->hasFile('photo')) {

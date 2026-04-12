@@ -58,7 +58,16 @@ class WageCalculationController extends Controller
             ->orderBy('output_date')
             ->get();
 
-        return view('admin.hrd.wage-calculation.show', compact('wageCalculation', 'outputs'));
+        $attendances = \App\Models\Attendance::where('user_id', $wageCalculation->user_id)
+            ->where('tenant_id', $wageCalculation->tenant_id)
+            ->whereBetween('attendance_date', [
+                $wageCalculation->week_start,
+                $wageCalculation->week_end
+            ])
+            ->orderBy('attendance_date')
+            ->get();
+
+        return view('admin.hrd.wage-calculation.show', compact('wageCalculation', 'outputs', 'attendances'));
     }
 
     public function calculate(Request $request)

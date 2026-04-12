@@ -19,6 +19,7 @@
             <div class="card-body">
                 <table class="table table-borderless table-sm mb-0">
                     <tr><td class="text-body-secondary">Karyawan</td><td>: <strong>{{ $wageCalculation->user->name ?? '-' }}</strong></td></tr>
+                    <tr><td class="text-body-secondary">Skema Upah</td><td>: <span class="badge bg-secondary">{{ ucfirst($wageCalculation->user->salary_type ?? 'Borongan') }}</span></td></tr>
                     <tr><td class="text-body-secondary">Periode</td><td>: 
                         @if($wageCalculation->user->salary_type === 'bulanan')
                             Bulan {{ \Carbon\Carbon::parse($wageCalculation->week_start)->translatedFormat('F Y') }}
@@ -26,7 +27,11 @@
                             {{ \Carbon\Carbon::parse($wageCalculation->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($wageCalculation->week_end)->format('d/m/Y') }}
                         @endif
                     </td></tr>
-                    <tr><td class="text-body-secondary">Total Output</td><td>: {{ number_format($wageCalculation->total_quantity, 2, ',', '.') }} kg</td></tr>
+                    @if($wageCalculation->user->salary_type === 'harian')
+                        <tr><td class="text-body-secondary">Upah Harian</td><td>: Rp {{ number_format($wageCalculation->user->daily_wage, 0, ',', '.') }}</td></tr>
+                    @else
+                        <tr><td class="text-body-secondary">Total Output</td><td>: {{ number_format($wageCalculation->total_quantity, 2, ',', '.') }} kg</td></tr>
+                    @endif
                     <tr><td class="text-body-secondary">Status</td><td>: 
                         @if($wageCalculation->status == 'pending') <span class="badge bg-warning">Pending</span>
                         @elseif($wageCalculation->status == 'approved') <span class="badge bg-info">Disetujui</span>
@@ -64,6 +69,48 @@
     </div>
     
     <div class="col-md-8">
+        @if($wageCalculation->user->salary_type === 'harian')
+        <div class="card mb-4">
+            <div class="card-header bg-white"><strong>Rincian Kehadiran (Harian)</strong></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Tanggal</th><th>Jam Masuk</th><th>Status</th><th class="text-end">Upah</th></tr>
+                        </thead>
+                        <tbody>
+                            @php $presentCount = 0; @endphp
+                            @forelse($attendances as $att)
+                            @php 
+                                $isPaid = $att->status === 'present';
+                                if($isPaid) $presentCount++;
+                            @endphp
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($att->attendance_date)->format('d/m/Y') }}</td>
+                                <td>{{ $att->check_in ? \Carbon\Carbon::parse($att->check_in)->format('H:i') : '-' }}</td>
+                                <td>
+                                    @if($isPaid) <span class="badge bg-success">Hadir / Dibayar</span>
+                                    @else <span class="badge bg-danger">{{ $att->status }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-end">Rp {{ $isPaid ? number_format($wageCalculation->user->daily_wage, 0, ',', '.') : '0' }}</td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="4" class="text-center py-4 text-body-secondary">Tidak ada data kehadiran.</td></tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="3">Total Kehadiran Dibayar</th>
+                                <th class="text-end">{{ $presentCount }} Hari</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="card">
             <div class="card-header bg-white"><strong>Rincian Output Karyawan</strong></div>
             <div class="card-body p-0">

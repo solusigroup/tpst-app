@@ -42,6 +42,9 @@ class User extends Authenticatable
         'photo',
         'salary_type',
         'monthly_salary',
+        'daily_wage',
+        'gender',
+        'payment_frequency',
     ];
 
     /**

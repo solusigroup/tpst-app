@@ -47,13 +47,34 @@
                             @error('ktp_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Tipe Gaji</label>
+                            <label class="form-label">Jenis Kelamin <span class="text-danger">*</span></label>
+                            <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="Laki-laki" {{ old('gender', $employee->gender) == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="Perempuan" {{ old('gender', $employee->gender) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('gender') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Skema Upah</label>
                             <select name="salary_type" id="salary_type" class="form-select @error('salary_type') is-invalid @enderror">
                                 <option value="">-- Pilih Tipe --</option>
                                 <option value="bulanan" {{ old('salary_type', $employee->salary_type) == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
                                 <option value="borongan" {{ old('salary_type', $employee->salary_type) == 'borongan' ? 'selected' : '' }}>Borongan</option>
+                                <option value="harian" {{ old('salary_type', $employee->salary_type) == 'harian' ? 'selected' : '' }}>Harian</option>
                             </select>
                             @error('salary_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6" id="payment_frequency_container" style="display: {{ old('salary_type', $employee->salary_type) == 'bulanan' ? 'none' : 'block' }};">
+                            <label class="form-label">Frekuensi Pembayaran</label>
+                            <select name="payment_frequency" class="form-select @error('payment_frequency') is-invalid @enderror">
+                                <option value="Mingguan" {{ old('payment_frequency', $employee->payment_frequency) == 'Mingguan' ? 'selected' : '' }}>Mingguan (Tiap Sabtu)</option>
+                                <option value="Dua Mingguan" {{ old('payment_frequency', $employee->payment_frequency) == 'Dua Mingguan' ? 'selected' : '' }}>Dua Mingguan</option>
+                            </select>
+                            @error('payment_frequency') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
@@ -65,6 +86,18 @@
                                 <input type="number" name="monthly_salary" class="form-control @error('monthly_salary') is-invalid @enderror" value="{{ old('monthly_salary', $employee->monthly_salary) }}" min="0" step="1">
                             </div>
                             @error('monthly_salary') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3" id="daily_wage_container" style="display: {{ old('salary_type', $employee->salary_type) == 'harian' ? 'flex' : 'none' }};">
+                        <div class="col-md-6">
+                            <label class="form-label">Upah Harian (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" name="daily_wage" id="daily_wage" class="form-control @error('daily_wage') is-invalid @enderror" value="{{ old('daily_wage', $employee->daily_wage) }}" min="0" step="1">
+                            </div>
+                            <small class="text-muted">Default: Laki-laki Rp70.000, Perempuan Rp65.000</small>
+                            @error('daily_wage') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
@@ -102,15 +135,39 @@
     document.addEventListener('DOMContentLoaded', function() {
         const salaryTypeSelect = document.getElementById('salary_type');
         const monthlySalaryContainer = document.getElementById('monthly_salary_container');
+        const dailyWageContainer = document.getElementById('daily_wage_container');
+        const genderSelect = document.getElementById('gender');
+        const dailyWageInput = document.getElementById('daily_wage');
+        const paymentFrequencyContainer = document.getElementById('payment_frequency_container');
+
+        function toggleSalaryFields() {
+            const type = salaryTypeSelect.value;
+            monthlySalaryContainer.style.display = (type === 'bulanan') ? 'flex' : 'none';
+            dailyWageContainer.style.display = (type === 'harian') ? 'flex' : 'none';
+            paymentFrequencyContainer.style.display = (type === 'bulanan') ? 'none' : 'block';
+        }
+
+        function updateDefaultWage() {
+            // Only update if it's currently empty or one of the defaults
+            const currentWage = dailyWageInput.value;
+            if (salaryTypeSelect.value === 'harian' && (!currentWage || currentWage == '0' || currentWage == '70000' || currentWage == '65000')) {
+                if (genderSelect.value === 'Laki-laki') {
+                    dailyWageInput.value = 70000;
+                } else if (genderSelect.value === 'Perempuan') {
+                    dailyWageInput.value = 65000;
+                }
+            }
+        }
 
         if(salaryTypeSelect) {
             salaryTypeSelect.addEventListener('change', function() {
-                if (this.value === 'bulanan') {
-                    monthlySalaryContainer.style.display = 'flex';
-                } else {
-                    monthlySalaryContainer.style.display = 'none';
-                }
+                toggleSalaryFields();
+                updateDefaultWage();
             });
+        }
+
+        if(genderSelect) {
+            genderSelect.addEventListener('change', updateDefaultWage);
         }
     });
 </script>

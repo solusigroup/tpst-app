@@ -43,21 +43,36 @@ class WageCalculation extends Model
     public static function calculateForEmployee(int $userId, \DateTime $weekStart, ?int $tenantId = null): self
     {
         $tenantId = $tenantId ?? auth()->user()->tenant_id;
-        $weekEnd = $weekStart->copy()->addDays(6);
+        $user = User::find($userId);
+        
+        // Determine pay period based on frequency
+        $daysToAdd = ($user && $user->payment_frequency === 'Dua Mingguan') ? 13 : 6;
+        $weekEnd = $weekStart->copy()->addDays($daysToAdd);
 
         $outputs = EmployeeOutput::where('user_id', $userId)
             ->where('tenant_id', $tenantId)
             ->whereBetween('output_date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
             ->get();
 
-        $user = User::find($userId);
-
         $totalQuantity = $outputs->sum('quantity');
         
-        if ($user && $user->salary_type === 'bulanan') {
-            $totalWage = $user->monthly_salary ?? 0;
-        } else {
-            $totalWage = $outputs->sum(fn($output) => $output->getWageForThisOutput());
+        $totalWage = 0;
+        if ($user) {
+            if ($user->salary_type === 'bulanan') {
+                $totalWage = $user->monthly_salary ?? 0;
+            } elseif ($user->salary_type === 'harian') {
+                // Count unique attendance days in this period
+                $attendanceCount = Attendance::where('user_id', $userId)
+                    ->where('tenant_id', $tenantId)
+                    ->whereBetween('attendance_date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
+                    ->whereIn('status', ['present']) // Use lowercase as per AttendanceController
+                    ->count();
+                
+                $totalWage = $attendanceCount * ($user->daily_wage ?? 0);
+            } else {
+                // Default to borongan (performance based)
+                $totalWage = $outputs->sum(fn($output) => $output->getWageForThisOutput());
+            }
         }
 
         $calculation = self::firstOrCreate(
@@ -75,6 +90,7 @@ class WageCalculation extends Model
         );
 
         $calculation->update([
+            'week_end' => $weekEnd,
             'total_quantity' => $totalQuantity,
             'total_wage' => $totalWage,
         ]);
