@@ -82,6 +82,7 @@
         .stat-card .stat-icon.bg-primary-light { background: rgba(59,130,246,.1); color: #3b82f6; }
         .stat-card .stat-icon.bg-success-light { background: rgba(16,185,129,.1); color: #10b981; }
         .stat-card .stat-icon.bg-warning-light { background: rgba(245,158,11,.1); color: #f59e0b; }
+        .stat-card .stat-icon.bg-danger-light  { background: rgba(239,68,68,.1); color: #ef4444; }
         .stat-card .stat-icon.bg-info-light    { background: rgba(6,182,212,.1); color: #06b6d4; }
         .table th {
             font-weight: 600;

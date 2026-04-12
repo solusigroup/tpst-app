@@ -99,6 +99,19 @@
             </div>
         </div>
     </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-danger">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-danger-light me-3">
+                    <i class="cil-wallet"></i>
+                </div>
+                <div>
+                    <div class="text-body-secondary text-uppercase fw-semibold small">Biaya Bulan Ini</div>
+                    <div class="fs-4 fw-bold">Rp {{ number_format($biayaBulanIni, 0, ',', '.') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
     @endif
 </div>
 

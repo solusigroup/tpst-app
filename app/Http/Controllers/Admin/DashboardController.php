@@ -36,9 +36,18 @@ class DashboardController extends Controller
                 ->sum('biaya_tipping');
             $penjualanBulanIni = Penjualan::whereBetween('tanggal', [$monthStart, $monthEnd])
                 ->sum('total_harga');
+            
+            $biayaBulanIni = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('coa.tipe', 'Expense')
+                ->whereBetween('jurnal_header.tanggal', [$monthStart, $monthEnd])
+                ->selectRaw('SUM(jurnal_detail.debit) - SUM(jurnal_detail.kredit) as total')
+                ->value('total') ?? 0;
         } else {
             $pendapatanTipping = 0;
             $penjualanBulanIni = 0;
+            $biayaBulanIni = 0;
         }
 
 
@@ -73,6 +82,7 @@ class DashboardController extends Controller
             'tonaseBulanIni',
             'pendapatanTipping',
             'penjualanBulanIni',
+            'biayaBulanIni',
             'jumlahRitaseHariIni',
             'jumlahRitaseBulanIni',
             'dailyTonnage',
