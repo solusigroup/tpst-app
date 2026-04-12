@@ -39,13 +39,22 @@
                 <label class="form-label">Jatuh Tempo <span class="text-danger">*</span></label>
                 <input type="date" name="tanggal_jatuh_tempo" class="form-control" value="{{ old('tanggal_jatuh_tempo', isset($invoice) ? \Carbon\Carbon::parse($invoice->tanggal_jatuh_tempo)->format('Y-m-d') : date('Y-m-d', strtotime('+14 days'))) }}" required>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Total Tagihan (Rp) <span class="text-danger">*</span></label>
                 <input type="number" id="total_tagihan" name="total_tagihan" class="form-control @error('total_tagihan') is-invalid @enderror" value="{{ old('total_tagihan', $invoice->total_tagihan ?? '0') }}" required readonly>
-                <small class="text-muted">Dihitung otomatis berdasarkan item yang dipilih.</small>
                 @error('total_tagihan') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <label class="form-label">Uang Muka / DP (Rp)</label>
+                <input type="number" id="uang_muka" name="uang_muka" class="form-control @error('uang_muka') is-invalid @enderror" value="{{ old('uang_muka', $invoice->uang_muka ?? '0') }}" required readonly>
+                @error('uang_muka') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sisa Tagihan (Rp)</label>
+                <input type="number" id="sisa_tagihan" class="form-control" value="{{ ($invoice->total_tagihan ?? 0) - ($invoice->uang_muka ?? 0) }}" readonly>
+            </div>
+            <div class="col-12"><small class="text-muted">Total Tagihan dan Uang Muka dihitung otomatis berdasarkan item yang dipilih.</small></div>
+            <div class="col-md-12">
                 <label class="form-label">Status <span class="text-danger">*</span></label>
                 <select name="status" class="form-select" required>
                     @foreach(['Draft','Sent','Paid','Canceled'] as $s)<option value="{{ $s }}" {{ old('status', $invoice->status ?? 'Draft') == $s ? 'selected' : '' }}>{{ $s }}</option>@endforeach
@@ -95,6 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const penjualanContainer = document.getElementById('penjualan-container');
     const penjualanList = document.getElementById('penjualan-list');
     const totalTagihanInput = document.getElementById('total_tagihan');
+    const uangMukaInput = document.getElementById('uang_muka');
+    const sisaTagihanInput = document.getElementById('sisa_tagihan');
     
     // Check if we are editing an invoice
     const invoiceId = "{{ isset($invoice) ? $invoice->id : '' }}";
@@ -105,10 +116,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function calculateTotal() {
         let total = 0;
+        let dp = 0;
         document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
-            total += parseFloat(cb.dataset.price);
+            total += parseFloat(cb.dataset.price || 0);
+            dp += parseFloat(cb.dataset.dp || 0);
         });
         totalTagihanInput.value = total;
+        uangMukaInput.value = dp;
+        sisaTagihanInput.value = total - dp;
     }
 
     function fetchItems() {
@@ -163,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const checked = item.selected ? 'checked' : '';
                         penjualanList.innerHTML += `
                             <div class="form-check">
-                                <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" ${checked}>
+                                <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" data-dp="${item.dp}" ${checked}>
                                 <label class="form-check-label" for="penjualan_${item.id}">
                                     ${item.label}
                                 </label>

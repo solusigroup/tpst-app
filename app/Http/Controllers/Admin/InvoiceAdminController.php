@@ -52,6 +52,7 @@ class InvoiceAdminController extends Controller
             'tanggal_invoice' => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date',
             'total_tagihan' => 'required|numeric|min:0',
+            'uang_muka' => 'nullable|numeric|min:0',
             'status' => 'required|in:Draft,Sent,Paid,Canceled',
             'keterangan' => 'nullable|string',
             'deskripsi_layanan' => 'nullable|string',
@@ -101,6 +102,7 @@ class InvoiceAdminController extends Controller
             'tanggal_invoice' => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date',
             'total_tagihan' => 'required|numeric|min:0',
+            'uang_muka' => 'nullable|numeric|min:0',
             'status' => 'required|in:Draft,Sent,Paid,Canceled',
             'keterangan' => 'nullable|string',
             'deskripsi_layanan' => 'nullable|string',
@@ -169,9 +171,11 @@ class InvoiceAdminController extends Controller
                     
                     $totalRitase = \App\Models\Ritase::where('invoice_id', $master->id)->sum('biaya_tipping');
                     $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('total_harga');
+                    $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('jumlah_bayar');
                     
                     $master->update([
                         'total_tagihan' => $totalRitase + $totalPenjualan,
+                        'uang_muka' => $totalUangMuka,
                         'keterangan' => empty($master->keterangan) ? 'Merged with other drafts' : $master->keterangan . ' (Merged)'
                     ]);
                 }

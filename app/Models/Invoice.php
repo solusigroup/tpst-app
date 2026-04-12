@@ -24,12 +24,14 @@ class Invoice extends Model
         'status',
         'keterangan',
         'deskripsi_layanan',
+        'uang_muka',
     ];
 
     protected $casts = [
         'tanggal_invoice' => 'date',
         'tanggal_jatuh_tempo' => 'date',
         'total_tagihan' => 'decimal:2',
+        'uang_muka' => 'decimal:2',
     ];
 
     /**

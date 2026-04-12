@@ -155,6 +155,13 @@ class PenjualanController extends Controller
         return redirect()->route('admin.penjualan.index')->with('success', 'Penjualan berhasil diperbarui.');
     }
 
+    public function show(Penjualan $penjualan)
+    {
+        Gate::authorize('view_penjualan');
+        $penjualan->load(['klien', 'invoice']);
+        return view('admin.penjualan.show', compact('penjualan'));
+    }
+
     public function destroy(Penjualan $penjualan)
     {
         Gate::authorize('delete_penjualan');

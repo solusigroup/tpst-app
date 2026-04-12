@@ -51,13 +51,14 @@ class InvoiceItemController extends Controller
                 }
             })
             ->orderBy('tanggal', 'asc')
-            ->select('id', 'tanggal', 'jenis_produk', 'berat_kg', 'total_harga', 'invoice_id');
+            ->select('id', 'tanggal', 'jenis_produk', 'berat_kg', 'total_harga', 'jumlah_bayar', 'invoice_id');
 
         $penjualan = $penjualanQuery->get()->map(function ($item) {
             return [
                 'id' => $item->id,
                 'label' => "Penjualan: {$item->jenis_produk} (" . $item->tanggal->format('d/m/Y') . ") - {$item->berat_kg} kg - Rp " . number_format($item->total_harga, 0, ',', '.'),
                 'price' => $item->total_harga,
+                'dp' => $item->jumlah_bayar,
                 'selected' => $item->invoice_id !== null,
             ];
         });

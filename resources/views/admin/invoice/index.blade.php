@@ -31,7 +31,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>No. Invoice</th><th>Klien</th><th>Periode</th><th>Total</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>No. Invoice</th><th>Klien</th><th>Periode</th><th>Total</th><th>DP</th><th>Sisa</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($invoices as $item)
                     <tr>
@@ -39,6 +39,8 @@
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
                         <td>{{ $item->periode_bulan }}/{{ $item->periode_tahun }}</td>
                         <td>Rp {{ number_format($item->total_tagihan, 0, ',', '.') }}</td>
+                        <td class="text-danger">Rp {{ number_format($item->uang_muka, 0, ',', '.') }}</td>
+                        <td class="fw-bold">Rp {{ number_format($item->total_tagihan - $item->uang_muka, 0, ',', '.') }}</td>
                         <td>
                             @php $invColors = ['Paid'=>'success','Sent'=>'info','Draft'=>'warning','Canceled'=>'danger']; @endphp
                             <span class="badge bg-{{ $invColors[$item->status] ?? 'secondary' }}">{{ $item->status }}</span>
@@ -54,7 +56,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
+                    <tr><td colspan="9" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
             </table>

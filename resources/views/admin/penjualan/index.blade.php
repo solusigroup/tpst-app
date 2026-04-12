@@ -32,8 +32,9 @@
                         <td><strong>Rp {{ number_format($item->total_harga, 0, ',', '.') }}</strong></td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.penjualan.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
-                                <form method="POST" action="{{ route('admin.penjualan.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                <a href="{{ route('admin.penjualan.show', $item) }}" class="btn btn-outline-info" title="Lihat"><i class="cil-search"></i></a>
+                                <a href="{{ route('admin.penjualan.edit', $item) }}" class="btn btn-outline-primary" title="Edit"><i class="cil-pencil"></i></a>
+                                <form method="POST" action="{{ route('admin.penjualan.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger" title="Hapus"><i class="cil-trash"></i></button></form>
                             </div>
                         </td>
                     </tr>

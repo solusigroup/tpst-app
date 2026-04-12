@@ -141,18 +141,22 @@
                     <td class="px-4 py-4 text-right font-sans">Rp {{ number_format($invoice->total_tagihan, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
-                    <td class="px-4 py-4 text-right font-bold uppercase text-xs tracking-wider text-slate-400">Pajak (0%)</td>
-                    <td class="px-4 py-4 text-right font-sans">Rp 0</td>
+                    <td class="px-4 py-4 text-right font-bold uppercase text-xs tracking-wider text-slate-400">Total</td>
+                    <td class="px-4 py-4 text-right font-sans">Rp {{ number_format($invoice->total_tagihan, 0, ',', '.') }}</td>
                 </tr>
-                <tr class="bg-slate-900 text-white">
-                    <td class="px-4 py-4 text-right font-black uppercase text-sm tracking-widest">Grand Total</td>
-                    <td class="px-4 py-4 text-right font-black text-xl font-sans tracking-tight">Rp {{ number_format($invoice->total_tagihan, 0, ',', '.') }}</td>
+                <tr>
+                    <td class="px-4 py-4 text-right font-bold uppercase text-xs tracking-wider text-slate-400">Uang Muka / DP</td>
+                    <td class="px-4 py-4 text-right font-sans text-red-600">- Rp {{ number_format($invoice->uang_muka, 0, ',', '.') }}</td>
+                </tr>
+                <tr class="bg-slate-900 text-white font-sans">
+                    <td class="px-4 py-4 text-right font-black uppercase text-sm tracking-widest">Sisa Tagihan (Pelunasan)</td>
+                    <td class="px-4 py-4 text-right font-black text-xl tracking-tight">Rp {{ number_format($invoice->total_tagihan - $invoice->uang_muka, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="px-4 py-3 bg-slate-50 border-t border-slate-200">
-                        <p class="text-xs uppercase tracking-widest font-bold text-slate-400 mb-1">Terbilang:</p>
+                        <p class="text-xs uppercase tracking-widest font-bold text-slate-400 mb-1">Terbilang (Sisa Pelunasan):</p>
                         <p class="text-sm font-bold italic text-slate-700 uppercase">
-                            # {{ \App\Helpers\Terbilang::make($invoice->total_tagihan) }} RUPIAH #
+                            # {{ \App\Helpers\Terbilang::make($invoice->total_tagihan - $invoice->uang_muka) }} RUPIAH #
                         </p>
                     </td>
                 </tr>
