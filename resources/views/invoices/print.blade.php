@@ -73,62 +73,84 @@
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-slate-100">
+                @php $hasItems = false; @endphp
+                
+                <!-- Ritase Section -->
+                @if($invoice->ritase->count() > 0)
+                @php $hasItems = true; @endphp
+                <tr>
+                    <td class="px-4 py-6">
+                        <p class="font-bold text-base text-slate-900 uppercase">Jasa Pengelolaan Sampah (Tipping Fee)</p>
+                        <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-bold">Rincian Tiket:</p>
+                        <div class="mt-2 grid grid-cols-2 gap-x-8 gap-y-1">
+                            @foreach($invoice->ritase as $r)
+                                <div class="text-[10px] text-slate-500 font-sans flex justify-between border-b border-slate-50 pb-1">
+                                    <span>{{ $r->nomor_tiket }} ({{ $r->waktu_masuk->format('d/m/Y') }})</span>
+                                    <span class="font-bold text-slate-400">{{ number_format($r->berat_netto/1000, 2, ',', '.') }} Ton</span>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="text-slate-400 mt-4 text-[10px] font-bold italic uppercase">Periode Layanan: {{ $periodeLabel }} ({{ $invoice->ritase->count() }} Ritase)</p>
+                    </td>
+                    <td class="px-4 py-6 text-center font-sans align-top text-slate-600">
+                        {{ number_format($totalTonnageRitase / 1000, 2, ',', '.') }}
+                    </td>
+                    <td class="px-4 py-6 text-right font-sans align-top text-slate-600">
+                        Rp {{ number_format($invoice->ritase->sum('biaya_tipping') / max(1, $totalTonnageRitase / 1000), 0, ',', '.') }}
+                    </td>
+                    <td class="px-4 py-6 text-right font-bold font-sans align-top text-slate-900">
+                        Rp {{ number_format($invoice->ritase->sum('biaya_tipping'), 0, ',', '.') }}
+                    </td>
+                </tr>
+                @endif
+
+                <!-- Penjualan Section -->
+                @if($invoice->penjualan->count() > 0)
+                @php $hasItems = true; @endphp
+                <tr>
+                    <td class="px-4 py-6">
+                        <p class="font-bold text-base text-slate-900 uppercase">Penjualan Hasil Pilahan</p>
+                        <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-bold">Rincian Produk:</p>
+                        <div class="mt-2 space-y-1 max-w-md">
+                            @foreach($invoice->penjualan as $p)
+                                <div class="text-[10px] text-slate-500 font-sans flex justify-between border-b border-slate-50 pb-1">
+                                    <span>{{ $p->jenis_produk }} ({{ $p->tanggal->format('d/m/Y') }})</span>
+                                    <span class="font-bold text-slate-400">{{ number_format($p->berat_kg, 0, ',', '.') }} kg</span>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="text-slate-400 mt-4 text-[10px] font-bold italic uppercase">Periode: {{ $periodeLabel }}</p>
+                    </td>
+                    <td class="px-4 py-6 text-center font-sans align-top text-slate-600">
+                        {{ number_format($totalTonnagePenjualan / 1000, 2, ',', '.') }}
+                    </td>
+                    <td class="px-4 py-6 text-right font-sans align-top text-slate-600">
+                        Rp {{ number_format($invoice->penjualan->sum('total_harga') / max(1, $totalTonnagePenjualan / 1000), 0, ',', '.') }}
+                    </td>
+                    <td class="px-4 py-6 text-right font-bold font-sans align-top text-slate-900">
+                        Rp {{ number_format($invoice->penjualan->sum('total_harga'), 0, ',', '.') }}
+                    </td>
+                </tr>
+                @endif
+
+                <!-- Custom Description Section -->
                 @if($invoice->deskripsi_layanan)
-                    <tr>
-                        <td class="px-4 py-6">
-                            <p class="font-bold text-base">{!! nl2br(e($invoice->deskripsi_layanan)) !!}</p>
-                            <p class="text-slate-500 mt-1">Periode Layanan: {{ $periodeLabel }}</p>
-                        </td>
-                        <td class="px-4 py-6 text-center font-sans">
-                            -
-                        </td>
-                        <td class="px-4 py-6 text-right font-sans">
-                            -
-                        </td>
-                        <td class="px-4 py-6 text-right font-bold font-sans">
+                <tr class="bg-slate-50/30">
+                    <td class="px-4 py-8" colspan="{{ $hasItems ? 4 : 3 }}">
+                        <p class="text-[10px] uppercase tracking-widest font-black text-slate-400 mb-3">Informasi Tambahan / Deskripsi Layanan:</p>
+                        <div class="font-bold text-lg text-slate-800 leading-relaxed max-w-2xl">
+                            {!! nl2br(e($invoice->deskripsi_layanan)) !!}
+                        </div>
+                        @if(!$hasItems)
+                            <p class="text-slate-500 mt-2 text-xs font-bold italic">PERIODE LAYANAN: {{ $periodeLabel }}</p>
+                        @endif
+                    </td>
+                    @if(!$hasItems)
+                        <td class="px-4 py-8 text-right font-black font-sans align-top text-slate-900 text-base">
                             Rp {{ number_format($invoice->total_tagihan, 0, ',', '.') }}
                         </td>
-                    </tr>
-                @else
-                    @if($invoice->ritase->count() > 0)
-                    <tr>
-                        <td class="px-4 py-6">
-                            <p class="font-bold text-base">Jasa Pengelolaan Sampah (Tipping Fee)</p>
-                            <p class="text-slate-500 mt-1">Periode Layanan: {{ $periodeLabel }} ({{ $invoice->ritase->count() }} Ritase)</p>
-                        </td>
-                        <td class="px-4 py-6 text-center font-sans">
-                            {{ number_format($totalTonnageRitase / 1000, 2, ',', '.') }}
-                        </td>
-                        <td class="px-4 py-6 text-right font-sans">
-                            Rp {{ number_format($invoice->ritase->sum('biaya_tipping') / max(1, $totalTonnageRitase / 1000), 0, ',', '.') }}
-                        </td>
-                        <td class="px-4 py-6 text-right font-bold font-sans">
-                            Rp {{ number_format($invoice->ritase->sum('biaya_tipping'), 0, ',', '.') }}
-                        </td>
-                    </tr>
                     @endif
-
-                    @if($invoice->penjualan->count() > 0)
-                    <tr>
-                        <td class="px-4 py-6">
-                            <p class="font-bold text-base">Penjualan Hasil Pilahan</p>
-                            <p class="text-slate-500 mt-1">
-                                @foreach($invoice->penjualan->groupBy('jenis_produk') as $jenis => $items)
-                                    {{ $jenis }} ({{ $items->count() }} Trans.), 
-                                @endforeach
-                            </p>
-                        </td>
-                        <td class="px-4 py-6 text-center font-sans">
-                            {{ number_format($totalTonnagePenjualan / 1000, 2, ',', '.') }}
-                        </td>
-                        <td class="px-4 py-6 text-right font-sans">
-                            Rp {{ number_format($invoice->penjualan->sum('total_harga') / max(1, $totalTonnagePenjualan / 1000), 0, ',', '.') }}
-                        </td>
-                        <td class="px-4 py-6 text-right font-bold font-sans">
-                            Rp {{ number_format($invoice->penjualan->sum('total_harga'), 0, ',', '.') }}
-                        </td>
-                    </tr>
-                    @endif
+                </tr>
                 @endif
             </tbody>
             <tfoot>
