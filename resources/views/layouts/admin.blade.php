@@ -370,7 +370,7 @@
         .ts-control {
             border-radius: 0.5rem !important;
             padding: 0.475rem 0.75rem !important;
-            border: 1px solid #dee2e6 !important;
+            border: 1px solid #ced4da !important; /* Bootstrap 5 default border color */
             min-height: 40px !important;
             display: flex !important;
             align-items: center !important;
@@ -381,12 +381,13 @@
         .ts-wrapper.single .ts-control::after {
             right: 0.75rem !important;
             margin-top: -2px !important;
+            border-color: #6c757d transparent transparent transparent !important;
         }
         .ts-dropdown {
-            background-color: #ffffff !important; /* Force solid white background */
+            background-color: #ffffff !important;
             border-radius: 0.5rem !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ced4da !important;
             margin-top: 4px !important;
             z-index: 2000 !important;
         }
@@ -402,15 +403,15 @@
         [data-coreui-theme="dark"] .ts-control {
             background-color: #0d1117 !important;
             color: #e6eef8 !important;
-            border-color: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.2) !important; /* More visible border for dark mode */
         }
         [data-coreui-theme="dark"] .ts-control input {
             color: #e6eef8 !important;
         }
         [data-coreui-theme="dark"] .ts-dropdown {
-            background-color: #161b22 !important; /* Force solid dark background */
+            background-color: #161b22 !important;
             color: #e6eef8 !important;
-            border-color: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.2) !important;
         }
         [data-coreui-theme="dark"] .ts-dropdown .option {
             color: #e6eef8 !important;
