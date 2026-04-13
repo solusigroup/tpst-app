@@ -459,6 +459,62 @@
             </li>
             @endcan
 
+            {{-- Laporan --}}
+            @canany(['view_laporan_keuangan', 'view_laporan_operasional'])
+            <li class="nav-title">Laporan</li>
+            @endcan
+            @can('view_laporan_keuangan')
+            <li class="nav-group {{ request()->routeIs('admin.laporan.*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-chart"></i> Laporan Keuangan
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.laba-rugi') ? 'active' : '' }}" href="{{ route('admin.laporan.laba-rugi') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laba Rugi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.neraca-saldo') ? 'active' : '' }}" href="{{ route('admin.laporan.neraca-saldo') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Neraca Saldo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.posisi-keuangan') ? 'active' : '' }}" href="{{ route('admin.laporan.posisi-keuangan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Posisi Keuangan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.arus-kas') ? 'active' : '' }}" href="{{ route('admin.laporan.arus-kas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Arus Kas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.perubahan-ekuitas') ? 'active' : '' }}" href="{{ route('admin.laporan.perubahan-ekuitas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perubahan Ekuitas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.buku-besar') ? 'active' : '' }}" href="{{ route('admin.laporan.buku-besar') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
+                    </li>
+                </ul>
+            </li>
+            @endcan
+            @can('view_laporan_operasional')
+            <li class="nav-group {{ request()->routeIs('admin.laporan-operasional.*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-clipboard"></i> Laporan Operasional
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.hasil-pilahan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.kehadiran') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
+                    </li>
+                </ul>
+            </li>
+            @endcan
+
             {{-- Keuangan --}}
             @canany(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice', 'view_vendor', 'view_buku_pembantu'])
             <li class="nav-title">Keuangan</li>
@@ -515,62 +571,6 @@
                         <a class="nav-link {{ request()->routeIs('admin.buku-pembantu.utang') ? 'active' : '' }}" href="{{ route('admin.buku-pembantu.utang') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Utang Lancar
                         </a>
-                    </li>
-                </ul>
-            </li>
-            @endcan
-
-            {{-- Laporan --}}
-            @canany(['view_laporan_keuangan', 'view_laporan_operasional'])
-            <li class="nav-title">Laporan</li>
-            @endcan
-            @can('view_laporan_keuangan')
-            <li class="nav-group {{ request()->routeIs('admin.laporan.*') ? 'show' : '' }}">
-                <a class="nav-link nav-group-toggle" href="#">
-                    <i class="nav-icon cil-chart"></i> Laporan Keuangan
-                </a>
-                <ul class="nav-group-items compact">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.laba-rugi') ? 'active' : '' }}" href="{{ route('admin.laporan.laba-rugi') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laba Rugi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.neraca-saldo') ? 'active' : '' }}" href="{{ route('admin.laporan.neraca-saldo') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Neraca Saldo</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.posisi-keuangan') ? 'active' : '' }}" href="{{ route('admin.laporan.posisi-keuangan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Posisi Keuangan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.arus-kas') ? 'active' : '' }}" href="{{ route('admin.laporan.arus-kas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Arus Kas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.perubahan-ekuitas') ? 'active' : '' }}" href="{{ route('admin.laporan.perubahan-ekuitas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perubahan Ekuitas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan.buku-besar') ? 'active' : '' }}" href="{{ route('admin.laporan.buku-besar') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
-                    </li>
-                </ul>
-            </li>
-            @endcan
-            @can('view_laporan_operasional')
-            <li class="nav-group {{ request()->routeIs('admin.laporan-operasional.*') ? 'show' : '' }}">
-                <a class="nav-link nav-group-toggle" href="#">
-                    <i class="nav-icon cil-clipboard"></i> Laporan Operasional
-                </a>
-                <ul class="nav-group-items compact">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.hasil-pilahan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.kehadiran') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
                     </li>
                 </ul>
             </li>
