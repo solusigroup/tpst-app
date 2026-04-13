@@ -488,4 +488,32 @@ class LaporanController extends Controller
 
         return view('admin.laporan.residu', compact('rows', 'dari', 'sampai', 'totals'));
     }
+
+    public function laporanKehadiran(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $userId = $request->get('user_id');
+
+        $query = \App\Models\Attendance::with('user')
+            ->when($dari, fn ($q) => $q->whereDate('attendance_date', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('attendance_date', '<=', $sampai))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->orderByDesc('attendance_date');
+
+        $rows = $query->paginate(20)->withQueryString();
+        $users = \App\Models\User::role('karyawan')->orderBy('name')->get();
+
+        $totals = (object)[
+            'present' => (clone $query)->where('status', 'present')->count(),
+            'absent' => (clone $query)->where('status', 'absent')->count(),
+            'sick' => (clone $query)->where('status', 'sick')->count(),
+            'leave' => (clone $query)->where('status', 'leave')->count(),
+            'total_rows' => (clone $query)->count(),
+        ];
+
+        return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals'));
+    }
 }

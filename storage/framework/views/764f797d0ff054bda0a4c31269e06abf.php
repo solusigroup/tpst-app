@@ -56,7 +56,7 @@
                         <td><strong><?php echo e($item->nomor_tiket); ?></strong></td>
                         <td><?php echo e($item->tanggal->format('d/m/Y')); ?></td>
                         <td>
-                            <div><?php echo e($item->armada->nomor_plat); ?></div>
+                            <div><?php echo e($item->armada->plat_nomor); ?></div>
                             <small class="text-body-secondary"><?php echo e($item->armada->nama_armada); ?></small>
                         </td>
                         <td class="fw-bold"><?php echo e(number_format($item->berat_netto, 0, ',', '.')); ?></td>

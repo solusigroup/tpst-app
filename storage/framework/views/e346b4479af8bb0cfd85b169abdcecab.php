@@ -82,6 +82,7 @@
         .stat-card .stat-icon.bg-primary-light { background: rgba(59,130,246,.1); color: #3b82f6; }
         .stat-card .stat-icon.bg-success-light { background: rgba(16,185,129,.1); color: #10b981; }
         .stat-card .stat-icon.bg-warning-light { background: rgba(245,158,11,.1); color: #f59e0b; }
+        .stat-card .stat-icon.bg-danger-light  { background: rgba(239,68,68,.1); color: #ef4444; }
         .stat-card .stat-icon.bg-info-light    { background: rgba(6,182,212,.1); color: #06b6d4; }
         .table th {
             font-weight: 600;
@@ -386,27 +387,31 @@
             <?php endif; ?>
 
             
-            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'operator|super_admin|manajemen')): ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan', 'view_pengangkutan_residu', 'view_machine', 'view_machine_log'])): ?>
             <li class="nav-title">Operasional</li>
             <?php endif; ?>
 
             
-            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'operator|super_admin|manajemen')): ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_machine', 'view_machine_log'])): ?>
             <li class="nav-group <?php echo e(request()->routeIs('admin.machines.*') || request()->routeIs('admin.machine-logs.*') ? 'show' : ''); ?>">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-memory"></i> Master & Log Mesin
                 </a>
                 <ul class="nav-group-items compact">
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_machine')): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.machines.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.machines.index')); ?>">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Data Mesin
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_machine_log')): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.machine-logs.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.machine-logs.index')); ?>">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Logbook Mesin
                         </a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </li>
             <?php endif; ?>
@@ -432,11 +437,13 @@
                 </a>
             </li>
             <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_pengangkutan_residu')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.pengangkutan-residu.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.pengangkutan-residu.index')); ?>">
                     <i class="nav-icon cil-trash"></i> Pengangkutan Residu
                 </a>
             </li>
+            <?php endif; ?>
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_hasil_pilahan')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.hasil-pilahan.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.hasil-pilahan.index')); ?>">

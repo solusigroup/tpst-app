@@ -569,6 +569,9 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.kehadiran') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
+                    </li>
                 </ul>
             </li>
             @endcan
