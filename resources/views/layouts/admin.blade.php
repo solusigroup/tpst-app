@@ -29,6 +29,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    {{-- Tom Select CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 
     <style>
         :root {
@@ -355,6 +357,50 @@
         [data-coreui-theme="dark"] .sidebar .nav-link,
         [data-coreui-theme="dark"] .sidebar .nav-title {
             color: #dbeeff !important;
+        }
+
+        /* Tom Select Customization */
+        .ts-control {
+            border-radius: 0.5rem !important;
+            padding: 0.5rem 0.75rem !important;
+            border-color: #dee2e6 !important;
+        }
+        .ts-dropdown {
+            border-radius: 0.5rem !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            border: none !important;
+            margin-top: 5px !important;
+        }
+        .ts-dropdown .active {
+            background-color: #3b82f6 !important;
+            color: #fff !important;
+        }
+        
+        /* Tom Select Dark Mode */
+        [data-coreui-theme="dark"] .ts-control,
+        [data-coreui-theme="dark"] .ts-control input {
+            background-color: #07121a !important;
+            color: #e6eef8 !important;
+            border-color: rgba(255,255,255,0.06) !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown,
+        [data-coreui-theme="dark"] .ts-dropdown .dropdown-input {
+            background-color: #0f1724 !important;
+            color: #e6eef8 !important;
+            border-color: rgba(255,255,255,0.06) !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown .option {
+            color: #e6eef8 !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown .option:hover,
+        [data-coreui-theme="dark"] .ts-dropdown .active {
+            background-color: rgba(59, 130, 246, 0.2) !important;
+            color: #fff !important;
+        }
+        [data-coreui-theme="dark"] .ts-control .item {
+            color: #e6eef8 !important;
+            background: #1e293b !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
         }
     </style>
     @stack('styles')
@@ -872,6 +918,44 @@
         document.getElementById('sidebar-overlay').addEventListener('click', function() {
             document.getElementById('sidebar').classList.remove('show');
             this.classList.add('d-none');
+        });
+    </script>
+    {{-- Tom Select JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Tom Select for all .form-select except those with .no-search
+            const initTomSelect = () => {
+                document.querySelectorAll('.form-select:not(.no-search):not(.tomselected)').forEach(el => {
+                    new TomSelect(el, {
+                        create: false,
+                        sortField: {
+                            field: "text",
+                            direction: "asc"
+                        },
+                        // Fix for bootstrap focus
+                        onFocus: () => {
+                            el.parentElement.classList.add('ts-focused');
+                        },
+                        onBlur: () => {
+                            el.parentElement.classList.remove('ts-focused');
+                        }
+                    });
+                });
+            };
+
+            initTomSelect();
+
+            // Re-init for dynamic content if needed
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.addedNodes.length) {
+                        initTomSelect();
+                    }
+                });
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
         });
     </script>
     @stack('scripts')
