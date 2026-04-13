@@ -365,25 +365,33 @@
             border: none !important;
             background: none !important;
             box-shadow: none !important;
+            height: auto !important;
         }
         .ts-control {
             border-radius: 0.5rem !important;
-            padding: 0.5625rem 0.75rem !important; /* Match Bootstrap 5 default padding */
+            padding: 0.475rem 0.75rem !important;
             border: 1px solid #dee2e6 !important;
-            min-height: calc(1.5em + 0.75rem + 2px) !important;
+            min-height: 40px !important;
             display: flex !important;
             align-items: center !important;
             background-color: #fff !important;
+            box-shadow: none !important;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
         }
         .ts-wrapper.single .ts-control::after {
             right: 0.75rem !important;
+            margin-top: -2px !important;
         }
         .ts-dropdown {
+            background-color: #ffffff !important; /* Force solid white background */
             border-radius: 0.5rem !important;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-            border: 1px solid rgba(0,0,0,0.1) !important;
-            margin-top: 2px !important;
-            z-index: 2000 !important; /* Ensure it stays above other fields */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            border: 1px solid #e2e8f0 !important;
+            margin-top: 4px !important;
+            z-index: 2000 !important;
+        }
+        .ts-dropdown .option {
+            padding: 8px 12px !important;
         }
         .ts-dropdown .active {
             background-color: #3b82f6 !important;
@@ -392,7 +400,7 @@
         
         /* Tom Select Dark Mode */
         [data-coreui-theme="dark"] .ts-control {
-            background-color: #07121a !important;
+            background-color: #0d1117 !important;
             color: #e6eef8 !important;
             border-color: rgba(255,255,255,0.1) !important;
         }
@@ -400,7 +408,7 @@
             color: #e6eef8 !important;
         }
         [data-coreui-theme="dark"] .ts-dropdown {
-            background-color: #0f1724 !important;
+            background-color: #161b22 !important; /* Force solid dark background */
             color: #e6eef8 !important;
             border-color: rgba(255,255,255,0.1) !important;
         }
@@ -421,6 +429,10 @@
         .ts-wrapper.focus .ts-control {
             border-color: #3b82f6 !important;
             box-shadow: 0 0 0 0.2rem rgba(59,130,246,.15) !important;
+        }
+        /* Hide original select completely */
+        .tomselected {
+            display: none !important;
         }
     </style>
     @stack('styles')
