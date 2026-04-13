@@ -86,7 +86,10 @@
                             @foreach($invoice->ritase as $r)
                                 <div class="text-[10px] text-slate-500 font-sans flex justify-between border-b border-slate-50 pb-1">
                                     <span>{{ $r->nomor_tiket }} ({{ $r->waktu_masuk->format('d/m/Y') }})</span>
-                                    <span class="font-bold text-slate-400">{{ number_format($r->berat_netto/1000, 2, ',', '.') }} Ton</span>
+                                    <span class="font-bold text-slate-400">
+                                        {{ number_format($r->berat_netto/1000, 2, ',', '.') }} Ton
+                                        <span class="ml-2 text-slate-500 inline-block min-w-[80px] text-right">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</span>
+                                    </span>
                                 </div>
                             @endforeach
                         </div>
@@ -115,7 +118,10 @@
                             @foreach($invoice->penjualan as $p)
                                 <div class="text-[10px] text-slate-500 font-sans flex justify-between border-b border-slate-50 pb-1">
                                     <span>{{ $p->jenis_produk }} ({{ $p->tanggal->format('d/m/Y') }})</span>
-                                    <span class="font-bold text-slate-400">{{ number_format($p->berat_kg, 0, ',', '.') }} kg</span>
+                                    <span class="font-bold text-slate-400">
+                                        {{ number_format($p->berat_kg, 1, ',', '.') }} kg
+                                        <span class="ml-2 text-slate-500 inline-block min-w-[80px] text-right">Rp {{ number_format($p->total_harga, 0, ',', '.') }}</span>
+                                    </span>
                                 </div>
                             @endforeach
                         </div>
