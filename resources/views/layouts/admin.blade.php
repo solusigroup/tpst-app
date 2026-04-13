@@ -199,9 +199,17 @@
             font-size: 0.875rem;
             color: #374151;
         }
+        /* Focus states */
         .form-control:focus, .form-select:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 0.2rem rgba(59,130,246,.15);
+        }
+
+        /* Readonly/Disabled styling light mode */
+        .form-control[readonly], .form-control:disabled, .bg-light {
+            background-color: #f8fafc !important;
+            opacity: 1;
+            color: #64748b;
         }
 
         /* Print Styles */
@@ -333,11 +341,22 @@
         [data-coreui-theme="dark"] .form-control,
         [data-coreui-theme="dark"] .form-select,
         [data-coreui-theme="dark"] textarea {
-            background: #07121a;
-            border-color: rgba(255,255,255,0.06);
+            background-color: #0d1117 !important;
+            border-color: rgba(255,255,255,0.1) !important;
             color: #e6eef8 !important;
         }
-        [data-coreui-theme="dark"] ::placeholder { color: rgba(230,238,248,0.6) !important; }
+        
+        /* Readonly/Disabled dark mode styling */
+        [data-coreui-theme="dark"] .form-control[readonly],
+        [data-coreui-theme="dark"] .form-control:disabled,
+        [data-coreui-theme="dark"] .bg-light,
+        [data-coreui-theme="dark"] .form-control.bg-light {
+            background-color: #161b22 !important;
+            border-color: rgba(255,255,255,0.05) !important;
+            color: #8b949e !important;
+        }
+
+        [data-coreui-theme="dark"] ::placeholder { color: rgba(230,238,248,0.4) !important; }
 
         /* Tables */
         [data-coreui-theme="dark"] .table {
