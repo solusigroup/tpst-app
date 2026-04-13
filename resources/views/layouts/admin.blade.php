@@ -387,30 +387,34 @@
             @endif
 
             {{-- Operasional --}}
-            @hasanyrole('operator|super_admin|manajemen')
+            @canany(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan', 'view_pengangkutan_residu', 'view_machine', 'view_machine_log'])
             <li class="nav-title">Operasional</li>
-            @endhasanyrole
+            @endcanany
 
             {{-- Mesin & Logbook --}}
-            @hasanyrole('operator|super_admin|manajemen')
+            @canany(['view_machine', 'view_machine_log'])
             <li class="nav-group {{ request()->routeIs('admin.machines.*') || request()->routeIs('admin.machine-logs.*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-memory"></i> Master & Log Mesin
                 </a>
                 <ul class="nav-group-items compact">
+                    @can('view_machine')
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.machines.*') ? 'active' : '' }}" href="{{ route('admin.machines.index') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Data Mesin
                         </a>
                     </li>
+                    @endcan
+                    @can('view_machine_log')
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.machine-logs.*') ? 'active' : '' }}" href="{{ route('admin.machine-logs.index') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Logbook Mesin
                         </a>
                     </li>
+                    @endcan
                 </ul>
             </li>
-            @endhasanyrole
+            @endcanany
 
             @can('view_ritase')
             <li class="nav-item">
@@ -433,11 +437,13 @@
                 </a>
             </li>
             @endcan
+            @can('view_pengangkutan_residu')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.pengangkutan-residu.*') ? 'active' : '' }}" href="{{ route('admin.pengangkutan-residu.index') }}">
                     <i class="nav-icon cil-trash"></i> Pengangkutan Residu
                 </a>
             </li>
+            @endcan
             @can('view_hasil_pilahan')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hasil-pilahan.*') ? 'active' : '' }}" href="{{ route('admin.hasil-pilahan.index') }}">
