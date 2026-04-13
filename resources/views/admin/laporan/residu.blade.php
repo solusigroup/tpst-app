@@ -31,8 +31,16 @@
                     <i class="cil-filter me-1"></i> Filter
                 </button>
             </div>
-            <div class="col-md-2">
-                <a href="{{ route('admin.laporan-operasional.residu') }}" class="btn btn-outline-secondary w-100">Reset</a>
+            <div class="col-md-4 text-end">
+                <div class="btn-group w-100">
+                    <a href="{{ route('admin.laporan-operasional.residu') }}" class="btn btn-outline-secondary">Reset</a>
+                    <a href="{{ route('admin.laporan-operasional.residu', array_merge(request()->all(), ['export' => 'pdf'])) }}" target="_blank" class="btn btn-danger">
+                        <i class="cil-print me-1"></i> PDF
+                    </a>
+                    <a href="{{ route('admin.laporan-operasional.residu', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success">
+                        <i class="cil-spreadsheet me-1"></i> Excel
+                    </a>
+                </div>
             </div>
         </form>
     </div>

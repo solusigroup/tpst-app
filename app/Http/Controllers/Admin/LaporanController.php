@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
+use App\Models\PengangkutanResidu;
+
 
 class LaporanController extends Controller
 {
@@ -460,13 +462,29 @@ class LaporanController extends Controller
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
 
-        $query = \App\Models\PengangkutanResidu::with('armada')
+        $query = PengangkutanResidu::with('armada')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->orderByDesc('tanggal');
 
-        $rows = $query->paginate(20)->withQueryString();
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_retribusi) as total_biaya, COUNT(*) as total_rows')->first();
+
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'dari', 'sampai', 'totals');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.residu-export', $data);
+                return $pdf->download('Laporan_Residu_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.residu-export', $data), 
+                    'Laporan_Residu_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
 
         return view('admin.laporan.residu', compact('rows', 'dari', 'sampai', 'totals'));
     }
