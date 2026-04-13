@@ -12,8 +12,40 @@
             </ol>
         </nav>
     </div>
-    <div>
-        <span class="text-body-secondary"><i class="cil-calendar me-1"></i> {{ now()->translatedFormat('l, d F Y') }}</span>
+    <div class="d-flex align-items-center gap-3">
+        <div class="dropdown">
+            <button class="btn btn-primary btn-lg shadow-sm dropdown-toggle" type="button" data-coreui-toggle="dropdown" aria-expanded="false">
+                <i class="cil-plus me-1"></i> Tambah Transaksi Operasional
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                @can('create_machine_log')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.machine-logs.create') }}"><i class="cil-memory me-2 text-primary"></i> Tambah Log Mesin</a></li>
+                @endcan
+                @can('create_ritase')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.ritase.create') }}"><i class="cil-truck me-2 text-primary"></i> Tambah Ritase</a></li>
+                @endcan
+                @can('create_hasil_pilahan')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.hasil-pilahan.create') }}"><i class="cil-filter me-2 text-primary"></i> Catat Hasil Pilah</a></li>
+                @endcan
+                @can('create_pengangkutan_residu')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.pengangkutan-residu.create') }}"><i class="cil-trash me-2 text-primary"></i> Catat Residu</a></li>
+                @endcan
+                <div class="dropdown-divider"></div>
+                @can('create_jurnal_kas')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.jurnal-kas.create') }}"><i class="cil-money me-2 text-success"></i> Catat Jurnal Kas</a></li>
+                @endcan
+                @can('create_attendance')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.hrd.attendance.create') }}"><i class="cil-calendar-check me-2 text-info"></i> Catat Kehadiran Karyawan</a></li>
+                @endcan
+                @can('create_penjualan')
+                <li><a class="dropdown-item py-2" href="{{ route('admin.penjualan.create') }}"><i class="cil-cart me-2 text-warning"></i> Catat Penjualan</a></li>
+                @endcan
+            </ul>
+        </div>
+        <div class="d-none d-md-block text-end">
+            <span class="text-body-secondary d-block small">Hari Ini</span>
+            <span class="fw-bold"><i class="cil-calendar me-1"></i> {{ now()->translatedFormat('l, d F Y') }}</span>
+        </div>
     </div>
 </div>
 
