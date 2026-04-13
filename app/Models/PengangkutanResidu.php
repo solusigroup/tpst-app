@@ -45,6 +45,7 @@ class PengangkutanResidu extends Model
                 $prefix = 'PR-' . now()->format('Ym') . '-';
                 
                 $lastResidu = self::withoutGlobalScope(TenantScope::class)
+                    ->withTrashed()
                     ->where('tenant_id', $residu->tenant_id)
                     ->where('nomor_tiket', 'like', $prefix . '%')
                     ->orderBy('nomor_tiket', 'desc')

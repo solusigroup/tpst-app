@@ -25,6 +25,9 @@ class RolePermissionSeeder extends Seeder
             'view_armada', 'create_armada', 'update_armada', 'delete_armada',
             'view_hasil_pilahan', 'create_hasil_pilahan', 'update_hasil_pilahan', 'delete_hasil_pilahan',
             'view_penjualan', 'create_penjualan', 'update_penjualan', 'delete_penjualan',
+            'view_pengangkutan_residu', 'create_pengangkutan_residu', 'update_pengangkutan_residu', 'delete_pengangkutan_residu',
+            'view_machine', 'create_machine', 'update_machine', 'delete_machine',
+            'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
             
             // Keuangan
             'view_coa', 'create_coa', 'update_coa', 'delete_coa',
@@ -73,6 +76,9 @@ class RolePermissionSeeder extends Seeder
             'view_armada', 'create_armada', 'update_armada', 'delete_armada',
             'view_hasil_pilahan', 'create_hasil_pilahan', 'update_hasil_pilahan', 'delete_hasil_pilahan',
             'view_penjualan', 'create_penjualan', 'update_penjualan', 'delete_penjualan',
+            'view_pengangkutan_residu', 'create_pengangkutan_residu', 'update_pengangkutan_residu', 'delete_pengangkutan_residu',
+            'view_machine', 'create_machine', 'update_machine', 'delete_machine',
+            'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
             'view_coa', 'create_coa', 'update_coa', 'delete_coa',
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
@@ -113,6 +119,9 @@ class RolePermissionSeeder extends Seeder
             'view_ritase', 'create_ritase', 'update_ritase', 'delete_ritase',
             'view_penjualan', 'create_penjualan', 'update_penjualan', 'delete_penjualan',
             'view_hasil_pilahan', 'create_hasil_pilahan', 'update_hasil_pilahan', 'delete_hasil_pilahan',
+            'view_pengangkutan_residu', 'create_pengangkutan_residu', 'update_pengangkutan_residu', 'delete_pengangkutan_residu',
+            'view_machine', 'create_machine', 'update_machine', 'delete_machine',
+            'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
         ]);
 
         // 5. Ritase Only Role
