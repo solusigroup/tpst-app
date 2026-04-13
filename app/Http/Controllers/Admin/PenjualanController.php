@@ -60,7 +60,7 @@ class PenjualanController extends Controller
     public function create()
     {
         Gate::authorize('create_penjualan');
-        $kliens = Klien::orderBy('nama_klien')->get();
+        $kliens = Klien::where('jenis', 'Offtaker')->orderBy('nama_klien')->get();
         $stokPilahan = $this->calculateAvailableStock();
         $coas = \App\Models\Coa::where('tipe', 'Asset')
             ->where(function ($q) {
@@ -118,7 +118,7 @@ class PenjualanController extends Controller
     public function edit(Penjualan $penjualan)
     {
         Gate::authorize('update_penjualan');
-        $kliens = Klien::orderBy('nama_klien')->get();
+        $kliens = Klien::where('jenis', 'Offtaker')->orderBy('nama_klien')->get();
         $stokPilahan = $this->calculateAvailableStock($penjualan->id);
         $coas = \App\Models\Coa::where('tipe', 'Asset')
             ->where(function ($q) {
