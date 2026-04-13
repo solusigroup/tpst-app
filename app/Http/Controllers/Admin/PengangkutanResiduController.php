@@ -8,11 +8,13 @@ use Illuminate\Http\Request;
 
 use App\Models\Armada;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class PengangkutanResiduController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('view_pengangkutan_residu');
         $query = PengangkutanResidu::with(['armada'])
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc');
@@ -31,12 +33,14 @@ class PengangkutanResiduController extends Controller
 
     public function create()
     {
+        Gate::authorize('create_pengangkutan_residu');
         $armadas = Armada::orderBy('plat_nomor')->get();
         return view('admin.pengangkutan_residu.create', compact('armadas'));
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('create_pengangkutan_residu');
         $request->validate([
             'armada_id' => 'required|exists:armada,id',
             'tanggal' => 'required|date',
@@ -55,6 +59,7 @@ class PengangkutanResiduController extends Controller
 
     public function show(PengangkutanResidu $pengangkutanResidu)
     {
+        Gate::authorize('view_pengangkutan_residu');
         return view('admin.pengangkutan_residu.show', [
             'item' => $pengangkutanResidu->load(['armada', 'jurnalHeader'])
         ]);
@@ -62,6 +67,7 @@ class PengangkutanResiduController extends Controller
 
     public function edit(PengangkutanResidu $pengangkutanResidu)
     {
+        Gate::authorize('update_pengangkutan_residu');
         $armadas = Armada::orderBy('plat_nomor')->get();
         return view('admin.pengangkutan_residu.edit', [
             'item' => $pengangkutanResidu,
@@ -71,6 +77,7 @@ class PengangkutanResiduController extends Controller
 
     public function update(Request $request, PengangkutanResidu $pengangkutanResidu)
     {
+        Gate::authorize('update_pengangkutan_residu');
         $request->validate([
             'armada_id' => 'required|exists:armada,id',
             'tanggal' => 'required|date',
@@ -89,6 +96,7 @@ class PengangkutanResiduController extends Controller
 
     public function destroy(PengangkutanResidu $pengangkutanResidu)
     {
+        Gate::authorize('delete_pengangkutan_residu');
         $pengangkutanResidu->delete();
         return redirect()->route('admin.pengangkutan-residu.index')
             ->with('success', 'Data pengangkutan residu berhasil dihapus.');

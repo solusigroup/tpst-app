@@ -10,11 +10,13 @@ use \App\Models\Machine;
 use \App\Models\MachineLog;
 use \App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class MachineLogController extends Controller
 {
     public function index()
     {
+        Gate::authorize('view_machine_log');
         // View for operator logbook history
         $logs = MachineLog::with(['machine', 'user'])->latest()->paginate(15);
         return view('admin.machine_logs.index', compact('logs'));
@@ -22,12 +24,14 @@ class MachineLogController extends Controller
 
     public function create()
     {
+        Gate::authorize('create_machine_log');
         $machines = Machine::all();
         return view('admin.machine_logs.create', compact('machines'));
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('create_machine_log');
         $request->validate([
             'machine_id' => 'required|exists:machines,id',
             'waktu_cek' => 'required|in:Engine On,Engine Off',
@@ -63,6 +67,7 @@ class MachineLogController extends Controller
 
     public function edit(MachineLog $machineLog)
     {
+        Gate::authorize('update_machine_log');
         // Operator doesn't usually edit, but let's provide it if admin needs it.
         $machines = Machine::all();
         return view('admin.machine_logs.edit', compact('machineLog', 'machines'));
@@ -70,6 +75,7 @@ class MachineLogController extends Controller
 
     public function update(Request $request, MachineLog $machineLog)
     {
+        Gate::authorize('update_machine_log');
         $request->validate([
             'machine_id' => 'required|exists:machines,id',
             'waktu_cek' => 'required|in:Engine On,Engine Off',
@@ -84,6 +90,7 @@ class MachineLogController extends Controller
 
     public function destroy(MachineLog $machineLog)
     {
+        Gate::authorize('delete_machine_log');
         $machineLog->delete();
         return redirect()->route('admin.machine-logs.index')->with('success', 'Log mesin dihapus.');
     }
