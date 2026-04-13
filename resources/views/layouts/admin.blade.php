@@ -360,16 +360,30 @@
         }
 
         /* Tom Select Customization */
+        .ts-wrapper.form-select, .ts-wrapper.form-control {
+            padding: 0 !important;
+            border: none !important;
+            background: none !important;
+            box-shadow: none !important;
+        }
         .ts-control {
             border-radius: 0.5rem !important;
-            padding: 0.5rem 0.75rem !important;
-            border-color: #dee2e6 !important;
+            padding: 0.5625rem 0.75rem !important; /* Match Bootstrap 5 default padding */
+            border: 1px solid #dee2e6 !important;
+            min-height: calc(1.5em + 0.75rem + 2px) !important;
+            display: flex !important;
+            align-items: center !important;
+            background-color: #fff !important;
+        }
+        .ts-wrapper.single .ts-control::after {
+            right: 0.75rem !important;
         }
         .ts-dropdown {
             border-radius: 0.5rem !important;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-            border: none !important;
-            margin-top: 5px !important;
+            border: 1px solid rgba(0,0,0,0.1) !important;
+            margin-top: 2px !important;
+            z-index: 2000 !important; /* Ensure it stays above other fields */
         }
         .ts-dropdown .active {
             background-color: #3b82f6 !important;
@@ -377,30 +391,36 @@
         }
         
         /* Tom Select Dark Mode */
-        [data-coreui-theme="dark"] .ts-control,
-        [data-coreui-theme="dark"] .ts-control input {
+        [data-coreui-theme="dark"] .ts-control {
             background-color: #07121a !important;
             color: #e6eef8 !important;
-            border-color: rgba(255,255,255,0.06) !important;
+            border-color: rgba(255,255,255,0.1) !important;
         }
-        [data-coreui-theme="dark"] .ts-dropdown,
-        [data-coreui-theme="dark"] .ts-dropdown .dropdown-input {
+        [data-coreui-theme="dark"] .ts-control input {
+            color: #e6eef8 !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown {
             background-color: #0f1724 !important;
             color: #e6eef8 !important;
-            border-color: rgba(255,255,255,0.06) !important;
+            border-color: rgba(255,255,255,0.1) !important;
         }
         [data-coreui-theme="dark"] .ts-dropdown .option {
             color: #e6eef8 !important;
         }
         [data-coreui-theme="dark"] .ts-dropdown .option:hover,
         [data-coreui-theme="dark"] .ts-dropdown .active {
-            background-color: rgba(59, 130, 246, 0.2) !important;
+            background-color: #3b82f6 !important;
             color: #fff !important;
         }
         [data-coreui-theme="dark"] .ts-control .item {
             color: #e6eef8 !important;
             background: #1e293b !important;
             border: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        /* Fix for focus ring */
+        .ts-wrapper.focus .ts-control {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 0.2rem rgba(59,130,246,.15) !important;
         }
     </style>
     @stack('styles')
