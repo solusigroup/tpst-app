@@ -24,7 +24,7 @@
                             <select name="armada_id" class="form-select @error('armada_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Armada --</option>
                                 @foreach($armadas as $a)
-                                    <option value="{{ $a->id }}" data-berat-kosong="{{ $a->berat_kosong }}" {{ old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : '' }}>{{ $a->plat_nomor }}</option>
+                                    <option value="{{ $a->id }}" data-berat-kosong="{{ $a->berat_kosong }}" data-klien-id="{{ $a->klien_id }}" {{ old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : '' }}>{{ $a->plat_nomor }}</option>
                                 @endforeach
                             </select>
                             @error('armada_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -205,17 +205,125 @@ function calcNetto() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const armadaSelect = document.querySelector('select[name="armada_id"]');
-    if (armadaSelect) {
-        armadaSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption && selectedOption.dataset.beratKosong) {
-                const beratTarra = document.getElementById('berat_tarra');
-                beratTarra.value = selectedOption.dataset.beratKosong;
-                calcNetto();
+    // Beri jeda sejenak untuk memastikan plugin TomSelect dari layout telah dipasang penuh
+    setTimeout(function() {
+        const armadaSelect = document.querySelector('select[name="armada_id"]');
+        const klienSelect = document.querySelector('select[name="klien_id"]');
+        
+        if (armadaSelect && klienSelect) {
+            
+            // Kumpulkan data semua opsi dari DOM asli
+            const allArmadaData = [];
+            Array.from(armadaSelect.querySelectorAll('option')).forEach(opt => {
+                if (opt.value) {
+                    allArmadaData.push({
+                        value: opt.value,
+                        text: opt.innerText,
+                        klienId: opt.dataset.klienId,
+                        beratKosong: opt.dataset.beratKosong
+                    });
+                }
+            });
+
+            // Apabila menggunakan TomSelect
+            if (armadaSelect.tomselect && klienSelect.tomselect) {
+                const tsArmada = armadaSelect.tomselect;
+                const tsKlien = klienSelect.tomselect;
+
+                tsArmada.on('change', function(value) {
+                    const selected = allArmadaData.find(a => a.value == value);
+                    if (selected) {
+                        if (selected.beratKosong) {
+                            const beratTarra = document.getElementById('berat_tarra');
+                            beratTarra.value = selected.beratKosong;
+                            calcNetto();
+                        }
+                        if (selected.klienId && tsKlien.getValue() != selected.klienId) {
+                            tsKlien.setValue(selected.klienId, true); // true = prevent loop
+                        }
+                    }
+                });
+
+                tsKlien.on('change', function(value) {
+                    const currentArmadaVal = tsArmada.getValue();
+                    let currentArmadaValid = false;
+                    
+                    tsArmada.clearOptions();
+                    
+                    allArmadaData.forEach(function(data) {
+                        if (!value || data.klienId == value) {
+                            tsArmada.addOption({value: data.value, text: data.text});
+                            if (data.value == currentArmadaVal) currentArmadaValid = true;
+                        }
+                    });
+                    tsArmada.refreshOptions(false);
+                    
+                    if (!currentArmadaValid) {
+                        tsArmada.setValue("", true);
+                    } else {
+                        tsArmada.setValue(currentArmadaVal, true);
+                    }
+                });
+
+                // Inisialisasi awal jika form adalah form Update
+                if (tsKlien.getValue()) {
+                    tsKlien.trigger('change', tsKlien.getValue());
+                } else if (tsArmada.getValue()) {
+                    tsArmada.trigger('change', tsArmada.getValue());
+                }
+                
+            } else {
+                // Fallback jika bukan TomSelect (VanillaJS)
+                armadaSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.dataset.beratKosong) {
+                        const beratTarra = document.getElementById('berat_tarra');
+                        beratTarra.value = selectedOption.dataset.beratKosong;
+                        calcNetto();
+                    }
+                    if (selectedOption && selectedOption.value !== "") {
+                        const klienId = selectedOption.dataset.klienId;
+                        if (klienId) {
+                            klienSelect.value = klienId;
+                        }
+                    }
+                });
+
+                klienSelect.addEventListener('change', function() {
+                    const selectedKlienId = this.value;
+                    const currentArmadaVal = armadaSelect.value;
+                    let currentArmadaValid = false;
+                    
+                    armadaSelect.innerHTML = '<option value="">-- Pilih Armada --</option>';
+                    
+                    allArmadaData.forEach(function(data) {
+                        if (!selectedKlienId || data.klienId == selectedKlienId) {
+                            const opt = document.createElement('option');
+                            opt.value = data.value;
+                            opt.textContent = data.text;
+                            opt.dataset.klienId = data.klienId;
+                            opt.dataset.beratKosong = data.beratKosong;
+                            armadaSelect.appendChild(opt);
+                            
+                            if (data.value == currentArmadaVal) {
+                                currentArmadaValid = true;
+                            }
+                        }
+                    });
+                    
+                    if (!currentArmadaValid) {
+                        armadaSelect.value = "";
+                    } else {
+                        armadaSelect.value = currentArmadaVal;
+                    }
+                });
+
+                if (klienSelect.value) {
+                    klienSelect.dispatchEvent(new Event('change'));
+                }
             }
-        });
-    }
+        }
+    }, 300); // 300ms tunda
 });
 
 function previewImage(input) {
