@@ -29,6 +29,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 
     <style>
         :root {
@@ -197,9 +199,17 @@
             font-size: 0.875rem;
             color: #374151;
         }
+        /* Focus states */
         .form-control:focus, .form-select:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 0.2rem rgba(59,130,246,.15);
+        }
+
+        /* Readonly/Disabled styling light mode */
+        .form-control[readonly], .form-control:disabled, .bg-light {
+            background-color: #f8fafc !important;
+            opacity: 1;
+            color: #64748b;
         }
 
         /* Print Styles */
@@ -331,11 +341,22 @@
         [data-coreui-theme="dark"] .form-control,
         [data-coreui-theme="dark"] .form-select,
         [data-coreui-theme="dark"] textarea {
-            background: #07121a;
-            border-color: rgba(255,255,255,0.06);
+            background-color: #0d1117 !important;
+            border-color: rgba(255,255,255,0.1) !important;
             color: #e6eef8 !important;
         }
-        [data-coreui-theme="dark"] ::placeholder { color: rgba(230,238,248,0.6) !important; }
+        
+        /* Readonly/Disabled dark mode styling */
+        [data-coreui-theme="dark"] .form-control[readonly],
+        [data-coreui-theme="dark"] .form-control:disabled,
+        [data-coreui-theme="dark"] .bg-light,
+        [data-coreui-theme="dark"] .form-control.bg-light {
+            background-color: #161b22 !important;
+            border-color: rgba(255,255,255,0.05) !important;
+            color: #8b949e !important;
+        }
+
+        [data-coreui-theme="dark"] ::placeholder { color: rgba(230,238,248,0.4) !important; }
 
         /* Tables */
         [data-coreui-theme="dark"] .table {
@@ -355,6 +376,83 @@
         [data-coreui-theme="dark"] .sidebar .nav-link,
         [data-coreui-theme="dark"] .sidebar .nav-title {
             color: #dbeeff !important;
+        }
+
+        /* Tom Select Customization */
+        .ts-wrapper.form-select, .ts-wrapper.form-control {
+            padding: 0 !important;
+            border: none !important;
+            background: none !important;
+            box-shadow: none !important;
+            height: auto !important;
+        }
+        .ts-control {
+            border-radius: 0.5rem !important;
+            padding: 0.475rem 0.75rem !important;
+            border: 1px solid #ced4da !important; /* Bootstrap 5 default border color */
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            background-color: #fff !important;
+            box-shadow: none !important;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        }
+        .ts-wrapper.single .ts-control::after {
+            right: 0.75rem !important;
+            margin-top: -2px !important;
+            border-color: #6c757d transparent transparent transparent !important;
+        }
+        .ts-dropdown {
+            background-color: #ffffff !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #ced4da !important;
+            margin-top: 4px !important;
+            z-index: 2000 !important;
+        }
+        .ts-dropdown .option {
+            padding: 8px 12px !important;
+        }
+        .ts-dropdown .active {
+            background-color: #3b82f6 !important;
+            color: #fff !important;
+        }
+        
+        /* Tom Select Dark Mode */
+        [data-coreui-theme="dark"] .ts-control {
+            background-color: #0d1117 !important;
+            color: #e6eef8 !important;
+            border-color: rgba(255,255,255,0.2) !important; /* More visible border for dark mode */
+        }
+        [data-coreui-theme="dark"] .ts-control input {
+            color: #e6eef8 !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown {
+            background-color: #161b22 !important;
+            color: #e6eef8 !important;
+            border-color: rgba(255,255,255,0.2) !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown .option {
+            color: #e6eef8 !important;
+        }
+        [data-coreui-theme="dark"] .ts-dropdown .option:hover,
+        [data-coreui-theme="dark"] .ts-dropdown .active {
+            background-color: #3b82f6 !important;
+            color: #fff !important;
+        }
+        [data-coreui-theme="dark"] .ts-control .item {
+            color: #e6eef8 !important;
+            background: #1e293b !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        /* Fix for focus ring */
+        .ts-wrapper.focus .ts-control {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 0.2rem rgba(59,130,246,.15) !important;
+        }
+        /* Hide original select completely */
+        .tomselected {
+            display: none !important;
         }
     </style>
     <?php echo $__env->yieldPushContent('styles'); ?>
@@ -460,6 +558,62 @@
             <?php endif; ?>
 
             
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_keuangan', 'view_laporan_operasional'])): ?>
+            <li class="nav-title">Laporan</li>
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_keuangan')): ?>
+            <li class="nav-group <?php echo e(request()->routeIs('admin.laporan.*') ? 'show' : ''); ?>">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-chart"></i> Laporan Keuangan
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.laba-rugi') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.laba-rugi')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laba Rugi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.neraca-saldo') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.neraca-saldo')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Neraca Saldo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.posisi-keuangan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.posisi-keuangan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Posisi Keuangan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.arus-kas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.arus-kas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Arus Kas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.perubahan-ekuitas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.perubahan-ekuitas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perubahan Ekuitas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.buku-besar') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.buku-besar')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
+                    </li>
+                </ul>
+            </li>
+            <?php endif; ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_operasional')): ?>
+            <li class="nav-group <?php echo e(request()->routeIs('admin.laporan-operasional.*') ? 'show' : ''); ?>">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-clipboard"></i> Laporan Operasional
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.hasil-pilahan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.residu') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.residu')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.kehadiran')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
+                    </li>
+                </ul>
+            </li>
+            <?php endif; ?>
+
+            
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice', 'view_vendor', 'view_buku_pembantu'])): ?>
             <li class="nav-title">Keuangan</li>
             <?php endif; ?>
@@ -515,59 +669,6 @@
                         <a class="nav-link <?php echo e(request()->routeIs('admin.buku-pembantu.utang') ? 'active' : ''); ?>" href="<?php echo e(route('admin.buku-pembantu.utang')); ?>">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Utang Lancar
                         </a>
-                    </li>
-                </ul>
-            </li>
-            <?php endif; ?>
-
-            
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_keuangan', 'view_laporan_operasional'])): ?>
-            <li class="nav-title">Laporan</li>
-            <?php endif; ?>
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_keuangan')): ?>
-            <li class="nav-group <?php echo e(request()->routeIs('admin.laporan.*') ? 'show' : ''); ?>">
-                <a class="nav-link nav-group-toggle" href="#">
-                    <i class="nav-icon cil-chart"></i> Laporan Keuangan
-                </a>
-                <ul class="nav-group-items compact">
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.laba-rugi') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.laba-rugi')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laba Rugi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.neraca-saldo') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.neraca-saldo')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Neraca Saldo</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.posisi-keuangan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.posisi-keuangan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Posisi Keuangan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.arus-kas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.arus-kas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Arus Kas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.perubahan-ekuitas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.perubahan-ekuitas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perubahan Ekuitas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.buku-besar') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.buku-besar')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
-                    </li>
-                </ul>
-            </li>
-            <?php endif; ?>
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_operasional')): ?>
-            <li class="nav-group <?php echo e(request()->routeIs('admin.laporan-operasional.*') ? 'show' : ''); ?>">
-                <a class="nav-link nav-group-toggle" href="#">
-                    <i class="nav-icon cil-clipboard"></i> Laporan Operasional
-                </a>
-                <ul class="nav-group-items compact">
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.hasil-pilahan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.residu') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.residu')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
                     </li>
                 </ul>
             </li>
@@ -873,6 +974,44 @@
         document.getElementById('sidebar-overlay').addEventListener('click', function() {
             document.getElementById('sidebar').classList.remove('show');
             this.classList.add('d-none');
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Tom Select for all .form-select except those with .no-search
+            const initTomSelect = () => {
+                document.querySelectorAll('.form-select:not(.no-search):not(.tomselected)').forEach(el => {
+                    new TomSelect(el, {
+                        create: false,
+                        sortField: {
+                            field: "text",
+                            direction: "asc"
+                        },
+                        // Fix for bootstrap focus
+                        onFocus: () => {
+                            el.parentElement.classList.add('ts-focused');
+                        },
+                        onBlur: () => {
+                            el.parentElement.classList.remove('ts-focused');
+                        }
+                    });
+                });
+            };
+
+            initTomSelect();
+
+            // Re-init for dynamic content if needed
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.addedNodes.length) {
+                        initTomSelect();
+                    }
+                });
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
         });
     </script>
     <?php echo $__env->yieldPushContent('scripts'); ?>

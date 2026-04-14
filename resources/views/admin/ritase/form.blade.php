@@ -238,37 +238,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             beratTarra.value = selected.beratKosong;
                             calcNetto();
                         }
+                        // Auto-fill Klien if it has a default and current klien is empty or different, but don't force it if user already chose.
+                        // Actually, it's better to auto-fill mostly to help them.
                         if (selected.klienId && tsKlien.getValue() != selected.klienId) {
-                            tsKlien.setValue(selected.klienId, true); // true = prevent loop
+                            tsKlien.setValue(selected.klienId, true); // true = prevent infinite loop
                         }
                     }
                 });
 
-                tsKlien.on('change', function(value) {
-                    const currentArmadaVal = tsArmada.getValue();
-                    let currentArmadaValid = false;
-                    
-                    tsArmada.clearOptions();
-                    
-                    allArmadaData.forEach(function(data) {
-                        if (!value || data.klienId == value) {
-                            tsArmada.addOption({value: data.value, text: data.text});
-                            if (data.value == currentArmadaVal) currentArmadaValid = true;
-                        }
-                    });
-                    tsArmada.refreshOptions(false);
-                    
-                    if (!currentArmadaValid) {
-                        tsArmada.setValue("", true);
-                    } else {
-                        tsArmada.setValue(currentArmadaVal, true);
-                    }
-                });
+                // tsKlien doesn't need to filter tsArmada anymore in Schema 1
+                // tsKlien.on('change', function(value) { ... });
 
                 // Inisialisasi awal jika form adalah form Update
                 if (tsKlien.getValue()) {
-                    tsKlien.trigger('change', tsKlien.getValue());
-                } else if (tsArmada.getValue()) {
+                    // Do nothing, no need to filter armada
+                }
+                if (tsArmada.getValue()) {
                     tsArmada.trigger('change', tsArmada.getValue());
                 }
                 
@@ -289,38 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                klienSelect.addEventListener('change', function() {
-                    const selectedKlienId = this.value;
-                    const currentArmadaVal = armadaSelect.value;
-                    let currentArmadaValid = false;
-                    
-                    armadaSelect.innerHTML = '<option value="">-- Pilih Armada --</option>';
-                    
-                    allArmadaData.forEach(function(data) {
-                        if (!selectedKlienId || data.klienId == selectedKlienId) {
-                            const opt = document.createElement('option');
-                            opt.value = data.value;
-                            opt.textContent = data.text;
-                            opt.dataset.klienId = data.klienId;
-                            opt.dataset.beratKosong = data.beratKosong;
-                            armadaSelect.appendChild(opt);
-                            
-                            if (data.value == currentArmadaVal) {
-                                currentArmadaValid = true;
-                            }
-                        }
-                    });
-                    
-                    if (!currentArmadaValid) {
-                        armadaSelect.value = "";
-                    } else {
-                        armadaSelect.value = currentArmadaVal;
-                    }
-                });
-
-                if (klienSelect.value) {
-                    klienSelect.dispatchEvent(new Event('change'));
-                }
+                // klienSelect doesn't need to filter armadaSelect anymore
             }
         }
     }, 300); // 300ms tunda

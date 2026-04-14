@@ -143,6 +143,32 @@ unset($__errorArgs, $__bag); ?>
                 <label class="form-label">Sisa (Piutang)</label>
                 <input type="text" id="sisa_bayar_display" class="form-control bg-light" value="Rp 0" readonly>
             </div>
+            <div class="col-md-6">
+                <label class="form-label">Akun Pembayaran (Kas/Bank) <span class="text-danger">*</span></label>
+                <select name="coa_pembayaran_id" class="form-select <?php $__errorArgs = ['coa_pembayaran_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
+                    <?php $__currentLoopData = $coas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($c->id); ?>" <?php echo e(old('coa_pembayaran_id', $penjualan->coa_pembayaran_id ?? '') == $c->id ? 'selected' : ( !isset($penjualan) && str_contains($c->nama_akun, 'Bank') ? 'selected' : '' )); ?>>
+                            <?php echo e($c->kode_akun); ?> - <?php echo e($c->nama_akun); ?>
+
+                        </option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+                <?php $__errorArgs = ['coa_pembayaran_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> <?php echo e(isset($penjualan) ? 'Perbarui' : 'Simpan'); ?></button>
                 <a href="<?php echo e(route('admin.penjualan.index')); ?>" class="btn btn-outline-secondary">Kembali</a>

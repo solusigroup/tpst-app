@@ -54,6 +54,30 @@ endif;
 unset($__errorArgs, $__bag); ?>
             </div>
             <div class="col-md-6">
+                <label class="form-label">Jenis Armada <span class="text-danger">*</span></label>
+                <select name="jenis_armada" class="form-select <?php $__errorArgs = ['jenis_armada'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
+                    <option value="">-- Pilih --</option>
+                    <?php $__currentLoopData = ['Dump Truk','Pick Up','Tossa','Gerobak','Lainnya']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $j): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($j); ?>" <?php echo e(old('jenis_armada', $armada->jenis_armada ?? '') == $j ? 'selected' : ''); ?>><?php echo e($j); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+                <?php $__errorArgs = ['jenis_armada'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Nama Sopir / Driver</label>
                 <input type="text" name="nama_sopir" class="form-control <?php $__errorArgs = ['nama_sopir'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');

@@ -43,7 +43,7 @@ class ArmadaController extends Controller
         Gate::authorize('create_armada');
 
         $validated = $request->validate([
-            'klien_id' => 'required|exists:klien,id',
+            'klien_id' => 'nullable|exists:klien,id',
             'plat_nomor' => 'required|string|unique:armada,plat_nomor',
             'jenis_armada' => 'required|in:Dump Truk,Pick Up,Tossa,Gerobak,Lainnya',
             'nama_sopir' => 'nullable|string',
@@ -77,7 +77,7 @@ class ArmadaController extends Controller
         Gate::authorize('update_armada');
 
         $validated = $request->validate([
-            'klien_id' => 'required|exists:klien,id',
+            'klien_id' => 'nullable|exists:klien,id',
             'plat_nomor' => 'required|string|unique:armada,plat_nomor,' . $armada->id,
             'jenis_armada' => 'required|in:Dump Truk,Pick Up,Tossa,Gerobak,Lainnya',
             'nama_sopir' => 'nullable|string',

@@ -30,7 +30,7 @@ endif;
 unset($__errorArgs, $__bag); ?>" required>
                                 <option value="">-- Pilih Armada --</option>
                                 <?php $__currentLoopData = $armadas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $a): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($a->id); ?>" <?php echo e(old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : ''); ?>><?php echo e($a->plat_nomor); ?></option>
+                                    <option value="<?php echo e($a->id); ?>" data-berat-kosong="<?php echo e($a->berat_kosong); ?>" data-klien-id="<?php echo e($a->klien_id); ?>" <?php echo e(old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : ''); ?>><?php echo e($a->plat_nomor); ?></option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                             <?php $__errorArgs = ['armada_id'];
@@ -328,6 +328,82 @@ function calcNetto() {
         tippingInput.value = Math.round(netto * 80);
     <?php endif; ?>
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Beri jeda sejenak untuk memastikan plugin TomSelect dari layout telah dipasang penuh
+    setTimeout(function() {
+        const armadaSelect = document.querySelector('select[name="armada_id"]');
+        const klienSelect = document.querySelector('select[name="klien_id"]');
+        
+        if (armadaSelect && klienSelect) {
+            
+            // Kumpulkan data semua opsi dari DOM asli
+            const allArmadaData = [];
+            Array.from(armadaSelect.querySelectorAll('option')).forEach(opt => {
+                if (opt.value) {
+                    allArmadaData.push({
+                        value: opt.value,
+                        text: opt.innerText,
+                        klienId: opt.dataset.klienId,
+                        beratKosong: opt.dataset.beratKosong
+                    });
+                }
+            });
+
+            // Apabila menggunakan TomSelect
+            if (armadaSelect.tomselect && klienSelect.tomselect) {
+                const tsArmada = armadaSelect.tomselect;
+                const tsKlien = klienSelect.tomselect;
+
+                tsArmada.on('change', function(value) {
+                    const selected = allArmadaData.find(a => a.value == value);
+                    if (selected) {
+                        if (selected.beratKosong) {
+                            const beratTarra = document.getElementById('berat_tarra');
+                            beratTarra.value = selected.beratKosong;
+                            calcNetto();
+                        }
+                        // Auto-fill Klien if it has a default and current klien is empty or different, but don't force it if user already chose.
+                        // Actually, it's better to auto-fill mostly to help them.
+                        if (selected.klienId && tsKlien.getValue() != selected.klienId) {
+                            tsKlien.setValue(selected.klienId, true); // true = prevent infinite loop
+                        }
+                    }
+                });
+
+                // tsKlien doesn't need to filter tsArmada anymore in Schema 1
+                // tsKlien.on('change', function(value) { ... });
+
+                // Inisialisasi awal jika form adalah form Update
+                if (tsKlien.getValue()) {
+                    // Do nothing, no need to filter armada
+                }
+                if (tsArmada.getValue()) {
+                    tsArmada.trigger('change', tsArmada.getValue());
+                }
+                
+            } else {
+                // Fallback jika bukan TomSelect (VanillaJS)
+                armadaSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.dataset.beratKosong) {
+                        const beratTarra = document.getElementById('berat_tarra');
+                        beratTarra.value = selectedOption.dataset.beratKosong;
+                        calcNetto();
+                    }
+                    if (selectedOption && selectedOption.value !== "") {
+                        const klienId = selectedOption.dataset.klienId;
+                        if (klienId) {
+                            klienSelect.value = klienId;
+                        }
+                    }
+                });
+
+                // klienSelect doesn't need to filter armadaSelect anymore
+            }
+        }
+    }, 300); // 300ms tunda
+});
 
 function previewImage(input) {
     if (input.files && input.files[0]) {

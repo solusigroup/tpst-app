@@ -14,8 +14,8 @@
         @csrf @if(isset($armada)) @method('PUT') @endif
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label">Klien <span class="text-danger">*</span></label>
-                <select name="klien_id" class="form-select @error('klien_id') is-invalid @enderror" required>
+                <label class="form-label">Klien Default (Opsional)</label>
+                <select name="klien_id" class="form-select @error('klien_id') is-invalid @enderror">
                     <option value="">-- Pilih --</option>
                     @foreach($kliens as $k)<option value="{{ $k->id }}" {{ old('klien_id', $armada->klien_id ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }}</option>@endforeach
                 </select>

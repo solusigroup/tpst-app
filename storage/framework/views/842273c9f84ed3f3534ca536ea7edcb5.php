@@ -85,6 +85,7 @@ unset($__errorArgs, $__bag); ?>">
                                             <option value="">-- Pilih --</option>
                                             <option value="Bulanan" <?php echo e(old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Bulanan' ? 'selected' : ''); ?>>Bulanan</option>
                                             <option value="Per Ritase" <?php echo e(old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Per Ritase' ? 'selected' : ''); ?>>Per Ritase</option>
+                                            <option value="Per Ton" <?php echo e(old('jenis_tarif', $klien->jenis_tarif ?? '') == 'Per Ton' ? 'selected' : ''); ?>>Per Ton</option>
                                         </select>
                                         <?php $__errorArgs = ['jenis_tarif'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
