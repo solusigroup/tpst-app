@@ -9,6 +9,7 @@ use App\Models\HasilPilahan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Models\PengangkutanResidu;
 
 class DashboardController extends Controller
 {
@@ -29,6 +30,19 @@ class DashboardController extends Controller
         
         $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
         $jumlahRitaseBulanIni = Ritase::whereBetween('waktu_masuk', [$monthStart, $monthEnd])->count();
+
+        // Residu dan Pilahan (Akumulasi / All-Time)
+        $tonaseAkumulasi = Ritase::sum('berat_netto');
+        $residuAkumulasi = PengangkutanResidu::sum('berat_netto');
+        $pilahanAkumulasi = HasilPilahan::sum('tonase');
+
+        $kemampuanReduceKeseluruhan = $tonaseAkumulasi > 0 
+            ? (($tonaseAkumulasi - $residuAkumulasi) / $tonaseAkumulasi) * 100 
+            : 0;
+
+        $kemampuanReducePilahan = $tonaseAkumulasi > 0 
+            ? ($pilahanAkumulasi / $tonaseAkumulasi) * 100 
+            : 0;
 
         if (!auth()->user()->hasRole('ritase_only')) {
             $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
@@ -85,6 +99,8 @@ class DashboardController extends Controller
             'biayaBulanIni',
             'jumlahRitaseHariIni',
             'jumlahRitaseBulanIni',
+            'kemampuanReduceKeseluruhan',
+            'kemampuanReducePilahan',
             'dailyTonnage',
             'monthlyRevenue'
         ));
