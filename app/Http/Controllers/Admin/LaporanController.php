@@ -359,11 +359,11 @@ class LaporanController extends Controller
         $status = $request->get('status');
 
         $query = Ritase::with(['armada', 'klien'])
-            ->when($dari, fn ($q) => $q->whereDate('waktu_masuk', '>=', $dari))
-            ->when($sampai, fn ($q) => $q->whereDate('waktu_masuk', '<=', $sampai))
-            ->when($klienId, fn ($q) => $q->where('klien_id', $klienId))
-            ->when($status, fn ($q) => $q->where('status', $status))
-            ->orderByDesc('waktu_masuk');
+            ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
+            ->when($klienId, fn ($q) => $q->where('ritase.klien_id', $klienId))
+            ->when($status, fn ($q) => $q->where('ritase.status', $status))
+            ->orderByDesc('ritase.waktu_masuk');
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
 

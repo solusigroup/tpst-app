@@ -214,18 +214,31 @@
             padding: 0 !important;
             margin: 0 !important;
         }
-        /* Ensure the modal background and other UI elements are hidden */
-        .modal, .modal-backdrop, .sidebar, .header, .mobile-bottom-nav {
+        /* Ensure the modal and its content are visible, but hide UI chrome */
+        .modal-backdrop, .sidebar, .header, .mobile-bottom-nav, .modal-header, .modal-footer {
             display: none !important;
         }
-        /* Show the modal-dialog/content but without its UI chrome during print */
-        .modal-dialog, .modal-content, .modal-body {
+        .modal {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+            position: static;
+            overflow: visible !important;
+        }
+        .modal-dialog {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+        }
+        .modal-content, .modal-body {
             display: block !important;
             border: none !important;
             box-shadow: none !important;
             padding: 0 !important;
             margin: 0 !important;
-            overflow: visible !important;
+            background: transparent !important;
         }
     }
 </style>
