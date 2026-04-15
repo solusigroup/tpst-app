@@ -370,7 +370,13 @@ class LaporanController extends Controller
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
 
-        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'status', 'totals'));
+        $rekapJenis = (clone $query)->reorder()
+            ->join('armada', 'ritase.armada_id', '=', 'armada.id')
+            ->selectRaw('armada.jenis_armada, COUNT(*) as total_ritase, SUM(ritase.berat_netto) as total_netto')
+            ->groupBy('armada.jenis_armada')
+            ->get();
+
+        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'status', 'totals', 'rekapJenis'));
     }
 
     public function laporanPenjualan(Request $request)
