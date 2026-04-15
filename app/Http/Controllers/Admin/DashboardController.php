@@ -36,8 +36,12 @@ class DashboardController extends Controller
         $residuAkumulasi = PengangkutanResidu::sum('berat_netto');
         $pilahanAkumulasi = HasilPilahan::sum('tonase');
 
+        $persenResidu = $tonaseAkumulasi > 0 
+            ? ($residuAkumulasi / $tonaseAkumulasi) * 100 
+            : 0;
+
         $kemampuanReduceKeseluruhan = $tonaseAkumulasi > 0 
-            ? (($tonaseAkumulasi - $residuAkumulasi) / $tonaseAkumulasi) * 100 
+            ? 100 - $persenResidu
             : 0;
 
         $kemampuanReducePilahan = $tonaseAkumulasi > 0 
