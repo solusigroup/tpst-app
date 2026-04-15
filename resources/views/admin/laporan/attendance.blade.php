@@ -2,17 +2,23 @@
 @section('title', 'Laporan Kehadiran Karyawan')
 
 @section('content')
-<div class="d-none d-print-block">
-    <x-kop-surat />
-</div>
+
 
 <div class="page-header d-print-none">
-    <div>
-        <h1>Laporan Kehadiran Karyawan</h1>
+    <div><h1>Laporan Kehadiran Karyawan</h1></div>
+    <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-outline-primary shadow-sm" data-coreui-toggle="modal" data-coreui-target="#previewModal">
+            <i class="cil-zoom-in me-1"></i> Preview & Cetak
+        </button>
+        <div class="btn-group shadow-sm">
+            <a href="{{ route('admin.laporan-operasional.kehadiran', array_merge(request()->all(), ['export' => 'pdf'])) }}" target="_blank" class="btn btn-danger" title="Export PDF">
+                <i class="cil-file me-1"></i> PDF
+            </a>
+            <a href="{{ route('admin.laporan-operasional.kehadiran', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success" title="Export Excel">
+                <i class="cil-spreadsheet me-1"></i> Excel
+            </a>
+        </div>
     </div>
-    <button class="btn btn-outline-secondary" onclick="window.print()">
-        <i class="cil-print me-1"></i> Print
-    </button>
 </div>
 
 <div class="card mb-4 d-print-none">
@@ -119,4 +125,108 @@
         </div> 
     @endif
 </div>
+
+<!-- Modal Preview -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header d-print-none">
+                <h5 class="modal-title" id="previewModalLabel">Preview Laporan Kehadiran</h5>
+                <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light p-0">
+                <div id="printArea" class="bg-white p-5 shadow-sm mx-auto" style="max-width: 21cm; min-height: 29.7cm;">
+                    <x-kop-surat />
+                    
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold text-uppercase mb-1">LAPORAN KEHADIRAN KARYAWAN</h4>
+                        <p class="text-secondary">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Ringkasan Status:</strong><br>
+                        Hadir: {{ $totals->present }} | Alpa: {{ $totals->absent }} | Sakit: {{ $totals->sick }} | Izin: {{ $totals->leave }} | Total: {{ $totals->total_rows }}
+                    </div>
+
+                    <table class="table table-bordered border-dark table-sm">
+                        <thead class="table-light border-dark">
+                            <tr>
+                                <th class="text-center" style="width: 40px;">No</th>
+                                <th>Tanggal</th>
+                                <th>Nama Karyawan</th>
+                                <th>Status</th>
+                                <th>Masuk</th>
+                                <th>Keluar</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php 
+                                $allRowsForPrint = \App\Models\Attendance::with('user')
+                                    ->when($dari, fn($q)=>$q->whereDate('attendance_date','>=',$dari))
+                                    ->when($sampai, fn($q)=>$q->whereDate('attendance_date','<=',$sampai))
+                                    ->when($userId, fn($q)=>$q->where('user_id',$userId))
+                                    ->orderByDesc('attendance_date')
+                                    ->get(); 
+                                $statusLabels = [
+                                    'present' => 'Hadir',
+                                    'absent' => 'Alpa',
+                                    'sick' => 'Sakit',
+                                    'leave' => 'Izin'
+                                ];
+                            @endphp
+                            @foreach($allRowsForPrint as $index => $r)
+                            <tr>
+                                <td class="text-center">{{ $index + 1 }}</td>
+                                <td>{{ \Carbon\Carbon::parse($r->attendance_date)->format('d/m/Y') }}</td>
+                                <td>{{ $r->user->name ?? '-' }}</td>
+                                <td>{{ $statusLabels[$r->status] ?? $r->status }}</td>
+                                <td>{{ $r->check_in ? \Carbon\Carbon::parse($r->check_in)->format('H:i') : '-' }}</td>
+                                <td>{{ $r->check_out ? \Carbon\Carbon::parse($r->check_out)->format('H:i') : '-' }}</td>
+                                <td>{{ $r->notes ?? '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    <div class="row mt-5">
+                        <div class="col-8"></div>
+                        <div class="col-4 text-center">
+                            <p class="mb-5">Dicetak pada: {{ now()->format('d/m/Y H:i') }}</p>
+                            <div class="mt-5">
+                                <p class="fw-bold mb-0">( ____________________ )</p>
+                                <p class="text-secondary small">Admin Operasional</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-print-none">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="cil-print me-1"></i> Cetak Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('styles')
+<style>
+    @media print {
+        body * { visibility: hidden; overflow: visible !important; }
+        #printArea, #printArea * { visibility: visible; }
+        #printArea {
+            position: absolute; left: 0; top: 0; width: 100%;
+            padding: 0 !important; margin: 0 !important;
+        }
+        .modal, .modal-backdrop, .sidebar, .header, .mobile-bottom-nav { display: none !important; }
+        .modal-dialog, .modal-content, .modal-body {
+            display: block !important; border: none !important;
+            box-shadow: none !important; padding: 0 !important;
+            margin: 0 !important; overflow: visible !important;
+        }
+    }
+</style>
+@endpush

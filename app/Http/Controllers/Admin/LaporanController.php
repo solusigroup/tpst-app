@@ -365,9 +365,6 @@ class LaporanController extends Controller
             ->when($status, fn ($q) => $q->where('status', $status))
             ->orderByDesc('waktu_masuk');
 
-        $rows = $query->paginate(20)->withQueryString();
-        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
-
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
 
         $rekapJenis = (clone $query)->reorder()
@@ -376,6 +373,24 @@ class LaporanController extends Controller
             ->groupBy('armada.jenis_armada')
             ->get();
 
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'status', 'totals', 'rekapJenis');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.ritase-export', $data);
+                return $pdf->download('Laporan_Ritase_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.ritase-export', $data), 
+                    'Laporan_Ritase_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'status', 'totals', 'rekapJenis'));
     }
 
@@ -391,9 +406,24 @@ class LaporanController extends Controller
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->orderByDesc('tanggal');
 
-        $rows = $query->paginate(20)->withQueryString();
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_kg) as total_berat, SUM(total_harga) as total_harga, COUNT(*) as total_rows')->first();
 
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'dari', 'sampai', 'totals');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.penjualan-export', $data);
+                return $pdf->download('Laporan_Penjualan_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.penjualan-export', $data), 
+                    'Laporan_Penjualan_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.penjualan', compact('rows', 'dari', 'sampai', 'totals'));
     }
 
@@ -458,6 +488,22 @@ class LaporanController extends Controller
             'sisa_stok' => $totalSisaAll
         ];
 
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'dari', 'sampai', 'kategori', 'totals', 'stokSummary', 'summaryTotals');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.hasil-pilahan-export', $data);
+                return $pdf->download('Laporan_Hasil_Pilahan_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.hasil-pilahan-export', $data), 
+                    'Laporan_Hasil_Pilahan_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'totals', 'stokSummary', 'summaryTotals'));
     }
 
@@ -509,9 +555,6 @@ class LaporanController extends Controller
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->orderByDesc('attendance_date');
 
-        $rows = $query->paginate(20)->withQueryString();
-        $users = \App\Models\User::role('karyawan')->orderBy('name')->get();
-
         $totals = (object)[
             'present' => (clone $query)->where('status', 'present')->count(),
             'absent' => (clone $query)->where('status', 'absent')->count(),
@@ -520,6 +563,24 @@ class LaporanController extends Controller
             'total_rows' => (clone $query)->count(),
         ];
 
+        $users = \App\Models\User::role('karyawan')->orderBy('name')->get();
+
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.attendance-export', $data);
+                return $pdf->download('Laporan_Kehadiran_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.attendance-export', $data), 
+                    'Laporan_Kehadiran_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals'));
     }
 }
