@@ -200,45 +200,50 @@
         body * {
             visibility: hidden;
             overflow: visible !important;
-        }
-        /* Only show the printArea and its ancestors (to keep it in DOM structure) */
-        #printArea, #printArea * {
-            visibility: visible;
-        }
-        /* Position printArea at the very top of the printed page */
-        #printArea {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        /* Ensure the modal and its content are visible, but hide UI chrome */
-        .modal-backdrop, .sidebar, .header, .mobile-bottom-nav, .modal-header, .modal-footer {
+        .sidebar, .header, .mobile-bottom-nav, .modal-backdrop, .breadcrumb, .page-header, .card, form, .no-print, .d-print-none {
             display: none !important;
         }
+        .wrapper { padding: 0 !important; margin: 0 !important; }
+        .body { padding: 0 !important; margin: 0 !important; }
+        .container-fluid { padding: 0 !important; margin: 0 !important; }
         .modal {
-            padding: 0 !important;
-            margin: 0 !important;
             display: block !important;
-            position: static;
-            overflow: visible !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background: white !important;
         }
         .modal-dialog {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            display: block !important;
+        }
+        .modal-header, .modal-footer {
+            display: none !important;
         }
         .modal-content, .modal-body {
             display: block !important;
             border: none !important;
             box-shadow: none !important;
             padding: 0 !important;
+            background: white !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        #printArea {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+            padding: 0 !important;
             margin: 0 !important;
-            background: transparent !important;
+        }
+        #printArea * {
+            visibility: visible !important;
+            opacity: 1 !important;
         }
     }
 </style>
