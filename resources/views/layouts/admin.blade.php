@@ -69,9 +69,23 @@
         .sidebar-brand {
             background: rgba(0,0,0,.15);
         }
-        .sidebar-nav .nav-link.active {
-            background: rgba(255,255,255,.1);
-            border-left: 3px solid #3b82f6;
+        .sidebar-nav .nav-title {
+            color: #adff2f !important; /* Hijau Stabilo */
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding-top: 1.5rem !important;
+            padding-bottom: 0.5rem !important;
+            margin-top: 0.5rem !important;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        [data-coreui-theme="light"] .sidebar-nav .nav-title {
+            color: #2d5a27 !important;
+            border-top-color: rgba(0,0,0,0.1);
+        }
+        .sidebar-nav .nav-link {
+            padding-right: 1.25rem !important;
+            position: relative;
         }
         .sidebar-nav .nav-group-toggle::after {
             filter: brightness(0) invert(1);
@@ -191,16 +205,13 @@
                 padding-left: var(--cui-sidebar-occupy-start, 256px);
                 transition: padding-left 0.3s;
             }
-            .sidebar-fixed {
-                width: 256px;
-            }
             #sidebar.hide + .wrapper {
-                padding-left: 0;
+                padding-left: 0 !important;
             }
         }
         @media (max-width: 767.98px) {
             .sidebar-fixed {
-                width: 256px;
+                width: var(--cui-sidebar-width) !important;
                 transform: translateX(-100%);
                 transition: transform 0.3s;
             }
@@ -513,7 +524,7 @@
 
             {{-- Mesin & Logbook --}}
             @canany(['view_machine', 'view_machine_log'])
-            <li class="nav-group {{ request()->routeIs('admin.machines.*') || request()->routeIs('admin.machine-logs.*') ? 'show' : '' }}">
+            <li class="nav-group">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-memory"></i> Master & Log Mesin
                 </a>
@@ -584,7 +595,7 @@
             <li class="nav-title">Laporan</li>
             @endcan
             @can('view_laporan_keuangan')
-            <li class="nav-group {{ request()->routeIs('admin.laporan.*') ? 'show' : '' }}">
+            <li class="nav-group {{ request()->is('admin/laporan*') && !request()->is('admin/laporan-operasional*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-chart"></i> Laporan Keuangan
                 </a>
@@ -611,7 +622,7 @@
             </li>
             @endcan
             @can('view_laporan_operasional')
-            <li class="nav-group {{ request()->routeIs('admin.laporan-operasional.*') ? 'show' : '' }}">
+            <li class="nav-group {{ request()->is('admin/laporan-operasional*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-clipboard"></i> Laporan Operasional
                 </a>
@@ -677,8 +688,8 @@
             @endcan
             @can('view_buku_pembantu')
             {{-- Buku Pembantu --}}
-            <li class="nav-group {{ request()->routeIs('admin.buku-pembantu.*') ? 'show' : '' }}">
-                <a class="nav-link nav-group-toggle" href="#">
+            <li class="nav-group">
+                <a class="nav-link nav-group-toggle" data-coreui-toggle="nav-group" href="#">
                     <i class="nav-icon cil-library"></i> Buku Pembantu
                 </a>
                 <ul class="nav-group-items compact">
@@ -697,8 +708,9 @@
             @endcan
 
             {{-- HRD (Sumber Daya Manusia) --}}
-            @hasanyrole('manajemen|hrd|keuangan|super_admin')
+            @canany(['view_attendance', 'view_employee_output', 'view_waste_category', 'view_wage_rate', 'view_wage_calculation', 'view_employee'])
             <li class="nav-title">S D M</li>
+            @endcanany
             
             @hasanyrole('manajemen|hrd|super_admin')
             <li class="nav-item">
@@ -731,20 +743,28 @@
             @endhasanyrole
 
             @hasanyrole('manajemen|hrd|keuangan|super_admin')
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.wage-rate.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-rate.index') }}">
-                    <i class="nav-icon cil-dollar"></i> Tarif Upah
+            <li class="nav-group {{ request()->is('admin/hrd/wage-*') || request()->routeIs('admin.laporan-operasional.upah') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-dollar"></i> Gaji & Upah
                 </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.hrd.wage-rate.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-rate.index') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Tarif Upah
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.hrd.wage-calculation.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-calculation.index') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perhitungan Upah
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.upah') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.upah') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Upah
+                        </a>
+                    </li>
+                </ul>
             </li>
-            @endhasanyrole
-
-            @hasanyrole('manajemen|keuangan|super_admin')
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.hrd.wage-calculation.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-calculation.index') }}">
-                    <i class="nav-icon cil-calculator"></i> Perhitungan Upah
-                </a>
-            </li>
-            @endhasanyrole
             @endhasanyrole
 
             {{-- Administrasi --}}
@@ -796,7 +816,7 @@
                 </a>
             </li>
 
-            @if(auth()->user() && auth()->user()->is_super_admin)
+            @if(auth()->user() && (auth()->user()->is_super_admin || auth()->user()->hasRole('super_admin')))
             <!-- CENTRAL PANEL -->
             <li class="nav-title text-danger">CENTRAL PANEL (SUPERADMIN)</li>
             <li class="nav-item">
@@ -815,7 +835,7 @@
                 </a>
             </li>
             @endif
-        </ul>
+            </ul>
         <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
     </div>
 

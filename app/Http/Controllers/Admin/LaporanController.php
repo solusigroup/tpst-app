@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use App\Models\PengangkutanResidu;
+use App\Models\WageCalculation;
 
 
 class LaporanController extends Controller
@@ -582,5 +583,57 @@ class LaporanController extends Controller
 
         $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals'));
+    }
+
+    public function laporanUpah(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+
+        $dari = $request->get('dari');
+        $sampai = $request->get('sampai');
+        $month = $request->get('month');
+        $year = $request->get('year', date('Y'));
+        $skemaUpah = $request->get('skema_upah');
+
+        if ($month) {
+            $dari = Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
+            $sampai = Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+        } else {
+            $dari = $dari ?: now()->startOfMonth()->format('Y-m-d');
+            $sampai = $sampai ?: now()->format('Y-m-d');
+        }
+
+        $query = WageCalculation::with('user')
+            ->join('users', 'wage_calculations.user_id', '=', 'users.id')
+            ->select('wage_calculations.*')
+            ->when($dari, fn ($q) => $q->whereDate('week_start', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('week_start', '<=', $sampai))
+            ->when($skemaUpah, fn ($q) => $q->where('users.salary_type', $skemaUpah))
+            ->orderByDesc('week_start');
+
+        $totals = (object)[
+            'total_wage' => (clone $query)->sum('total_wage'),
+            'total_paid' => (clone $query)->where('wage_calculations.status', 'paid')->sum('total_wage'),
+            'total_unpaid' => (clone $query)->where('wage_calculations.status', '!=', 'paid')->sum('total_wage'),
+            'total_rows' => (clone $query)->count(),
+        ];
+
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $rows = $query->get();
+            $data = compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'totals');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.upah-export', $data);
+                return $pdf->download('Laporan_Upah_Karyawan_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.upah-export', $data), 
+                    'Laporan_Upah_Karyawan_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+        }
+
+        $rows = $query->paginate(20)->withQueryString();
+        return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'totals'));
     }
 }
