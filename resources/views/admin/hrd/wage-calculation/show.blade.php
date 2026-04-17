@@ -45,11 +45,21 @@
             </div>
             
             @if($wageCalculation->status == 'pending')
-            <div class="card-body border-top">
-                <form action="{{ route('admin.hrd.wage-calculation.approve', $wageCalculation) }}" method="POST" onsubmit="return confirm('Setujui perhitungan ini?')">
-                    @csrf
-                    <button class="btn btn-info w-100 text-white"><i class="cil-check-circle me-1"></i> Setujui Upah</button>
-                </form>
+            <div class="card-body border-top p-2">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <form action="{{ route('admin.hrd.wage-calculation.recalculate', $wageCalculation) }}" method="POST" onsubmit="return confirm('Peringatan: Upah akan dihitung ulang berdasarkan data kehadiran dan output terbaru. Lanjutkan?')">
+                            @csrf
+                            <button class="btn btn-outline-warning w-100"><i class="cil-reload me-1"></i> Hitung Ulang</button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form action="{{ route('admin.hrd.wage-calculation.approve', $wageCalculation) }}" method="POST" onsubmit="return confirm('Setujui perhitungan ini?')">
+                            @csrf
+                            <button class="btn btn-info w-100 text-white"><i class="cil-check-circle me-1"></i> Setujui Upah</button>
+                        </form>
+                    </div>
+                </div>
             </div>
             @endif
 

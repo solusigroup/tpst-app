@@ -110,6 +110,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::resource('employee', EmployeeController::class);
         Route::match(['post', 'patch'], 'wage-calculation/{wageCalculation}/approve', [WageCalculationController::class, 'approve'])->name('wage-calculation.approve');
         Route::match(['post', 'patch'], 'wage-calculation/{wageCalculation}/pay', [WageCalculationController::class, 'pay'])->name('wage-calculation.pay');
+        Route::post('wage-calculation/{wageCalculation}/recalculate', [WageCalculationController::class, 'recalculate'])->name('wage-calculation.recalculate');
         Route::get('wage-calculation/{wageCalculation}/export-slip', [WageCalculationController::class, 'exportSlip'])->name('wage-calculation.export-slip');
     });
 });

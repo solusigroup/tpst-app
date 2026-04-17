@@ -172,5 +172,21 @@ class WageCalculationController extends Controller
         $pdf = Pdf::loadView('admin.hrd.wage-calculation.pdf-slip', compact('wageCalculation', 'outputs'));
         
         return $pdf->stream('Slip_Gaji_' . ($wageCalculation->user->name ?? 'Karyawan') . '_' . \Carbon\Carbon::parse($wageCalculation->week_start)->format('dmY') . '.pdf');
+    public function recalculate(WageCalculation $wageCalculation)
+    {
+        $this->authorize('update', $wageCalculation);
+
+        if ($wageCalculation->status !== 'pending') {
+            return redirect()->back()->with('error', 'Hanya perhitungan berstatus Pending yang dapat dihitung ulang.');
+        }
+
+        WageCalculation::calculateForEmployee(
+            $wageCalculation->user_id, 
+            Carbon::parse($wageCalculation->week_start), 
+            $wageCalculation->tenant_id
+        );
+
+        return redirect()->route('admin.hrd.wage-calculation.show', $wageCalculation)
+            ->with('success', 'Perhitungan upah berhasil diperbarui.');
     }
 }
