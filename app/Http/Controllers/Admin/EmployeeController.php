@@ -28,6 +28,22 @@ class EmployeeController extends Controller
             $query->where('salary_type', $request->salary_type);
         }
 
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            $employees = $query->orderBy('name')->get();
+            $data = compact('employees');
+
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.hrd.employee.export', $data)
+                    ->setPaper('a4', 'landscape');
+                return $pdf->stream('Database_Karyawan_' . now()->format('Ymd') . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.hrd.employee.export', $data), 
+                    'Database_Karyawan_' . now()->format('Ymd') . '.xlsx'
+                );
+            }
+        }
+
         $employees = $query->orderBy('name')->paginate(20);
 
         return view('admin.hrd.employee.index', compact('employees'));

@@ -8,11 +8,19 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <strong>Daftar Karyawan</strong>
-                @can('create_employee')
-                    <a href="{{ route('admin.hrd.employee.create') }}" class="btn btn-primary btn-sm">
-                        <i class="cil-plus"></i> Tambah Karyawan
+                <div class="btn-group btn-group-sm">
+                    <a href="{{ route('admin.hrd.employee.index', array_merge(request()->all(), ['export' => 'excel'])) }}" target="_blank" class="btn btn-outline-success">
+                        <i class="cil-save"></i> Export Excel
                     </a>
-                @endcan
+                    <a href="{{ route('admin.hrd.employee.index', array_merge(request()->all(), ['export' => 'pdf'])) }}" target="_blank" class="btn btn-outline-danger">
+                        <i class="cil-print"></i> Cetak Database (PDF)
+                    </a>
+                    @can('create_employee')
+                        <a href="{{ route('admin.hrd.employee.create') }}" class="btn btn-primary">
+                            <i class="cil-plus"></i> Tambah Karyawan
+                        </a>
+                    @endcan
+                </div>
             </div>
             <div class="card-body">
                 @if(session('success'))
