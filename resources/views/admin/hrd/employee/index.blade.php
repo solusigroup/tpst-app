@@ -89,16 +89,19 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @can('update_employee')
-                                            <a href="{{ route('admin.hrd.employee.edit', $emp->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        @endcan
-                                        @can('delete_employee')
-                                            <form action="{{ route('admin.hrd.employee.destroy', $emp->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                            </form>
-                                        @endcan
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ route('admin.hrd.employee.show', $emp->id) }}" class="btn btn-outline-info" title="Lihat Detail"><i class="cil-user"></i></a>
+                                            @can('update_employee')
+                                                <a href="{{ route('admin.hrd.employee.edit', $emp->id) }}" class="btn btn-outline-warning" title="Edit"><i class="cil-pencil"></i></a>
+                                            @endcan
+                                            @can('delete_employee')
+                                                <form action="{{ route('admin.hrd.employee.destroy', $emp->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger" title="Hapus"><i class="cil-trash"></i></button>
+                                                </form>
+                                            @endcan
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

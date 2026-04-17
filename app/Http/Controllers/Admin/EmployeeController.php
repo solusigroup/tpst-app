@@ -117,6 +117,16 @@ class EmployeeController extends Controller
         return view('admin.hrd.employee.edit', compact('employee'));
     }
 
+    public function show(User $employee)
+    {
+        // Permission check can reuse view_employee or similar
+        // For now, let's keep it consistent with edit
+        if (!auth()->user()->isSuperAdmin()) {
+            abort_if($employee->tenant_id !== auth()->user()->tenant_id, 403, 'Unauthorized.');
+        }
+        return view('admin.hrd.employee.show', compact('employee'));
+    }
+
     public function update(Request $request, User $employee)
     {
         $this->authorize('update_employee', $employee);
