@@ -1,4 +1,4 @@
-@extends('admin.laporan.exports.layout', ['title' => 'Laporan Perhitungan Upah Karyawan'])
+@extends('admin.laporan.exports.layout', ['title' => 'Laporan Upah Karyawan'])
 
 @section('content')
 <div class="text-center mb-4">
@@ -30,6 +30,9 @@
             <th width="30">No</th>
             <th>Periode</th>
             <th>Nama Karyawan</th>
+            <th class="text-center">H</th>
+            <th class="text-center">S/I</th>
+            <th class="text-center">A</th>
             <th>Skema</th>
             <th class="text-right">Total Upah</th>
             <th class="text-right">Sdh Dibayar</th>
@@ -44,6 +47,9 @@
             <td class="text-center">{{ $index + 1 }}</td>
             <td style="font-size: 10px;">{{ \Carbon\Carbon::parse($r->week_start)->format('d/m/y') }}-{{ \Carbon\Carbon::parse($r->week_end)->format('d/m/y') }}</td>
             <td>{{ $r->user->name ?? '-' }}</td>
+            <td class="text-center">{{ $r->stats->hadir ?? 0 }}</td>
+            <td class="text-center">{{ ($r->stats->sakit ?? 0) + ($r->stats->izin ?? 0) }}</td>
+            <td class="text-center">{{ $r->stats->mangkir ?? 0 }}</td>
             <td style="text-transform: capitalize;">{{ $r->user->salary_type ?? '-' }}</td>
             <td class="text-right">Rp {{ number_format($r->total_wage, 0, ',', '.') }}</td>
             <td class="text-right">
@@ -59,7 +65,7 @@
     </tbody>
     <tfoot>
         <tr style="background-color: #f0f0f0; font-weight: bold;">
-            <td colspan="4" class="text-right">TOTAL</td>
+            <td colspan="7" class="text-right">TOTAL</td>
             <td class="text-right">Rp {{ number_format($totals->total_wage, 0, ',', '.') }}</td>
             <td class="text-right">Rp {{ number_format($totals->total_paid, 0, ',', '.') }}</td>
             <td class="text-right">Rp {{ number_format($totals->total_unpaid, 0, ',', '.') }}</td>

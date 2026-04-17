@@ -620,6 +620,24 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
+            
+            foreach ($rows as $row) {
+                $row->stats = (object)[
+                    'hadir' => \App\Models\Attendance::where('user_id', $row->user_id)
+                        ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                        ->where('status', 'present')->count(),
+                    'izin' => \App\Models\Attendance::where('user_id', $row->user_id)
+                        ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                        ->where('status', 'leave')->count(),
+                    'sakit' => \App\Models\Attendance::where('user_id', $row->user_id)
+                        ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                        ->where('status', 'sick')->count(),
+                    'mangkir' => \App\Models\Attendance::where('user_id', $row->user_id)
+                        ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                        ->where('status', 'absent')->count(),
+                ];
+            }
+
             $data = compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'totals');
 
             if ($request->export === 'pdf') {
@@ -635,7 +653,7 @@ class LaporanController extends Controller
 
         $rows = $query->paginate(20)->withQueryString();
 
-        // Add attendance stats to each row
+        // Add attendance stats to web rows
         foreach ($rows as $row) {
             $row->stats = (object)[
                 'hadir' => \App\Models\Attendance::where('user_id', $row->user_id)
