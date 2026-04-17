@@ -172,6 +172,8 @@ class WageCalculationController extends Controller
         $pdf = Pdf::loadView('admin.hrd.wage-calculation.pdf-slip', compact('wageCalculation', 'outputs'));
         
         return $pdf->stream('Slip_Gaji_' . ($wageCalculation->user->name ?? 'Karyawan') . '_' . \Carbon\Carbon::parse($wageCalculation->week_start)->format('dmY') . '.pdf');
+    }
+
     public function recalculate(WageCalculation $wageCalculation)
     {
         $this->authorize('update', $wageCalculation);
