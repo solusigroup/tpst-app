@@ -620,7 +620,7 @@
                     </li>
                 </ul>
             </li>
-            @endcan
+            @endcanany
             @can('view_laporan_operasional')
             <li class="nav-group {{ request()->is('admin/laporan-operasional*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
@@ -647,9 +647,8 @@
             @endcan
 
             {{-- Keuangan --}}
-            @canany(['view_coa', 'view_jurnal', 'view_jurnal_kas', 'view_invoice', 'view_vendor', 'view_buku_pembantu'])
             <li class="nav-title">Keuangan</li>
-            @endcan
+            @endcanany
             @can('view_coa')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.coa.*') ? 'active' : '' }}" href="{{ route('admin.coa.index') }}">
@@ -768,9 +767,8 @@
             @endhasanyrole
 
             {{-- Administrasi --}}
-            @canany(['view_users', 'view_company_settings', 'view_activity_log'])
             <li class="nav-title">Administrasi</li>
-            @endcan
+            @endcanany
             @can('view_users')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}" href="{{ route('admin.roles.index') }}">
