@@ -102,11 +102,13 @@ class WageCalculationController extends Controller
 
     public function approve(WageCalculation $wageCalculation)
     {
-        $this->authorize('update', $wageCalculation);
+        $this->authorize('approve', $wageCalculation);
 
-        $wageCalculation->update(['status' => 'approved']);
+        if ($wageCalculation->approve(auth()->id())) {
+            return back()->with('success', 'Upah berhasil disetujui');
+        }
 
-        return back()->with('success', 'Upah berhasil disetujui');
+        return back()->with('error', 'Gagal menyetujui upah');
     }
 
     public function pay(Request $request, WageCalculation $wageCalculation)

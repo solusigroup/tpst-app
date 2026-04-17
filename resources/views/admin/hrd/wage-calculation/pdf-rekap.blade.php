@@ -26,8 +26,9 @@
             <th class="text-center">No</th>
             <th>Karyawan</th>
             <th>Periode Mingguan</th>
-            <th class="text-end">Total Output</th>
-            <th class="text-end">Total Upah</th>
+            <th class="text-end">Base Wage</th>
+            <th class="text-end">Overtime</th>
+            <th class="text-end">Total Pay</th>
             <th>Status</th>
         </tr>
     </thead>
@@ -43,8 +44,9 @@
                     {{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}
                 @endif
             </td>
-            <td class="text-end">{{ number_format($item->total_quantity, 2, ',', '.') }} kg</td>
-            <td class="text-end">Rp {{ number_format($item->total_wage, 2, ',', '.') }}</td>
+            <td class="text-end">Rp {{ number_format($item->total_wage, 0, ',', '.') }}</td>
+            <td class="text-end">Rp {{ number_format($item->overtime_pay, 0, ',', '.') }}</td>
+            <td class="text-end"><strong>Rp {{ number_format($item->total_wage + $item->overtime_pay, 0, ',', '.') }}</strong></td>
             <td>
                 @if($item->status == 'pending') Pending
                 @elseif($item->status == 'approved') Disetujui

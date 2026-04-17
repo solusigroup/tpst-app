@@ -82,7 +82,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Oleh</th><th>Skema Upah</th><th>Periode Mingguan</th><th>Total Upah</th><th>Total Output</th><th>Status</th><th class="text-end">Aksi</th></tr>
+                    <tr><th>Oleh</th><th>Skema Upah</th><th>Periode Mingguan</th><th>Upah Dasar</th><th>Lembur</th><th>Total Upah</th><th>Output</th><th>Status</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
                     @forelse($wages as $item)
@@ -96,19 +96,61 @@
                                 {{ \Carbon\Carbon::parse($item->week_start)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->week_end)->format('d/m/Y') }}
                             @endif
                         </td>
-                        <td><strong>Rp {{ number_format($item->total_wage, 2, ',', '.') }}</strong></td>
+                        <td>Rp {{ number_format($item->total_wage, 0, ',', '.') }}</td>
+                        <td class="{{ $item->overtime_pay > 0 ? 'text-success' : 'text-muted' }}">
+                            {{ $item->overtime_pay > 0 ? 'Rp '.number_format($item->overtime_pay, 0, ',', '.') : '-' }}
+                        </td>
+                        <td><strong>Rp {{ number_format($item->total_wage + $item->overtime_pay, 0, ',', '.') }}</strong></td>
                         <td>{{ number_format($item->total_quantity, 2, ',', '.') }} kg</td>
                         <td>
                             @if($item->status == 'pending') <span class="badge bg-warning">Pending</span>
                             @elseif($item->status == 'approved') <span class="badge bg-info">Disetujui</span>
+                                <div class="small text-muted">Oleh: {{ $item->approvedBy->name ?? '-' }}</div>
                             @elseif($item->status == 'paid') <span class="badge bg-success">Dibayar</span>
                             @endif
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.hrd.wage-calculation.show', $item) }}" class="btn btn-outline-info"><i class="cil-search"></i> Detail</a>
-                                <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\WageCalculation'), 'ref_id' => $item->id]) }}" class="btn btn-outline-primary" title="Buat Jurnal"><i class="cil-book"></i> Jurnal</a>
+                                <a href="{{ route('admin.hrd.wage-calculation.show', $item) }}" class="btn btn-outline-info" title="Detail"><i class="cil-search"></i></a>
+                                
+                                @if($item->status === 'pending' && auth()->user()->hasRole(['manajemen', 'super_admin']))
+                                <form action="{{ route('admin.hrd.wage-calculation.approve', $item) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-success" title="Setujui" onclick="return confirm('Setujui perhitungan upah ini?')"><i class="cil-check"></i></button>
+                                </form>
+                                @endif
+
+                                @if($item->status === 'approved')
+                                <button type="button" class="btn btn-outline-primary" title="Bayar" data-coreui-toggle="modal" data-coreui-target="#payModal{{ $item->id }}"><i class="cil-money"></i></button>
+                                @endif
+
+                                <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\WageCalculation'), 'ref_id' => $item->id]) }}" class="btn btn-outline-secondary" title="Buat Jurnal"><i class="cil-book"></i></a>
                             </div>
+
+                            @if($item->status === 'approved')
+                            <!-- Pay Modal -->
+                            <div class="modal fade" id="payModal{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-sm">
+                                    <form action="{{ route('admin.hrd.wage-calculation.pay', $item) }}" method="POST" class="modal-content text-start">
+                                        @csrf
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Konfirmasi Pembayaran</h5>
+                                            <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Total: <strong>Rp {{ number_format($item->total_wage + $item->overtime_pay, 0, ',', '.') }}</strong></p>
+                                            <div class="mb-3">
+                                                <label class="form-label">Tanggal Bayar</label>
+                                                <input type="date" name="paid_date" class="form-control" required value="{{ date('Y-m-d') }}">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-success text-white w-100">Bayar Sekarang</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            @endif
                         </td>
                     </tr>
                     @empty

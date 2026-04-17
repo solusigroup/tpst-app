@@ -86,9 +86,17 @@
     Total Keseluruhan Output: {{ number_format($wageCalculation->total_quantity, 2, ',', '.') }} kg<br><br>
     @endif
     @if($wageCalculation->user->salary_type === 'bulanan')
-    GAJI POKOK BULANAN: Rp {{ number_format($wageCalculation->user->monthly_salary ?? 0, 0, ',', '.') }}<br><br>
+    GAJI POKOK BULANAN: Rp {{ number_format($wageCalculation->user->monthly_salary ?? 0, 0, ',', '.') }}<br>
+    @else
+    UPAH DASAR: Rp {{ number_format($wageCalculation->total_wage, 0, ',', '.') }}<br>
     @endif
-    TOTAL UPAH DITERIMA: Rp {{ number_format($wageCalculation->total_wage, 0, ',', '.') }}
+    
+    @if($wageCalculation->overtime_pay > 0)
+    UPAH LEMBUR: Rp {{ number_format($wageCalculation->overtime_pay, 0, ',', '.') }}<br>
+    @endif
+    
+    <br>
+    <strong>TOTAL UPAH DITERIMA: Rp {{ number_format($wageCalculation->total_wage + $wageCalculation->overtime_pay, 0, ',', '.') }}</strong>
 </div>
 
 <div class="footer">

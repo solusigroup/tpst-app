@@ -57,6 +57,10 @@ class EmployeeController extends Controller
             'daily_wage' => 'nullable|numeric|min:0',
             'payment_frequency' => 'nullable|in:Mingguan,Dua Mingguan',
             'photo' => 'nullable|image',
+            'joined_at' => 'nullable|date',
+            'ended_at' => 'nullable|date',
+            'bpjs_status' => 'required|in:Aktif,Tidak Aktif',
+            'bpjs_number' => 'nullable|string|max:50',
         ]);
         
         if ($validated['salary_type'] !== 'bulanan') {
@@ -117,6 +121,10 @@ class EmployeeController extends Controller
             'daily_wage' => 'nullable|numeric|min:0',
             'payment_frequency' => 'nullable|in:Mingguan,Dua Mingguan',
             'photo' => 'nullable|image',
+            'joined_at' => 'nullable|date',
+            'ended_at' => 'nullable|date',
+            'bpjs_status' => 'required|in:Aktif,Tidak Aktif',
+            'bpjs_number' => 'nullable|string|max:50',
         ]);
 
         if ($validated['salary_type'] !== 'bulanan') {

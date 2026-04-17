@@ -17,6 +17,7 @@ class Attendance extends Model
         'check_in',
         'check_out',
         'status',
+        'overtime_pay',
         'notes',
     ];
 

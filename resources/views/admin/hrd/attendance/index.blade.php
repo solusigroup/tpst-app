@@ -80,7 +80,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Tanggal</th><th>Karyawan</th><th>Check In</th><th>Check Out</th><th>Status</th><th class="text-end">Aksi</th></tr>
+                    <tr><th>Tanggal</th><th>Karyawan</th><th>Check In</th><th>Check Out</th><th>Overtime</th><th>Status</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
                     @forelse($attendances as $item)
@@ -89,6 +89,7 @@
                         <td><strong>{{ $item->user->name }}</strong></td>
                         <td>{{ $item->check_in ? \Carbon\Carbon::parse($item->check_in)->format('H:i') : '-' }}</td>
                         <td>{{ $item->check_out ? \Carbon\Carbon::parse($item->check_out)->format('H:i') : '-' }}</td>
+                        <td>{{ $item->overtime_pay ? 'Rp '.number_format($item->overtime_pay, 0, ',', '.') : '-' }}</td>
                         <td>
                             @if($item->status == 'present') <span class="badge bg-success">Hadir</span>
                             @elseif($item->status == 'absent') <span class="badge bg-danger">Mangkir</span>

@@ -45,6 +45,10 @@ class User extends Authenticatable
         'daily_wage',
         'gender',
         'payment_frequency',
+        'joined_at',
+        'ended_at',
+        'bpjs_status',
+        'bpjs_number',
     ];
 
     /**
@@ -69,6 +73,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => 'string',
             'is_super_admin' => 'boolean',
+            'joined_at' => 'date',
+            'ended_at' => 'date',
         ];
     }
 

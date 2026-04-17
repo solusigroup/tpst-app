@@ -54,6 +54,15 @@
                     @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
+                <div class="col-md-6">
+                    <label class="form-label">Upah Lembur (Rp) - Opsional</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" name="overtime_pay" class="form-control @error('overtime_pay') is-invalid @enderror" value="{{ old('overtime_pay', 0) }}" min="0" step="1">
+                    </div>
+                    @error('overtime_pay')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
+
                 <div class="col-md-12">
                     <label class="form-label">Catatan</label>
                     <textarea name="notes" rows="3" class="form-control @error('notes') is-invalid @enderror">{{ old('notes') }}</textarea>

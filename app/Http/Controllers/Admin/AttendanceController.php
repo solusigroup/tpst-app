@@ -70,6 +70,7 @@ class AttendanceController extends Controller
             'check_in' => 'nullable|date_format:H:i',
             'check_out' => 'nullable|date_format:H:i',
             'status' => 'required|in:present,absent,sick,leave',
+            'overtime_pay' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 
@@ -101,6 +102,7 @@ class AttendanceController extends Controller
             'check_in' => 'nullable|date_format:H:i',
             'check_out' => 'nullable|date_format:H:i',
             'status' => 'required|in:present,absent,sick,leave',
+            'overtime_pay' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 

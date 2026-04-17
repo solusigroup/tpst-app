@@ -634,6 +634,25 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
+
+        // Add attendance stats to each row
+        foreach ($rows as $row) {
+            $row->stats = (object)[
+                'hadir' => \App\Models\Attendance::where('user_id', $row->user_id)
+                    ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                    ->where('status', 'present')->count(),
+                'izin' => \App\Models\Attendance::where('user_id', $row->user_id)
+                    ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                    ->where('status', 'leave')->count(),
+                'sakit' => \App\Models\Attendance::where('user_id', $row->user_id)
+                    ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                    ->where('status', 'sick')->count(),
+                'mangkir' => \App\Models\Attendance::where('user_id', $row->user_id)
+                    ->whereBetween('attendance_date', [$row->week_start, $row->week_end])
+                    ->where('status', 'absent')->count(),
+            ];
+        }
+
         return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'totals'));
     }
 }

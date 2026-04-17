@@ -58,6 +58,35 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
+                            <label class="form-label">Tgl Masuk Kerja</label>
+                            <input type="date" name="joined_at" class="form-control @error('joined_at') is-invalid @enderror" value="{{ old('joined_at') }}">
+                            @error('joined_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tgl Berhenti Kerja</label>
+                            <input type="date" name="ended_at" class="form-control @error('ended_at') is-invalid @enderror" value="{{ old('ended_at') }}">
+                            @error('ended_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Kepesertaan BPJS <span class="text-danger">*</span></label>
+                            <select name="bpjs_status" class="form-select @error('bpjs_status') is-invalid @enderror" required>
+                                <option value="Tidak Aktif" {{ old('bpjs_status') == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+                                <option value="Aktif" {{ old('bpjs_status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                            </select>
+                            @error('bpjs_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor BPJS</label>
+                            <input type="text" name="bpjs_number" class="form-control @error('bpjs_number') is-invalid @enderror" value="{{ old('bpjs_number') }}">
+                            @error('bpjs_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label class="form-label">Skema Upah</label>
                             <select name="salary_type" id="salary_type" class="form-select @error('salary_type') is-invalid @enderror">
                                 <option value="">-- Pilih Tipe --</option>

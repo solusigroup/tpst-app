@@ -21,7 +21,10 @@ class WageCalculation extends Model
         'week_end',
         'total_quantity',
         'total_wage',
+        'overtime_pay',
         'status',
+        'approved_by_id',
+        'approved_at',
         'paid_date',
         'notes',
     ];
@@ -31,7 +34,9 @@ class WageCalculation extends Model
         'week_end' => 'date',
         'total_quantity' => 'decimal:2',
         'total_wage' => 'decimal:2',
+        'overtime_pay' => 'decimal:2',
         'paid_date' => 'date',
+        'approved_at' => 'datetime',
     ];
 
     public function tenant(): BelongsTo
@@ -82,6 +87,11 @@ class WageCalculation extends Model
             }
         }
 
+        $overtimePay = Attendance::where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('attendance_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
+            ->sum('overtime_pay');
+
         $calculation = self::updateOrCreate(
             [
                 'tenant_id' => $tenantId,
@@ -92,6 +102,7 @@ class WageCalculation extends Model
                 'week_end' => $weekEnd->toDateString(),
                 'total_quantity' => $totalQuantity,
                 'total_wage' => $totalWage,
+                'overtime_pay' => $overtimePay,
                 'status' => 'pending',
             ]
         );
@@ -105,6 +116,30 @@ class WageCalculation extends Model
     public function getTotalOutputAttribute()
     {
         return $this->total_quantity;
+    }
+
+    /**
+     * Approve the calculation.
+     */
+    public function approve(int $approvedById): bool
+    {
+        if ($this->status !== 'pending') {
+            return false;
+        }
+
+        return $this->update([
+            'status' => 'approved',
+            'approved_by_id' => $approvedById,
+            'approved_at' => now(),
+        ]);
+    }
+
+    /**
+     * Get associated approved by user.
+     */
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by_id');
     }
 
     /**

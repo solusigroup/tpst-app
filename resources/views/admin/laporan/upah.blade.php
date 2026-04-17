@@ -109,6 +109,9 @@
                     <tr>
                         <th>Periode</th>
                         <th>Karyawan</th>
+                        <th>H</th>
+                        <th>S/I</th>
+                        <th>A</th>
                         <th>Skema</th>
                         <th class="text-end">Output</th>
                         <th class="text-end">Total Upah</th>
@@ -129,6 +132,9 @@
                             <strong>{{ $r->user->name ?? '-' }}</strong>
                             <div class="small text-body-secondary">{{ $r->user->position ?? '-' }}</div>
                         </td>
+                        <td>{{ $r->stats->hadir ?? 0 }}</td>
+                        <td>{{ ($r->stats->sakit ?? 0) + ($r->stats->izin ?? 0) }}</td>
+                        <td class="text-danger">{{ $r->stats->mangkir ?? 0 }}</td>
                         <td><span class="text-capitalize">{{ $r->user->salary_type ?? '-' }}</span></td>
                         <td class="text-end">{{ number_format($r->total_quantity, 2, ',', '.') }}</td>
                         <td class="text-end fw-bold">Rp {{ number_format($r->total_wage, 0, ',', '.') }}</td>
