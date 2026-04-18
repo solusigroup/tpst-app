@@ -34,7 +34,7 @@
                 <thead class="table-light"><tr><th>No. Invoice</th><th>Klien</th><th>Periode</th><th>Total</th><th>DP</th><th>Sisa</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($invoices as $item)
-                    <tr>
+                    <tr onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;">
                         <td><strong>{{ $item->nomor_invoice ?? '-' }}</strong></td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
                         <td>{{ $item->periode_bulan }}/{{ $item->periode_tahun }}</td>
@@ -46,7 +46,7 @@
                             <span class="badge bg-{{ $invColors[$item->status] ?? 'secondary' }}">{{ $item->status }}</span>
                         </td>
                         <td>{{ \Carbon\Carbon::parse($item->tanggal_invoice)->format('d/m/Y') }}</td>
-                        <td class="text-end">
+                        <td class="text-end" onclick="event.stopPropagation()">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('invoices.print', $item) }}" target="_blank" class="btn btn-outline-success" title="Cetak"><i class="cil-print"></i></a>
                                 <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->id]) }}" class="btn btn-outline-info" title="Buat Jurnal"><i class="cil-book"></i></a>

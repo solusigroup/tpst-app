@@ -94,6 +94,13 @@ class InvoiceAdminController extends Controller
         return redirect()->route('admin.invoice.index')->with('success', 'Invoice berhasil dibuat.');
     }
 
+    public function show(Invoice $invoice)
+    {
+        Gate::authorize('view_invoice');
+        $invoice->load(['klien', 'ritase', 'penjualan']);
+        return view('admin.invoice.show', compact('invoice'));
+    }
+
     public function edit(Invoice $invoice)
     {
         Gate::authorize('update_invoice');
