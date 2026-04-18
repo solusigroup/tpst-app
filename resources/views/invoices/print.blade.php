@@ -194,11 +194,18 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="2" rowspan="3" class="px-4 py-8 align-top italic text-slate-400 text-xs">
-                        * Pembayaran harus dilakukan via transfer ke Rekening
-                        {{ $invoice->tenant->bank_name ?: 'Bank Mandiri' }} <br>
-                        a/n {{ $invoice->tenant->bank_account_name ?: $invoice->tenant->name }} No. Rek:
-                        {{ $invoice->tenant->bank_account_number ?: '123-456-7890' }}
+                    <td colspan="2" rowspan="3" class="px-4 py-8 align-top">
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                            <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">Instruksi Pembayaran:</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Silakan melakukan pembayaran melalui transfer ke rekening berikut:
+                            </p>
+                            <div class="mt-2 text-sm text-slate-800">
+                                <p>Bank: <strong class="uppercase">{{ $invoice->tenant->bank_name ?: '-' }}</strong></p>
+                                <p>No. Rekening: <strong>{{ $invoice->tenant->bank_account_number ?: '-' }}</strong></p>
+                                <p>Atas Nama: <strong>{{ $invoice->tenant->bank_account_name ?: $invoice->tenant->name }}</strong></p>
+                            </div>
+                        </div>
                     </td>
                     <td class="px-4 py-4 text-right font-bold uppercase text-xs tracking-wider text-slate-400">Subtotal
                     </td>

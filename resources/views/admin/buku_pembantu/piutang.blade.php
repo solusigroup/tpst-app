@@ -62,6 +62,7 @@
                         <th>Nama Klien</th>
                         <th>Keterangan</th>
                         <th class="text-end">Jumlah</th>
+                        <th class="text-end">Outstanding</th>
                         <th>Jatuh Tempo</th>
                         <th>Bukti</th>
                         <th>Status</th>
@@ -74,9 +75,13 @@
                         <td><strong>{{ $item->contactable->nama_klien ?? 'N/A' }}</strong></td>
                         <td class="small">{{ $item->keterangan }}</td>
                         <td class="text-end fw-bold text-primary">
-                            <div>Rp {{ number_format($item->jumlah, 0, ',', '.') }}</div>
-                            @if($item->terbayar > 0 && $item->status == 'pending')
-                                <div class="text-muted small">Sisa: Rp {{ number_format($item->jumlah - $item->terbayar, 0, ',', '.') }}</div>
+                            Rp {{ number_format($item->jumlah, 0, ',', '.') }}
+                        </td>
+                        <td class="text-end fw-bold {{ $item->status == 'lunas' ? 'text-success' : 'text-danger' }}">
+                            @if($item->status == 'lunas')
+                                Rp 0
+                            @else
+                                Rp {{ number_format($item->jumlah - $item->terbayar, 0, ',', '.') }}
                             @endif
                         </td>
                         <td class="{{ $item->tanggal_jatuh_tempo < now() && $item->status == 'pending' ? 'text-danger fw-bold' : '' }}">
@@ -99,7 +104,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data piutang.</td>
+                        <td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data piutang.</td>
                     </tr>
                     @endforelse
                 </tbody>
