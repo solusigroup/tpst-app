@@ -55,6 +55,7 @@
                                 <th>Foto</th>
                                 <th>Nama & Jabatan</th>
                                 <th>No. KTP</th>
+                                <th>Alamat</th>
                                 <th>Tipe Gaji</th>
                                 <th>Aksi</th>
                             </tr>
@@ -76,6 +77,11 @@
                                         <small class="text-muted">{{ $emp->position ?? '-' }}</small>
                                     </td>
                                     <td>{{ $emp->ktp_number ?? '-' }}</td>
+                                    <td>
+                                        <div style="max-width: 200px; white-space: normal; font-size: 0.85rem;">
+                                            {{ $emp->address ?? '-' }}
+                                        </div>
+                                    </td>
                                     <td>
                                         @if($emp->salary_type)
                                             <span class="badge bg-{{ $emp->salary_type == 'bulanan' ? 'info' : 'success' }}">
@@ -106,7 +112,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Tidak ada data karyawan</td>
+                                    <td colspan="6" class="text-center">Tidak ada data karyawan</td>
                                 </tr>
                             @endforelse
                         </tbody>

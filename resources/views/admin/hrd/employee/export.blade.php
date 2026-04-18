@@ -19,6 +19,7 @@
             <th>Nama Karyawan</th>
             <th>Jabatan</th>
             <th>No. KTP</th>
+            <th>Alamat</th>
             <th>Gender</th>
             <th>Tipe Gaji</th>
             <th>Gaji/Upah</th>
@@ -36,6 +37,7 @@
             <td><strong>{{ $emp->name }}</strong></td>
             <td>{{ $emp->position ?? '-' }}</td>
             <td>{{ $emp->ktp_number ?? '-' }}</td>
+            <td>{{ $emp->address ?? '-' }}</td>
             <td>{{ $emp->gender ?? '-' }}</td>
             <td style="text-transform: capitalize;">{{ $emp->salary_type ?? '-' }}</td>
             <td>
