@@ -79,7 +79,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Tanggal</th><th>Karyawan</th><th>Check In</th><th>Check Out</th><th>Status</th><th class="text-end">Aksi</th></tr>
+                    <tr><th>Tanggal</th><th>Karyawan</th><th>Check In</th><th>Check Out</th><th>Overtime</th><th>Status</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $attendances; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
@@ -88,6 +88,7 @@
                         <td><strong><?php echo e($item->user->name); ?></strong></td>
                         <td><?php echo e($item->check_in ? \Carbon\Carbon::parse($item->check_in)->format('H:i') : '-'); ?></td>
                         <td><?php echo e($item->check_out ? \Carbon\Carbon::parse($item->check_out)->format('H:i') : '-'); ?></td>
+                        <td><?php echo e($item->overtime_pay ? 'Rp '.number_format($item->overtime_pay, 0, ',', '.') : '-'); ?></td>
                         <td>
                             <?php if($item->status == 'present'): ?> <span class="badge bg-success">Hadir</span>
                             <?php elseif($item->status == 'absent'): ?> <span class="badge bg-danger">Mangkir</span>

@@ -66,7 +66,7 @@ unset($__errorArgs, $__bag); ?>
                 <label class="form-label">Jatuh Tempo <span class="text-danger">*</span></label>
                 <input type="date" name="tanggal_jatuh_tempo" class="form-control" value="<?php echo e(old('tanggal_jatuh_tempo', isset($invoice) ? \Carbon\Carbon::parse($invoice->tanggal_jatuh_tempo)->format('Y-m-d') : date('Y-m-d', strtotime('+14 days')))); ?>" required>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Total Tagihan (Rp) <span class="text-danger">*</span></label>
                 <input type="number" id="total_tagihan" name="total_tagihan" class="form-control <?php $__errorArgs = ['total_tagihan'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -76,7 +76,6 @@ $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('total_tagihan', $invoice->total_tagihan ?? '0')); ?>" required readonly>
-                <small class="text-muted">Dihitung otomatis berdasarkan item yang dipilih.</small>
                 <?php $__errorArgs = ['total_tagihan'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -86,11 +85,61 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
             </div>
+            <div class="col-md-4">
+                <label class="form-label">Uang Muka / DP (Rp)</label>
+                <input type="number" id="uang_muka" name="uang_muka" class="form-control <?php $__errorArgs = ['uang_muka'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('uang_muka', $invoice->uang_muka ?? '0')); ?>" required>
+                <?php $__errorArgs = ['uang_muka'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sisa Tagihan (Rp)</label>
+                <input type="number" id="sisa_tagihan" class="form-control" value="<?php echo e(($invoice->total_tagihan ?? 0) - ($invoice->uang_muka ?? 0)); ?>" readonly>
+            </div>
+            <div class="col-12"><small class="text-muted">Total Tagihan dan Uang Muka dihitung otomatis berdasarkan item yang dipilih.</small></div>
             <div class="col-md-6">
                 <label class="form-label">Status <span class="text-danger">*</span></label>
                 <select name="status" class="form-select" required>
                     <?php $__currentLoopData = ['Draft','Sent','Paid','Canceled']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($s); ?>" <?php echo e(old('status', $invoice->status ?? 'Draft') == $s ? 'selected' : ''); ?>><?php echo e($s); ?></option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Akun Pembayaran (Kas/Bank) <span class="text-danger">*</span></label>
+                <select name="coa_pembayaran_id" class="form-select <?php $__errorArgs = ['coa_pembayaran_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
+                    <?php $__currentLoopData = $coas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($c->id); ?>" <?php echo e(old('coa_pembayaran_id', $invoice->coa_pembayaran_id ?? '') == $c->id ? 'selected' : ( !isset($invoice) && str_contains($c->nama_akun, 'Bank') ? 'selected' : '' )); ?>>
+                            <?php echo e($c->kode_akun); ?> - <?php echo e($c->nama_akun); ?>
+
+                        </option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+                <?php $__errorArgs = ['coa_pembayaran_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
             <div class="col-12 mt-4">
                 <h5 class="border-bottom pb-2">Item Tertagih</h5>
@@ -136,6 +185,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const penjualanContainer = document.getElementById('penjualan-container');
     const penjualanList = document.getElementById('penjualan-list');
     const totalTagihanInput = document.getElementById('total_tagihan');
+    const uangMukaInput = document.getElementById('uang_muka');
+    const sisaTagihanInput = document.getElementById('sisa_tagihan');
     
     // Check if we are editing an invoice
     const invoiceId = "<?php echo e(isset($invoice) ? $invoice->id : ''); ?>";
@@ -146,11 +197,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function calculateTotal() {
         let total = 0;
+        let dp = 0;
         document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
-            total += parseFloat(cb.dataset.price);
+            total += parseFloat(cb.dataset.price || 0);
+            dp += parseFloat(cb.dataset.dp || 0);
         });
         totalTagihanInput.value = total;
+        uangMukaInput.value = dp;
+        calculateBalance();
     }
+
+    function calculateBalance() {
+        const total = parseFloat(totalTagihanInput.value || 0);
+        const dp = parseFloat(uangMukaInput.value || 0);
+        sisaTagihanInput.value = total - dp;
+    }
+
+    uangMukaInput.addEventListener('input', calculateBalance);
 
     function fetchItems() {
         const klienId = klienSelect.value;
@@ -204,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const checked = item.selected ? 'checked' : '';
                         penjualanList.innerHTML += `
                             <div class="form-check">
-                                <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" ${checked}>
+                                <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" data-dp="${item.dp}" ${checked}>
                                 <label class="form-check-label" for="penjualan_${item.id}">
                                     ${item.label}
                                 </label>

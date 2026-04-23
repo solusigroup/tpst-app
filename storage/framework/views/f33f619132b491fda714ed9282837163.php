@@ -6,11 +6,19 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <strong>Daftar Karyawan</strong>
-                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create_employee')): ?>
-                    <a href="<?php echo e(route('admin.hrd.employee.create')); ?>" class="btn btn-primary btn-sm">
-                        <i class="cil-plus"></i> Tambah Karyawan
+                <div class="btn-group btn-group-sm">
+                    <a href="<?php echo e(route('admin.hrd.employee.index', array_merge(request()->all(), ['export' => 'excel']))); ?>" target="_blank" class="btn btn-outline-success">
+                        <i class="cil-save"></i> Export Excel
                     </a>
-                <?php endif; ?>
+                    <a href="<?php echo e(route('admin.hrd.employee.index', array_merge(request()->all(), ['export' => 'pdf']))); ?>" target="_blank" class="btn btn-outline-danger">
+                        <i class="cil-print"></i> Cetak Database (PDF)
+                    </a>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create_employee')): ?>
+                        <a href="<?php echo e(route('admin.hrd.employee.create')); ?>" class="btn btn-primary">
+                            <i class="cil-plus"></i> Tambah Karyawan
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="card-body">
                 <?php if(session('success')): ?>
@@ -81,16 +89,19 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('update_employee')): ?>
-                                            <a href="<?php echo e(route('admin.hrd.employee.edit', $emp->id)); ?>" class="btn btn-warning btn-sm">Edit</a>
-                                        <?php endif; ?>
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete_employee')): ?>
-                                            <form action="<?php echo e(route('admin.hrd.employee.destroy', $emp->id)); ?>" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?');">
-                                                <?php echo csrf_field(); ?>
-                                                <?php echo method_field('DELETE'); ?>
-                                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                            </form>
-                                        <?php endif; ?>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="<?php echo e(route('admin.hrd.employee.show', $emp->id)); ?>" class="btn btn-outline-info" title="Lihat Detail"><i class="cil-user"></i></a>
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('update_employee')): ?>
+                                                <a href="<?php echo e(route('admin.hrd.employee.edit', $emp->id)); ?>" class="btn btn-outline-warning" title="Edit"><i class="cil-pencil"></i></a>
+                                            <?php endif; ?>
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete_employee')): ?>
+                                                <form action="<?php echo e(route('admin.hrd.employee.destroy', $emp->id)); ?>" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?');">
+                                                    <?php echo csrf_field(); ?>
+                                                    <?php echo method_field('DELETE'); ?>
+                                                    <button type="submit" class="btn btn-outline-danger" title="Hapus"><i class="cil-trash"></i></button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

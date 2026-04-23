@@ -58,6 +58,7 @@ class HasilPilahanController extends Controller
             'kategori'           => 'required|in:Organik,Anorganik,B3,Residu',
             'waste_category_id'  => 'required|exists:waste_categories,id',
             'tonase'             => 'required|numeric|min:0',
+            'jml_bal'            => 'nullable|integer|min:0',
             'user_id'            => 'required|exists:users,id',
             'keterangan'         => 'nullable|string|max:500',
         ]);
@@ -100,6 +101,7 @@ class HasilPilahanController extends Controller
             'kategori'           => 'required|in:Organik,Anorganik,B3,Residu',
             'waste_category_id'  => 'required|exists:waste_categories,id',
             'tonase'             => 'required|numeric|min:0',
+            'jml_bal'            => 'nullable|integer|min:0',
             'user_id'            => 'required|exists:users,id',
             'keterangan'         => 'nullable|string|max:500',
         ]);

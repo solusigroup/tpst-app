@@ -443,7 +443,7 @@ class LaporanController extends Controller
             ->orderByDesc('tanggal');
 
         $rows = $query->paginate(20)->withQueryString();
-        $totals = (clone $query)->reorder()->selectRaw('SUM(tonase) as total_tonase, COUNT(*) as total_rows')->first();
+        $totals = (clone $query)->reorder()->selectRaw('SUM(tonase) as total_tonase, SUM(jml_bal) as total_bal, COUNT(*) as total_rows')->first();
 
         // Stock Summary Logic
         $pilahanAgg = HasilPilahan::selectRaw('kategori, jenis, SUM(tonase) as gross_tonase')

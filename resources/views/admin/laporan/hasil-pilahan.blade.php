@@ -90,7 +90,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Petugas</th><th class="text-end">Tonase</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Petugas</th><th class="text-end">Jml Bal</th><th class="text-end">Tonase</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
@@ -101,6 +101,7 @@
                         </td>
                         <td>{{ $r->jenis }}</td>
                         <td>{{ $r->officer }}</td>
+                        <td class="text-end">{{ $r->jml_bal ? $r->jml_bal . ' Bal' : '-' }}</td>
                         <td class="text-end">{{ number_format($r->tonase, 2, ',', '.') }} kg</td>
                     </tr>
                     @empty
@@ -108,7 +109,9 @@
                     @endforelse
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="4" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Catatan)</td><td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }} kg</td></tr>
+                    <tr><td colspan="4" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Catatan)</td>
+                    <td class="text-end">{{ number_format($totals->total_bal ?? 0, 0, ',', '.') }} Bal</td>
+                    <td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }} kg</td></tr>
                 </tfoot>
             </table>
         </div>
@@ -174,6 +177,7 @@
                                 <th>Kategori</th>
                                 <th>Jenis</th>
                                 <th>Petugas</th>
+                                <th class="text-end">Jml Bal</th>
                                 <th class="text-end">Tonase</th>
                             </tr>
                         </thead>
@@ -193,13 +197,15 @@
                                 <td>{{ $r->kategori }}</td>
                                 <td>{{ $r->jenis }}</td>
                                 <td>{{ $r->officer }}</td>
+                                <td class="text-end">{{ $r->jml_bal ? $r->jml_bal . ' Bal' : '-' }}</td>
                                 <td class="text-end">{{ number_format($r->tonase, 2, ',', '.') }} kg</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="fw-bold table-light border-dark">
                             <tr>
-                                <td colspan="5" class="text-end">TOTAL TONASE</td>
+                                <td colspan="5" class="text-end">TOTAL</td>
+                                <td class="text-end">{{ number_format($totals->total_bal ?? 0, 0, ',', '.') }} Bal</td>
                                 <td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }} kg</td>
                             </tr>
                         </tfoot>

@@ -21,6 +21,7 @@ class HasilPilahan extends Model
         'kategori',
         'jenis',
         'tonase',
+        'jml_bal',
         'officer',
         'keterangan',
     ];
@@ -28,6 +29,7 @@ class HasilPilahan extends Model
     protected $casts = [
         'tanggal' => 'date',
         'tonase' => 'decimal:2',
+        'jml_bal' => 'integer',
     ];
 
     /**

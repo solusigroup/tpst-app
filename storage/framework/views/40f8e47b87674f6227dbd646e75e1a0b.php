@@ -237,17 +237,50 @@
 <?php $__env->startPush('styles'); ?>
 <style>
     @media print {
-        body * { visibility: hidden; overflow: visible !important; }
-        #printArea, #printArea * { visibility: visible; }
-        #printArea {
-            position: absolute; left: 0; top: 0; width: 100%;
-            padding: 0 !important; margin: 0 !important;
+        .sidebar, .header, .mobile-bottom-nav, .modal-backdrop, .breadcrumb, .page-header, .card, form, .no-print, .d-print-none {
+            display: none !important;
         }
-        .modal, .modal-backdrop, .sidebar, .header, .mobile-bottom-nav { display: none !important; }
-        .modal-dialog, .modal-content, .modal-body {
-            display: block !important; border: none !important;
-            box-shadow: none !important; padding: 0 !important;
-            margin: 0 !important; overflow: visible !important;
+        .wrapper { padding: 0 !important; margin: 0 !important; }
+        .body { padding: 0 !important; margin: 0 !important; }
+        .container-fluid { padding: 0 !important; margin: 0 !important; }
+        .modal {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background: white !important;
+        }
+        .modal-dialog {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .modal-header, .modal-footer {
+            display: none !important;
+        }
+        .modal-content, .modal-body {
+            display: block !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            background: white !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        #printArea {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        #printArea * {
+            visibility: visible !important;
+            opacity: 1 !important;
         }
     }
 </style>

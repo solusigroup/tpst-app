@@ -38,12 +38,17 @@
                 @error('waste_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 <small class="text-muted">Jenis ini akan otomatis ditautkan ke modul Employee Output (HRD)</small>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Tonase (kg) <span class="text-danger">*</span></label>
                 <input type="number" step="0.01" name="tonase" class="form-control @error('tonase') is-invalid @enderror" value="{{ old('tonase', $hasilPilahan->tonase ?? '') }}" required>
                 @error('tonase') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <label class="form-label">Jml Bal</label>
+                <input type="number" name="jml_bal" class="form-control @error('jml_bal') is-invalid @enderror" value="{{ old('jml_bal', $hasilPilahan->jml_bal ?? '') }}" placeholder="Kosongkan jika tidak ada">
+                @error('jml_bal') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
                 <label class="form-label">Petugas <span class="text-danger">*</span></label>
                 <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
                     <option value="">-- Pilih Petugas --</option>

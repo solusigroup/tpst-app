@@ -26,7 +26,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Tonase</th><th>Petugas</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Tonase</th><th>Jml Bal</th><th>Petugas</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $hasilPilahans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
@@ -37,6 +37,7 @@
                         </td>
                         <td><?php echo e($item->jenis); ?></td>
                         <td><?php echo e(number_format($item->tonase, 2, ',', '.')); ?> kg</td>
+                        <td><?php echo e($item->jml_bal ? $item->jml_bal . ' Bal' : '-'); ?></td>
                         <td><?php echo e($item->officer); ?></td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
@@ -46,7 +47,7 @@
                         </td>
                     </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <tr><td colspan="6" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
