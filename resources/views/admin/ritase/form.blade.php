@@ -41,12 +41,12 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Waktu Masuk <span class="text-danger">*</span></label>
-                            <input type="datetime-local" name="waktu_masuk" class="form-control @error('waktu_masuk') is-invalid @enderror" value="{{ old('waktu_masuk', isset($ritase) ? \Carbon\Carbon::parse($ritase->waktu_masuk)->format('Y-m-d\TH:i') : '') }}" required>
+                            <input type="datetime-local" name="waktu_masuk" id="waktu_masuk" class="form-control @error('waktu_masuk') is-invalid @enderror" value="{{ old('waktu_masuk', isset($ritase) ? \Carbon\Carbon::parse($ritase->waktu_masuk)->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}" required onchange="updateExitTime()">
                             @error('waktu_masuk') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Waktu Keluar</label>
-                            <input type="datetime-local" name="waktu_keluar" class="form-control @error('waktu_keluar') is-invalid @enderror" value="{{ old('waktu_keluar', isset($ritase) && $ritase->waktu_keluar ? \Carbon\Carbon::parse($ritase->waktu_keluar)->format('Y-m-d\TH:i') : '') }}">
+                            <input type="datetime-local" name="waktu_keluar" id="waktu_keluar" class="form-control @error('waktu_keluar') is-invalid @enderror" value="{{ old('waktu_keluar', isset($ritase) && $ritase->waktu_keluar ? \Carbon\Carbon::parse($ritase->waktu_keluar)->format('Y-m-d\TH:i') : (isset($ritase) ? '' : now()->addMinutes(45)->format('Y-m-d\TH:i'))) }}">
                             @error('waktu_keluar') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                         <label class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" class="form-select" required>
                             @foreach(['masuk'=>'Masuk','timbang'=>'Timbang','keluar'=>'Keluar','selesai'=>'Selesai'] as $val => $label)
-                                <option value="{{ $val }}" {{ old('status', $ritase->status ?? 'masuk') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $val }}" {{ old('status', $ritase->status ?? 'selesai') == $val ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -190,6 +190,31 @@
 
 @push('scripts')
 <script>
+function updateExitTime() {
+    const masukInput = document.getElementById('waktu_masuk');
+    const keluarInput = document.getElementById('waktu_keluar');
+    
+    if (masukInput.value && !keluarInput.value.includes('T')) {
+        // If keluar is empty or invalid, set it. Or if it's a new record.
+    }
+    
+    // Actually the user wants it to be default +45 mins. 
+    // Let's make it update automatically if it's a NEW record or if the user just changed "Masuk".
+    const date = new Date(masukInput.value);
+    if (!isNaN(date.getTime())) {
+        date.setMinutes(date.getMinutes() + 45);
+        
+        // Format to YYYY-MM-DDTHH:mm
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        
+        keluarInput.value = `${y}-${m}-${d}T${h}:${min}`;
+    }
+}
+
 function calcNetto() {
     const bruto = parseFloat(document.getElementById('berat_bruto').value) || 0;
     const tarra = parseFloat(document.getElementById('berat_tarra').value) || 0;
