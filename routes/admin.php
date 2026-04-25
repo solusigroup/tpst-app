@@ -55,6 +55,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
     Route::post('invoice/merge-drafts', [InvoiceAdminController::class, 'mergeDrafts'])->name('invoice.merge-drafts');
+    Route::post('invoice/{invoice}/sync-dlh', [InvoiceAdminController::class, 'syncDlhItems'])->name('invoice.sync-dlh');
     Route::resource('invoice', InvoiceAdminController::class);
 
     // Buku Pembantu

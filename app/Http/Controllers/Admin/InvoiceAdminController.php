@@ -236,4 +236,67 @@ class InvoiceAdminController extends Controller
         }
         return redirect()->route('admin.invoice.index')->with('info', 'Tidak ada draft invoice untuk klien yang sama yang perlu digabungkan.');
     }
+    public function syncDlhItems($id)
+    {
+        Gate::authorize('update_invoice');
+        
+        $invoice = Invoice::with('klien')->findOrFail($id);
+        
+        if (!$invoice->klien || $invoice->klien->jenis !== 'DLH') {
+            return back()->with('error', 'Hanya invoice DLH yang dapat disinkronkan otomatis.');
+        }
+
+        $count = 0;
+        DB::transaction(function () use ($invoice, &$count) {
+            // Find all ritase from DLH type clients in the same month/year
+            $missingRitase = \App\Models\Ritase::whereHas('klien', function($q) {
+                    $q->where('jenis', 'DLH');
+                })
+                ->whereYear('waktu_masuk', $invoice->periode_tahun)
+                ->whereMonth('waktu_masuk', $invoice->periode_bulan)
+                ->where(function($q) use ($invoice) {
+                    $q->whereNull('invoice_id')->orWhere('invoice_id', '!=', $invoice->id);
+                })
+                ->where('status_invoice', '!=', 'Paid') // Don't steal from paid invoices
+                ->get();
+
+            foreach ($missingRitase as $ritase) {
+                $ritase->update([
+                    'invoice_id' => $invoice->id,
+                    'status_invoice' => $invoice->status,
+                    'status' => 'selesai' // Ensure status is consistent
+                ]);
+                $count++;
+            }
+
+            // Also check Penjualan
+            $missingPenjualan = \App\Models\Penjualan::whereHas('klien', function($q) {
+                    $q->where('jenis', 'DLH');
+                })
+                ->whereYear('tanggal', $invoice->periode_tahun)
+                ->whereMonth('tanggal', $invoice->periode_bulan)
+                ->where(function($q) use ($invoice) {
+                    $q->whereNull('invoice_id')->orWhere('invoice_id', '!=', $invoice->id);
+                })
+                ->get();
+
+            foreach ($missingPenjualan as $p) {
+                $p->update(['invoice_id' => $invoice->id]);
+                $count++;
+            }
+
+            if ($count > 0) {
+                $totalRitase = \App\Models\Ritase::where('invoice_id', $invoice->id)->sum('biaya_tipping');
+                $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('total_harga');
+                $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('jumlah_bayar');
+
+                $invoice->update([
+                    'total_tagihan' => $totalRitase + $totalPenjualan,
+                    'uang_muka' => $totalUangMuka,
+                ]);
+            }
+        });
+
+        return back()->with('success', "Berhasil menyinkronkan $count data baru ke invoice ini.");
+    }
 }

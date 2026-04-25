@@ -14,6 +14,14 @@
         </nav>
     </div>
     <div class="d-flex gap-2">
+        @if($invoice->klien && $invoice->klien->jenis === 'DLH')
+            <form action="{{ route('admin.invoice.sync-dlh', $invoice) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-primary" onclick="return confirm('Saring data Ritase DLH yang belum tertagih bulan ini?')">
+                    <i class="cil-sync me-1"></i> Sinkron Data DLH
+                </button>
+            </form>
+        @endif
         <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-success">
             <i class="cil-print me-1"></i> Cetak
         </a>
@@ -49,7 +57,12 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label class="text-muted d-block small text-uppercase fw-bold mb-1">Klien</label>
-                        <h5 class="fw-bold mb-3 text-dark">{{ $invoice->klien->nama_klien ?? '-' }}</h5>
+                        <h5 class="fw-bold mb-3 text-dark">
+                            {{ $invoice->klien->nama_klien ?? '-' }}
+                            @if($invoice->klien && $invoice->klien->jenis === 'DLH')
+                                <span class="badge bg-info ms-2">Konsolidasi DLH</span>
+                            @endif
+                        </h5>
                         
                         <label class="text-muted d-block small text-uppercase fw-bold mb-1">Periode</label>
                         <p class="mb-3 text-dark">{{ $invoice->periode_bulan }} / {{ $invoice->periode_tahun }}</p>
