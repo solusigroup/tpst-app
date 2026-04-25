@@ -76,10 +76,13 @@
 
         <!-- Linked Items -->
         <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3 border-bottom">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0 fw-bold text-primary">
                     <i class="cil-list me-2"></i>Rincian Tagihan
                 </h5>
+                @if($invoice->klien && ($invoice->klien->nama_klien === 'Dinas Lingkungan Hidup' || $invoice->klien->jenis === 'DLH'))
+                    <span class="badge bg-info text-white">Konsolidasi DLH</span>
+                @endif
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -87,6 +90,7 @@
                         <thead class="table-light text-muted small text-uppercase">
                             <tr>
                                 <th class="ps-4">Item Transaksi</th>
+                                <th>Klien Asal</th>
                                 <th>Kategori</th>
                                 <th class="text-end pe-4">Subtotal</th>
                             </tr>
@@ -95,8 +99,11 @@
                             @foreach($invoice->ritase as $ritase)
                             <tr>
                                 <td class="ps-4">
-                                    <span class="d-block fw-bold">Ritase - No. Pol {{ $ritase->armada->nomor_polisi ?? '-' }}</span>
-                                    <small class="text-muted">{{ \Carbon\Carbon::parse($ritase->tanggal)->format('d/m/Y') }}</small>
+                                    <span class="d-block fw-bold">Ritase - {{ $ritase->armada->plat_nomor ?? ($ritase->armada->nomor_polisi ?? '-') }}</span>
+                                    <small class="text-muted">{{ \Carbon\Carbon::parse($ritase->waktu_masuk)->format('d/m/Y H:i') }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ $ritase->klien->nama_klien ?? '-' }} ({{ $ritase->klien->jenis ?? '-' }})</span>
                                 </td>
                                 <td>Tipping Fee</td>
                                 <td class="text-end pe-4 text-dark font-monospace">Rp {{ number_format($ritase->biaya_tipping, 0, ',', '.') }}</td>
@@ -109,6 +116,9 @@
                                     <span class="d-block fw-bold">Penjualan - {{ $penjualan->jenis_produk }}</span>
                                     <small class="text-muted">{{ \Carbon\Carbon::parse($penjualan->tanggal)->format('d/m/Y') }} ({{ number_format($penjualan->berat_kg, 2) }} kg)</small>
                                 </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ $penjualan->klien->nama_klien ?? '-' }} ({{ $penjualan->klien->jenis ?? '-' }})</span>
+                                </td>
                                 <td>Penjualan Produk</td>
                                 <td class="text-end pe-4 text-dark font-monospace">Rp {{ number_format($penjualan->total_harga, 0, ',', '.') }}</td>
                             </tr>
@@ -116,7 +126,7 @@
                             
                             @if($invoice->ritase->isEmpty() && $invoice->penjualan->isEmpty())
                             <tr>
-                                <td colspan="3" class="text-center py-4 text-muted small">Tidak ada rincian item transaksi.</td>
+                                <td colspan="4" class="text-center py-4 text-muted small">Tidak ada rincian item transaksi.</td>
                             </tr>
                             @endif
                         </tbody>

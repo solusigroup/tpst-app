@@ -357,12 +357,28 @@ class LaporanController extends Controller
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $klienId = $request->get('klien_id');
+        $jenisKlien = $request->get('jenis_klien');
         $status = $request->get('status');
 
         $query = Ritase::with(['armada', 'klien'])
             ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
-            ->when($klienId, fn ($q) => $q->where('ritase.klien_id', $klienId))
+            ->when($jenisKlien, function ($q) use ($jenisKlien) {
+                $q->whereHas('klien', function ($qk) use ($jenisKlien) {
+                    $qk->where('jenis', $jenisKlien);
+                });
+            })
+            ->when($klienId, function ($q) use ($klienId) {
+                // Special logic for DLH: if master DLH is selected, show all DLH type clients
+                $selectedKlien = \App\Models\Klien::find($klienId);
+                if ($selectedKlien && ($selectedKlien->nama_klien === 'Dinas Lingkungan Hidup' || $selectedKlien->jenis === 'DLH')) {
+                    $q->whereHas('klien', function ($qk) {
+                        $qk->where('jenis', 'DLH');
+                    });
+                } else {
+                    $q->where('ritase.klien_id', $klienId);
+                }
+            })
             ->when($status, fn ($q) => $q->where('ritase.status', $status))
             ->orderByDesc('ritase.waktu_masuk');
 
@@ -378,7 +394,7 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'status', 'totals', 'rekapJenis');
+            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'totals', 'rekapJenis');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.ritase-export', $data);
@@ -392,7 +408,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'status', 'totals', 'rekapJenis'));
+        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'totals', 'rekapJenis'));
     }
 
     public function laporanPenjualan(Request $request)

@@ -10,7 +10,7 @@
     <div class="d-flex gap-2">
         <form method="POST" action="{{ route('admin.invoice.merge-drafts') }}" class="m-0">
             @csrf
-            <button type="submit" class="btn btn-warning text-dark" onclick="return confirm('Apakah Anda yakin ingin menggabungkan semua Invoice Draft dari Klien yang sama?')">
+            <button type="submit" class="btn btn-warning text-dark" onclick="return confirm('Apakah Anda yakin ingin menggabungkan semua Invoice Draft dari Klien yang sama? (Termasuk konsolidasi Klien DLH ke Dinas Lingkungan Hidup)')">
                 <i class="cil-object-group me-1"></i> Gabung Draft
             </button>
         </form>
@@ -31,12 +31,13 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>No. Invoice</th><th>Klien</th><th>Periode</th><th>Total</th><th>DP</th><th>Sisa</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>No. Invoice</th><th>Klien</th><th>Jenis</th><th>Periode</th><th>Total</th><th>DP</th><th>Sisa</th><th>Status</th><th>Tgl Invoice</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($invoices as $item)
                     <tr onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;">
                         <td><strong>{{ $item->nomor_invoice ?? '-' }}</strong></td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ $item->klien->jenis ?? '-' }}</span></td>
                         <td>{{ $item->periode_bulan }}/{{ $item->periode_tahun }}</td>
                         <td>Rp {{ number_format($item->total_tagihan, 0, ',', '.') }}</td>
                         <td class="text-danger">Rp {{ number_format($item->uang_muka, 0, ',', '.') }}</td>
@@ -56,7 +57,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="9" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
+                    <tr><td colspan="10" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
             </table>

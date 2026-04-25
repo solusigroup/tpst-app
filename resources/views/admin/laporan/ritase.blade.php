@@ -26,10 +26,19 @@
         <div class="col-auto"><label class="form-label mb-0 small text-body-secondary">Dari</label><input type="date" name="dari" class="form-control" value="{{ $dari }}"></div>
         <div class="col-auto"><label class="form-label mb-0 small text-body-secondary">Sampai</label><input type="date" name="sampai" class="form-control" value="{{ $sampai }}"></div>
         <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Jenis Klien</label>
+            <select name="jenis_klien" class="form-select">
+                <option value="">-- Semua Jenis --</option>
+                @foreach(['DLH', 'Swasta', 'Offtaker', 'Internal'] as $jk)
+                    <option value="{{ $jk }}" {{ $jenisKlien == $jk ? 'selected' : '' }}>{{ $jk }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-auto">
             <label class="form-label mb-0 small text-body-secondary">Klien</label>
             <select name="klien_id" class="form-select">
                 <option value="">-- Semua Klien --</option>
-                @foreach($kliens as $k)<option value="{{ $k->id }}" {{ $klienId == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }}</option>@endforeach
+                @foreach($kliens as $k)<option value="{{ $k->id }}" {{ $klienId == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }} ({{ $k->jenis }})</option>@endforeach
             </select>
         </div>
         <div class="col-auto">
@@ -82,7 +91,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Tiket (M)</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Tiket (M)</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
@@ -92,6 +101,18 @@
                         <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                         <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
                         <td>{{ $r->klien->nama_klien ?? '-' }}</td>
+                        <td>
+                            @php
+                                $jenisColors = [
+                                    'DLH' => 'info',
+                                    'Swasta' => 'primary',
+                                    'Offtaker' => 'success',
+                                    'Internal' => 'secondary'
+                                ];
+                                $color = $jenisColors[$r->klien->jenis] ?? 'light';
+                            @endphp
+                            <span class="badge bg-{{ $color }}">{{ $r->klien->jenis ?? '-' }}</span>
+                        </td>
                         <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
                         <td class="text-end">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
                         <td>
@@ -104,11 +125,11 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="10" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                    <tr><td colspan="11" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                     @endforelse
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="6" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td><td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td><td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td><td colspan="2"></td></tr>
+                    <tr><td colspan="7" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td><td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td><td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td><td colspan="2"></td></tr>
                 </tfoot>
             </table>
         </div>
@@ -171,8 +192,9 @@
                                 <th>Tanggal</th>
                                 <th>No Tiket</th>
                                 <th>Armada</th>
-                                <th>Jenis</th>
+                                <th>Jenis Armada</th>
                                 <th>Klien</th>
+                                <th>Jenis Klien</th>
                                 <th class="text-end">Netto (kg)</th>
                                 <th class="text-end">Tipping</th>
                                 <th>Status</th>
@@ -183,7 +205,14 @@
                                 $allRowsForPrint = \App\Models\Ritase::with(['armada', 'klien'])
                                     ->when($dari, fn($q)=>$q->whereDate('waktu_masuk','>=',$dari))
                                     ->when($sampai, fn($q)=>$q->whereDate('waktu_masuk','<=',$sampai))
-                                    ->when($klienId, fn($q)=>$q->where('klien_id',$klienId))
+                                    ->when($klienId, function ($q) use ($klienId) {
+                                        $selectedKlien = \App\Models\Klien::find($klienId);
+                                        if ($selectedKlien && ($selectedKlien->nama_klien === 'Dinas Lingkungan Hidup' || $selectedKlien->jenis === 'DLH')) {
+                                            $q->whereHas('klien', function ($qk) { $qk->where('jenis', 'DLH'); });
+                                        } else {
+                                            $q->where('ritase.klien_id', $klienId);
+                                        }
+                                    })
                                     ->when($status, fn($q)=>$q->where('status',$status))
                                     ->orderByDesc('waktu_masuk')
                                     ->get(); 
@@ -196,6 +225,7 @@
                                 <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                                 <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
+                                <td>{{ $r->klien->jenis ?? '-' }}</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
                                 <td>{{ ucfirst($r->status) }}</td>
@@ -204,7 +234,7 @@
                         </tbody>
                         <tfoot class="fw-bold">
                             <tr class="table-light border-dark">
-                                <td colspan="6" class="text-end">TOTAL KESELURUHAN</td>
+                                <td colspan="7" class="text-end">TOTAL KESELURUHAN</td>
                                 <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
                                 <td></td>

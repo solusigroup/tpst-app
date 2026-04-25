@@ -248,8 +248,18 @@ class RitaseController extends Controller
             $month = $ritase->waktu_masuk->format('n');
             $year = $ritase->waktu_masuk->format('Y');
 
+            $klienId = $ritase->klien_id;
+            
+            // If client is DLH type, use the master DLH client as payer
+            if ($ritase->klien && $ritase->klien->jenis === 'DLH') {
+                $masterDLH = \App\Models\Klien::where('nama_klien', 'Dinas Lingkungan Hidup')->first();
+                if ($masterDLH) {
+                    $klienId = $masterDLH->id;
+                }
+            }
+
             $invoice = \App\Models\Invoice::where('tenant_id', $ritase->tenant_id)
-                ->where('klien_id', $ritase->klien_id)
+                ->where('klien_id', $klienId)
                 ->where('periode_bulan', $month)
                 ->where('periode_tahun', $year)
                 ->where('status', 'Draft')
@@ -258,7 +268,7 @@ class RitaseController extends Controller
             if (!$invoice) {
                 $invoice = \App\Models\Invoice::create([
                     'tenant_id' => $ritase->tenant_id,
-                    'klien_id' => $ritase->klien_id,
+                    'klien_id' => $klienId,
                     'periode_bulan' => $month,
                     'periode_tahun' => $year,
                     'tanggal_invoice' => now(),

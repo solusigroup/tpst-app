@@ -174,11 +174,29 @@ class InvoiceAdminController extends Controller
     {
         Gate::authorize('update_invoice');
         
-        $draftInvoices = Invoice::where('status', 'Draft')->get()->groupBy('klien_id');
+        $masterDLH = Klien::where('nama_klien', 'Dinas Lingkungan Hidup')->first();
+        $allDrafts = Invoice::with('klien')->where('status', 'Draft')->get();
+        
+        // 1. First, redirect all DLH-type invoices to the Master DLH client ID
+        if ($masterDLH) {
+            foreach ($allDrafts as $draft) {
+                if ($draft->klien && $draft->klien->jenis === 'DLH' && $draft->klien_id != $masterDLH->id) {
+                    // Update this draft to belong to Master DLH so it gets grouped in the next step
+                    $draft->update(['klien_id' => $masterDLH->id]);
+                }
+            }
+            // Refresh drafts after redirection
+            $allDrafts = Invoice::with('klien')->where('status', 'Draft')->get();
+        }
+
+        // 2. Group by klien_id, periode_bulan, and periode_tahun to ensure we don't merge across periods
+        $groupedDrafts = $allDrafts->groupBy(function($item) {
+            return $item->klien_id . '-' . $item->periode_bulan . '-' . $item->periode_tahun;
+        });
         
         $mergedCount = 0;
-        DB::transaction(function () use ($draftInvoices, &$mergedCount) {
-            foreach ($draftInvoices as $klienId => $invoices) {
+        DB::transaction(function () use ($groupedDrafts, &$mergedCount) {
+            foreach ($groupedDrafts as $key => $invoices) {
                 if ($invoices->count() > 1) {
                     $master = $invoices->first();
                     $others = $invoices->slice(1);
@@ -196,6 +214,7 @@ class InvoiceAdminController extends Controller
                         $mergedCount++;
                     }
                     
+                    // Recalculate totals for the merged master invoice
                     $totalRitase = \App\Models\Ritase::where('invoice_id', $master->id)->sum('biaya_tipping');
                     $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('total_harga');
                     $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('jumlah_bayar');
@@ -204,7 +223,7 @@ class InvoiceAdminController extends Controller
                         'total_tagihan' => $totalRitase + $totalPenjualan,
                         'uang_muka' => $totalUangMuka,
                         'coa_pembayaran_id' => $master->coa_pembayaran_id ?? \App\Models\Coa::where('kode_akun', '1102')->value('id'),
-                        'keterangan' => empty($master->keterangan) ? 'Merged with other drafts' : $master->keterangan . ' (Merged)'
+                        'keterangan' => empty($master->keterangan) ? 'Merged automatically' : $master->keterangan . ' (Merged)'
                     ]);
                 }
             }
