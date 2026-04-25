@@ -191,7 +191,9 @@ class InvoiceAdminController extends Controller
 
         // 2. Group by klien_id, periode_bulan, and periode_tahun to ensure we don't merge across periods
         $groupedDrafts = $allDrafts->groupBy(function($item) {
-            return $item->klien_id . '-' . $item->periode_bulan . '-' . $item->periode_tahun;
+            // Normalize month to integer string to handle '04' vs '4'
+            $month = (int)$item->periode_bulan;
+            return $item->klien_id . '-' . $month . '-' . $item->periode_tahun;
         });
         
         $mergedCount = 0;

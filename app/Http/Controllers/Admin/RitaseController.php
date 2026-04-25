@@ -242,6 +242,8 @@ class RitaseController extends Controller
             $ritase->update([
                 'is_approved' => true,
                 'approved_at' => now(),
+                'status' => 'selesai',
+                'status_invoice' => 'Draft'
             ]);
 
             // Auto-Invoice Logic
