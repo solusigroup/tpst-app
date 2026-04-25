@@ -323,15 +323,29 @@ class LaporanController extends Controller
             ->select([
                 'jurnal_detail.*',
                 'jurnal_header.tanggal', 'jurnal_header.deskripsi',
-                'coa.kode_akun', 'coa.nama_akun',
+                'coa.kode_akun', 'coa.nama_akun', 'coa.tipe',
             ])
-            ->orderByDesc('jurnal_header.tanggal');
+            ->orderBy('jurnal_header.tanggal')
+            ->orderBy('jurnal_header.id')
+            ->orderBy('jurnal_detail.id');
 
         $coas = Coa::orderBy('kode_akun')->get();
+        $selectedCoa = $coaId ? Coa::find($coaId) : null;
+        $saldoAwal = 0;
+
+        if ($selectedCoa) {
+            $isDebitNormal = in_array($selectedCoa->tipe, ['Asset', 'Expense']);
+            $saldoAwal = JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $coaId)
+                ->whereDate('jurnal_header.tanggal', '<', $dari)
+                ->selectRaw($isDebitNormal ? 'SUM(debit) - SUM(kredit) as saldo' : 'SUM(kredit) - SUM(debit) as saldo')
+                ->value('saldo') ?? 0;
+        }
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId');
+            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal');
             
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.buku-besar-export', $data);
@@ -344,8 +358,46 @@ class LaporanController extends Controller
             }
         }
 
-        $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId'));
+        $rows = $query->paginate(50)->withQueryString();
+        
+        // Calculate the balance before the current page starts
+        $pageSaldoAwal = $saldoAwal;
+        if ($selectedCoa && $rows->currentPage() > 1) {
+            $isDebitNormal = in_array($selectedCoa->tipe, ['Asset', 'Expense']);
+            $previousTransactionsSum = JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $coaId)
+                ->whereDate('jurnal_header.tanggal', '>=', $dari)
+                ->where(function($q) use ($rows) {
+                    // This is a bit tricky with dates, but we can use the first ID of the current page
+                    // Actually, since we order by date, id, id, we can't easily query "everything before"
+                    // without knowing the exact sort order.
+                    // But we can just use the skip/take logic if we want to be precise.
+                });
+            
+            // Simpler way: Calculate sum of all transactions before this page
+            $offset = ($rows->currentPage() - 1) * $rows->perPage();
+            $prePageMutation = JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $coaId)
+                ->whereDate('jurnal_header.tanggal', '>=', $dari)
+                ->whereDate('jurnal_header.tanggal', '<=', $sampai)
+                ->orderBy('jurnal_header.tanggal')
+                ->orderBy('jurnal_header.id')
+                ->orderBy('jurnal_detail.id')
+                ->take($offset)
+                ->get();
+            
+            foreach ($prePageMutation as $m) {
+                if ($isDebitNormal) {
+                    $pageSaldoAwal += ($m->debit - $m->kredit);
+                } else {
+                    $pageSaldoAwal += ($m->kredit - $m->debit);
+                }
+            }
+        }
+
+        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal'));
     }
 
     // ─── Laporan Operasional ───

@@ -41,12 +41,12 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Waktu Masuk <span class="text-danger">*</span></label>
-                            <input type="datetime-local" name="waktu_masuk" class="form-control @error('waktu_masuk') is-invalid @enderror" value="{{ old('waktu_masuk', isset($ritase) ? \Carbon\Carbon::parse($ritase->waktu_masuk)->format('Y-m-d\TH:i') : '') }}" required>
+                            <input type="datetime-local" id="waktu_masuk" name="waktu_masuk" class="form-control @error('waktu_masuk') is-invalid @enderror" value="{{ old('waktu_masuk', isset($ritase) ? \Carbon\Carbon::parse($ritase->waktu_masuk)->format('Y-m-d\TH:i') : '') }}" required onchange="updateWaktuKeluar()">
                             @error('waktu_masuk') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Waktu Keluar</label>
-                            <input type="datetime-local" name="waktu_keluar" class="form-control @error('waktu_keluar') is-invalid @enderror" value="{{ old('waktu_keluar', isset($ritase) && $ritase->waktu_keluar ? \Carbon\Carbon::parse($ritase->waktu_keluar)->format('Y-m-d\TH:i') : '') }}">
+                            <input type="datetime-local" id="waktu_keluar" name="waktu_keluar" class="form-control @error('waktu_keluar') is-invalid @enderror" value="{{ old('waktu_keluar', isset($ritase) && $ritase->waktu_keluar ? \Carbon\Carbon::parse($ritase->waktu_keluar)->format('Y-m-d\TH:i') : '') }}">
                             @error('waktu_keluar') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                         <label class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" class="form-select" required>
                             @foreach(['masuk'=>'Masuk','timbang'=>'Timbang','keluar'=>'Keluar','selesai'=>'Selesai'] as $val => $label)
-                                <option value="{{ $val }}" {{ old('status', $ritase->status ?? 'masuk') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $val }}" {{ old('status', $ritase->status ?? 'selesai') == $val ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -202,6 +202,25 @@ function calcNetto() {
     @if(!isset($ritase))
         tippingInput.value = Math.round(netto * 80);
     @endif
+}
+
+function updateWaktuKeluar() {
+    const waktuMasukInput = document.getElementById('waktu_masuk').value;
+    if (waktuMasukInput) {
+        const waktuMasuk = new Date(waktuMasukInput);
+        // Add 15 minutes
+        waktuMasuk.setMinutes(waktuMasuk.getMinutes() + 15);
+        
+        // Format to YYYY-MM-DDTHH:mm
+        const year = waktuMasuk.getFullYear();
+        const month = String(waktuMasuk.getMonth() + 1).padStart(2, '0');
+        const day = String(waktuMasuk.getDate()).padStart(2, '0');
+        const hours = String(waktuMasuk.getHours()).padStart(2, '0');
+        const minutes = String(waktuMasuk.getMinutes()).padStart(2, '0');
+        
+        const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+        document.getElementById('waktu_keluar').value = formattedDate;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

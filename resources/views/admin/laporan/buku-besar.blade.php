@@ -46,9 +46,32 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>Kode Akun</th><th>Nama Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kode Akun</th><th>Nama Akun</th><th>Keterangan</th><th class="text-end">Debit</th><th class="text-end">Kredit</th><th class="text-end">Saldo</th></tr></thead>
                 <tbody>
+                    @php 
+                        $runningSaldo = $pageSaldoAwal ?? 0;
+                        $isDebitNormal = $selectedCoa ? in_array($selectedCoa->tipe, ['Asset', 'Expense']) : true;
+                    @endphp
+
+                    @if($coaId && $rows->currentPage() == 1)
+                    <tr class="table-light italic">
+                        <td colspan="4"><strong>SALDO AWAL (Per {{ \Carbon\Carbon::parse($dari)->format('d M Y') }})</strong></td>
+                        <td class="text-end">-</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end fw-bold text-primary">{{ number_format($saldoAwal, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
+
                     @forelse($rows as $r)
+                    @php 
+                        if ($selectedCoa) {
+                            if ($isDebitNormal) {
+                                $runningSaldo += ($r->debit - $r->kredit);
+                            } else {
+                                $runningSaldo += ($r->kredit - $r->debit);
+                            }
+                        }
+                    @endphp
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
                         <td><strong>{{ $r->kode_akun }}</strong></td>
@@ -56,9 +79,16 @@
                         <td style="font-size: 0.85rem; max-width: 300px; white-space: normal; word-wrap: break-word;">{{ $r->deskripsi }}</td>
                         <td class="text-end">{{ $r->debit > 0 ? number_format($r->debit, 0, ',', '.') : '-' }}</td>
                         <td class="text-end">{{ $r->kredit > 0 ? number_format($r->kredit, 0, ',', '.') : '-' }}</td>
+                        <td class="text-end fw-bold {{ $runningSaldo < 0 ? 'text-danger' : 'text-primary' }}">
+                            @if($coaId)
+                                {{ number_format($runningSaldo, 0, ',', '.') }}
+                            @else
+                                <span class="text-muted small">N/A</span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="text-center py-4 text-body-secondary">Belum ada data jurnal untuk periode ini.</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data jurnal untuk periode ini.</td></tr>
                     @endforelse
                 </tbody>
             </table>
