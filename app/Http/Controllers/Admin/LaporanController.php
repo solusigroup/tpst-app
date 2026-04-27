@@ -434,7 +434,7 @@ class LaporanController extends Controller
             ->when($status, fn ($q) => $q->where('ritase.status', $status))
             ->orderByDesc('ritase.waktu_masuk');
 
-        $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
+        $totals = (clone $query)->reorder()->selectRaw('SUM(berat_bruto) as total_bruto, SUM(berat_tarra) as total_tarra, SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
 
         $rekapJenis = (clone $query)->reorder()
             ->join('armada', 'ritase.armada_id', '=', 'armada.id')

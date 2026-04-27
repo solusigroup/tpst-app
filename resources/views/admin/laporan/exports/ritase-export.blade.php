@@ -43,6 +43,8 @@
             <th>Armada</th>
             <th>Jenis Armada</th>
             <th>Klien</th>
+            <th class="text-end">Bruto (kg)</th>
+            <th class="text-end">Tarra (kg)</th>
             <th class="text-end">Berat Netto (kg)</th>
             <th class="text-end">Biaya Tipping</th>
             <th>Status</th>
@@ -57,6 +59,8 @@
             <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
             <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
             <td>{{ $r->klien->nama_klien ?? '-' }}</td>
+            <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }}</td>
+            <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
             <td>{{ ucfirst($r->status) }}</td>
@@ -66,6 +70,8 @@
     <tfoot class="fw-bold">
         <tr>
             <td colspan="6" class="text-end">TOTAL KESELURUHAN</td>
+            <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }}</td>
+            <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
             <td></td>

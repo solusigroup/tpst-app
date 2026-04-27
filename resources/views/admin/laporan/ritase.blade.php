@@ -91,13 +91,12 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Tiket (M)</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->format('d M Y') }}</td>
                         <td><strong>{{ $r->nomor_tiket }}</strong></td>
-                        <td>{{ $r->tiket ?? '-' }}</td>
                         <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                         <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
                         <td>{{ $r->klien->nama_klien ?? '-' }}</td>
@@ -113,6 +112,8 @@
                             @endphp
                             <span class="badge bg-{{ $color }}">{{ $r->klien->jenis ?? '-' }}</span>
                         </td>
+                        <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }} kg</td>
+                        <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }} kg</td>
                         <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
                         <td class="text-end">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
                         <td>
@@ -129,7 +130,14 @@
                     @endforelse
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="7" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td><td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td><td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td><td colspan="2"></td></tr>
+                    <tr>
+                        <td colspan="6" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td>
+                        <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }} kg</td>
+                        <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }} kg</td>
+                        <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td>
+                        <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
+                        <td colspan="2"></td>
+                    </tr>
                 </tfoot>
             </table>
         </div>
@@ -195,6 +203,8 @@
                                 <th>Jenis Armada</th>
                                 <th>Klien</th>
                                 <th>Jenis Klien</th>
+                                <th class="text-end">Bruto</th>
+                                <th class="text-end">Tarra</th>
                                 <th class="text-end">Netto (kg)</th>
                                 <th class="text-end">Tipping</th>
                                 <th>Status</th>
@@ -226,6 +236,8 @@
                                 <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
                                 <td>{{ $r->klien->jenis ?? '-' }}</td>
+                                <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
                                 <td>{{ ucfirst($r->status) }}</td>
@@ -235,6 +247,8 @@
                         <tfoot class="fw-bold">
                             <tr class="table-light border-dark">
                                 <td colspan="7" class="text-end">TOTAL KESELURUHAN</td>
+                                <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
                                 <td></td>
