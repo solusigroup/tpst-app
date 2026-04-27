@@ -547,13 +547,6 @@
             </li>
             @endcanany
 
-            @can('view_ritase')
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.ritase.*') ? 'active' : '' }}" href="{{ route('admin.ritase.index') }}">
-                    <i class="nav-icon cil-truck"></i> Ritase
-                </a>
-            </li>
-            @endcan
             @can('view_klien')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.klien.*') ? 'active' : '' }}" href="{{ route('admin.klien.index') }}">
@@ -568,6 +561,15 @@
                 </a>
             </li>
             @endcan
+
+            @can('view_ritase')
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.ritase.*') ? 'active' : '' }}" href="{{ route('admin.ritase.index') }}">
+                    <i class="nav-icon cil-truck"></i> Ritase
+                </a>
+            </li>
+            @endcan
+
             @can('view_pengangkutan_residu')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.pengangkutan-residu.*') ? 'active' : '' }}" href="{{ route('admin.pengangkutan-residu.index') }}">
