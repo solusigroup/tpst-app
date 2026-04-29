@@ -20,8 +20,20 @@
                     @foreach(['Organik','Anorganik','B3','Residu'] as $k)<option value="{{ $k }}" {{ request('kategori') == $k ? 'selected' : '' }}>{{ $k }}</option>@endforeach
                 </select>
             </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <span class="input-group-text">Dari</span>
+                    <input type="date" name="dari" class="form-control" value="{{ request('dari') }}">
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <span class="input-group-text">Sampai</span>
+                    <input type="date" name="sampai" class="form-control" value="{{ request('sampai') }}">
+                </div>
+            </div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button></div>
-            @if(request()->hasAny(['search','kategori']))<div class="col-auto"><a href="{{ route('admin.hasil-pilahan.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','kategori','dari','sampai']))<div class="col-auto"><a href="{{ route('admin.hasil-pilahan.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">

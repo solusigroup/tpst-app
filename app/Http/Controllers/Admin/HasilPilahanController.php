@@ -26,6 +26,12 @@ class HasilPilahanController extends Controller
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
+        if ($request->filled('dari')) {
+            $query->whereDate('tanggal', '>=', $request->dari);
+        }
+        if ($request->filled('sampai')) {
+            $query->whereDate('tanggal', '<=', $request->sampai);
+        }
 
         $hasilPilahans = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
