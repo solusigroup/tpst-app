@@ -149,6 +149,11 @@
 @push('styles')
 <style>
     @media print {
+        body { 
+            overflow: visible !important; 
+            height: auto !important; 
+            background: white !important;
+        }
         .sidebar, .header, .mobile-bottom-nav, .modal-backdrop, .breadcrumb, .page-header, .card, form, .no-print, .d-print-none {
             display: none !important;
         }
@@ -157,22 +162,23 @@
         .container-fluid { padding: 0 !important; margin: 0 !important; }
         .modal {
             display: block !important;
-            position: absolute !important;
+            position: static !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             opacity: 1 !important;
             visibility: visible !important;
             background: white !important;
+            overflow: visible !important;
+            height: auto !important;
         }
         .modal-dialog {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-        }
-        .modal-header, .modal-footer {
-            display: none !important;
+            overflow: visible !important;
+            height: auto !important;
         }
         .modal-content, .modal-body {
             display: block !important;
@@ -182,6 +188,9 @@
             background: white !important;
             visibility: visible !important;
             opacity: 1 !important;
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
         }
         #printArea {
             visibility: visible !important;
@@ -189,6 +198,9 @@
             display: block !important;
             padding: 0 !important;
             margin: 0 !important;
+            max-width: 100% !important;
+            min-height: auto !important;
+            box-shadow: none !important;
         }
         #printArea * {
             visibility: visible !important;

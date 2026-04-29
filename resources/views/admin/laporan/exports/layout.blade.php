@@ -23,6 +23,17 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 1rem;
+            page-break-inside: auto;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        thead {
+            display: table-header-group;
+        }
+        tfoot {
+            display: table-row-group;
         }
         th, td {
             padding: 0.5rem;
