@@ -84,17 +84,30 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Chart data: Revenue for 6 months ending at selected month
-        $monthlyRevenue = collect();
+        // Chart data: Revenue vs Expense for 6 months ending at selected month
+        $monthlyFinancials = collect();
         if (!auth()->user()->hasRole('ritase_only')) {
             for ($i = 5; $i >= 0; $i--) {
                 $month = $monthStart->copy()->subMonths($i);
+                $mStart = $month->copy()->startOfMonth();
+                $mEnd = $month->copy()->endOfMonth();
+
                 $revenue = Penjualan::whereYear('tanggal', $month->year)
                     ->whereMonth('tanggal', $month->month)
                     ->sum('total_harga');
-                $monthlyRevenue->push([
+                
+                $expense = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                    ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                    ->where('jurnal_header.status', 'posted')
+                    ->where('coa.tipe', 'Expense')
+                    ->whereBetween('jurnal_header.tanggal', [$mStart, $mEnd])
+                    ->selectRaw('SUM(jurnal_detail.debit) - SUM(jurnal_detail.kredit) as total')
+                    ->value('total') ?? 0;
+
+                $monthlyFinancials->push([
                     'month' => $month->format('M Y'),
                     'revenue' => round($revenue, 0),
+                    'expense' => round($expense, 0),
                 ]);
             }
         }
@@ -123,7 +136,7 @@ class DashboardController extends Controller
             'kemampuanReduceKeseluruhan',
             'kemampuanReducePilahan',
             'dailyTonnage',
-            'monthlyRevenue',
+            'monthlyFinancials',
             'selectedMonth',
             'selectedYear',
             'months',

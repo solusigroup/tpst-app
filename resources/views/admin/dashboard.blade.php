@@ -232,10 +232,10 @@
             <div class="col-xl-4">
                 <div class="card">
                     <div class="card-header bg-white border-bottom-0 pt-4">
-                        <h5 class="card-title mb-0 fw-semibold">Revenue Bulanan</h5>
+                        <h5 class="card-title mb-0 fw-semibold">Revenue vs Biaya</h5>
                     </div>
                     <div class="card-body">
-                        <canvas id="revenueChart" height="200"></canvas>
+                        <canvas id="financialChart" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -330,29 +330,43 @@
             });
 
             @if(!auth()->user()->hasRole('ritase_only'))
-                // Revenue Chart
-                const revenueData = @json($monthlyRevenue);
-                new Chart(document.getElementById('revenueChart'), {
-                    type: 'doughnut',
+                // Financial Comparison Chart
+                const financialData = @json($monthlyFinancials);
+                new Chart(document.getElementById('financialChart'), {
+                    type: 'bar',
                     data: {
-                        labels: revenueData.map(d => d.month),
-                        datasets: [{
-                            data: revenueData.map(d => d.revenue),
-                            backgroundColor: [
-                                '#3b82f6', '#10b981', '#f59e0b',
-                                '#ef4444', '#8b5cf6', '#06b6d4'
-                            ],
-                            borderWidth: 0,
-                            hoverOffset: 8
-                        }]
+                        labels: financialData.map(d => d.month),
+                        datasets: [
+                            {
+                                label: 'Revenue',
+                                data: financialData.map(d => d.revenue),
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 4,
+                            },
+                            {
+                                label: 'Biaya',
+                                data: financialData.map(d => d.expense),
+                                backgroundColor: '#ef4444',
+                                borderRadius: 4,
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true } },
+                            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
                             tooltip: {
                                 callbacks: {
-                                    label: ctx => 'Rp ' + ctx.parsed.toLocaleString('id-ID')
+                                    label: ctx => ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString('id-ID')
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: v => 'Rp ' + (v >= 1000000 ? (v / 1000000) + 'jt' : v.toLocaleString('id-ID'))
                                 }
                             }
                         }
