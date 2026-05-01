@@ -51,6 +51,15 @@
                 </div>
             </form>
 
+            @can('view_buku_pembantu')
+                <form action="{{ route('admin.buku-pembantu.sync-status') }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-info btn-lg shadow-sm" title="Sinkronisasi Status Piutang">
+                        <i class="cil-sync me-1"></i> Sync Piutang
+                    </button>
+                </form>
+            @endcan
+
             <div class="dropdown">
                 <button class="btn btn-primary btn-lg shadow-sm dropdown-toggle" type="button" data-coreui-toggle="dropdown"
                     aria-expanded="false">

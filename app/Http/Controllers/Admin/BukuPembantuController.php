@@ -84,4 +84,22 @@ class BukuPembantuController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+    /**
+     * Sync status for all entries.
+     */
+    public function syncStatus()
+    {
+        Gate::authorize('view_buku_pembantu');
+        
+        $affected = 0;
+        BukuPembantu::where('status', 'pending')
+            ->whereColumn('terbayar', '>=', 'jumlah')
+            ->get()
+            ->each(function($entry) use (&$affected) {
+                $entry->save(); // This triggers the saving hook in the model
+                $affected++;
+            });
+
+        return back()->with('success', "Sinkronisasi berhasil. $affected data piutang telah diperbarui ke status Lunas.");
+    }
 }
