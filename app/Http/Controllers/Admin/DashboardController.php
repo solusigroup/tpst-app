@@ -13,16 +13,19 @@ use App\Models\PengangkutanResidu;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // If the logged-in user is a regular employee, redirect to their attendance recap
         if (auth()->check() && (auth()->user()->hasRole('karyawan') || auth()->user()->salary_type === 'bulanan')) {
             return redirect()->route('admin.hrd.attendance.index', ['user_id' => auth()->id()]);
         }
 
+        $selectedMonth = $request->get('month', date('m'));
+        $selectedYear = $request->get('year', date('Y'));
+
         $today = Carbon::today();
-        $monthStart = Carbon::now()->startOfMonth();
-        $monthEnd = Carbon::now()->endOfMonth();
+        $monthStart = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
+        $monthEnd = $monthStart->copy()->endOfMonth();
 
         // Stats
         $tonaseHariIni = Ritase::whereDate('waktu_masuk', $today)->sum('berat_netto');
@@ -69,10 +72,11 @@ class DashboardController extends Controller
         }
 
 
-        // Chart data: Daily tonnage for last 30 days
+        // Chart data: Daily tonnage for selected month
         $dailyTonnage = collect();
-        for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
+        $daysInMonth = $monthStart->daysInMonth;
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = Carbon::createFromDate($selectedYear, $selectedMonth, $d);
             $tonnage = Ritase::whereDate('waktu_masuk', $date)->sum('berat_netto');
             $dailyTonnage->push([
                 'date' => $date->format('d/m'),
@@ -80,11 +84,11 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Chart data: Revenue for last 6 months
+        // Chart data: Revenue for 6 months ending at selected month
         $monthlyRevenue = collect();
         if (!auth()->user()->hasRole('ritase_only')) {
             for ($i = 5; $i >= 0; $i--) {
-                $month = Carbon::now()->subMonths($i);
+                $month = $monthStart->copy()->subMonths($i);
                 $revenue = Penjualan::whereYear('tanggal', $month->year)
                     ->whereMonth('tanggal', $month->month)
                     ->sum('total_harga');
@@ -93,6 +97,19 @@ class DashboardController extends Controller
                     'revenue' => round($revenue, 0),
                 ]);
             }
+        }
+
+        // Month and Year options for selector
+        $months = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $months[$m] = Carbon::create()->month($m)->translatedFormat('F');
+        }
+
+        $years = [];
+        $startYear = date('Y') - 5;
+        $endYear = date('Y') + 1;
+        for ($y = $startYear; $y <= $endYear; $y++) {
+            $years[$y] = $y;
         }
 
         return view('admin.dashboard', compact(
@@ -106,7 +123,11 @@ class DashboardController extends Controller
             'kemampuanReduceKeseluruhan',
             'kemampuanReducePilahan',
             'dailyTonnage',
-            'monthlyRevenue'
+            'monthlyRevenue',
+            'selectedMonth',
+            'selectedYear',
+            'months',
+            'years'
         ));
     }
 }
