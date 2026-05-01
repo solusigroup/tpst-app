@@ -55,8 +55,13 @@ class DashboardController extends Controller
             $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
                 ->where('biaya_tipping', '>', 0)
                 ->sum('biaya_tipping');
-            $penjualanBulanIni = Penjualan::whereBetween('tanggal', [$monthStart, $monthEnd])
-                ->sum('total_harga');
+            $penjualanBulanIni = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('coa.tipe', 'Revenue')
+                ->whereBetween('jurnal_header.tanggal', [$monthStart, $monthEnd])
+                ->selectRaw('SUM(jurnal_detail.kredit) - SUM(jurnal_detail.debit) as total')
+                ->value('total') ?? 0;
             
             $biayaBulanIni = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
                 ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
@@ -92,9 +97,13 @@ class DashboardController extends Controller
                 $mStart = $month->copy()->startOfMonth();
                 $mEnd = $month->copy()->endOfMonth();
 
-                $revenue = Penjualan::whereYear('tanggal', $month->year)
-                    ->whereMonth('tanggal', $month->month)
-                    ->sum('total_harga');
+                $revenue = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                    ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                    ->where('jurnal_header.status', 'posted')
+                    ->where('coa.tipe', 'Revenue')
+                    ->whereBetween('jurnal_header.tanggal', [$mStart, $mEnd])
+                    ->selectRaw('SUM(jurnal_detail.kredit) - SUM(jurnal_detail.debit) as total')
+                    ->value('total') ?? 0;
                 
                 $expense = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
                     ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')

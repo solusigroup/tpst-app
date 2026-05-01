@@ -193,7 +193,7 @@
                             <i class="cil-chart"></i>
                         </div>
                         <div>
-                            <div class="text-body-secondary text-uppercase fw-semibold small">Penjualan {{ $months[intval($selectedMonth)] }} {{ $selectedYear }}</div>
+                            <div class="text-body-secondary text-uppercase fw-semibold small">Pendapatan {{ $months[intval($selectedMonth)] }} {{ $selectedYear }}</div>
                             <div class="fs-4 fw-bold">Rp {{ number_format($penjualanBulanIni, 0, ',', '.') }}</div>
                         </div>
                     </div>
@@ -338,7 +338,7 @@
                         labels: financialData.map(d => d.month),
                         datasets: [
                             {
-                                label: 'Revenue',
+                                label: 'Pendapatan',
                                 data: financialData.map(d => d.revenue),
                                 backgroundColor: '#3b82f6',
                                 borderRadius: 4,
