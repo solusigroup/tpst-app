@@ -77,12 +77,24 @@
                 <div id="no-items" class="text-muted" style="display: none;">Pilih Klien untuk melihat item yang belum ditagihkan.</div>
                 
                 <div id="ritase-container" class="mb-3" style="display: none;">
-                    <strong>Ritase (Tipping Fee)</strong>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>Ritase (Tipping Fee)</strong>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select-all-ritase">
+                            <label class="form-check-label" for="select-all-ritase"><small>Pilih Semua</small></label>
+                        </div>
+                    </div>
                     <div class="mt-2" id="ritase-list"></div>
                 </div>
 
                 <div id="penjualan-container" class="mb-3" style="display: none;">
-                    <strong>Penjualan (Hasil Pilahan)</strong>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>Penjualan (Hasil Pilahan)</strong>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select-all-penjualan">
+                            <label class="form-check-label" for="select-all-penjualan"><small>Pilih Semua</small></label>
+                        </div>
+                    </div>
                     <div class="mt-2" id="penjualan-list"></div>
                 </div>
             </div>
@@ -125,6 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
     }
 
+    const selectAllRitase = document.getElementById('select-all-ritase');
+    const selectAllPenjualan = document.getElementById('select-all-penjualan');
+
     function calculateTotal() {
         let total = 0;
         let dp = 0;
@@ -135,6 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
         totalTagihanInput.value = total;
         uangMukaInput.value = dp;
         calculateBalance();
+        updateSelectAllState();
     }
 
     function calculateBalance() {
@@ -142,6 +158,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const dp = parseFloat(uangMukaInput.value || 0);
         sisaTagihanInput.value = total - dp;
     }
+
+    function updateSelectAllState() {
+        const ritaseCheckboxes = document.querySelectorAll('input[name="selected_ritase[]"]');
+        if (ritaseCheckboxes.length > 0) {
+            selectAllRitase.checked = Array.from(ritaseCheckboxes).every(cb => cb.checked);
+        }
+
+        const penjualanCheckboxes = document.querySelectorAll('input[name="selected_penjualan[]"]');
+        if (penjualanCheckboxes.length > 0) {
+            selectAllPenjualan.checked = Array.from(penjualanCheckboxes).every(cb => cb.checked);
+        }
+    }
+
+    selectAllRitase.addEventListener('change', function() {
+        document.querySelectorAll('input[name="selected_ritase[]"]').forEach(cb => {
+            cb.checked = this.checked;
+        });
+        calculateTotal();
+    });
+
+    selectAllPenjualan.addEventListener('change', function() {
+        document.querySelectorAll('input[name="selected_penjualan[]"]').forEach(cb => {
+            cb.checked = this.checked;
+        });
+        calculateTotal();
+    });
 
     uangMukaInput.addEventListener('input', calculateBalance);
 
@@ -159,6 +201,10 @@ document.addEventListener('DOMContentLoaded', function() {
         ritaseList.innerHTML = '';
         penjualanList.innerHTML = '';
         totalTagihanInput.value = 0; // reset calculated total until fetched
+        
+        // Reset select all checkboxes
+        if (selectAllRitase) selectAllRitase.checked = false;
+        if (selectAllPenjualan) selectAllPenjualan.checked = false;
 
         let url = `{{ route('admin.invoice-items.pending') }}?klien_id=${klienId}`;
         if (invoiceId) url += `&invoice_id=${invoiceId}`;
