@@ -62,14 +62,28 @@ class InvoiceObserver
                     ->first();
 
                 // 2. Revenue lookup
-                $revenueCoa = Coa::where('tenant_id', $invoice->tenant_id)
+                // 2a. Tipping/Service Revenue Coa
+                $tippingCoa = Coa::where('tenant_id', $invoice->tenant_id)
                     ->where('tipe', 'Revenue')
-                    ->where('nama_akun', 'like', '%Layanan%')
-                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where(function($q) {
+                        $q->where('nama_akun', 'like', '%Layanan%')
+                          ->orWhere('nama_akun', 'like', '%Tipping%');
+                    })
+                    ->first();
+
+                // 2b. Product Sale Revenue Coa
+                $penjualanCoa = Coa::where('tenant_id', $invoice->tenant_id)
                     ->where('tipe', 'Revenue')
-                    ->where('nama_akun', 'like', '%Tipping%')
-                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                    ->where(function($q) {
+                        $q->where('nama_akun', 'like', '%Penjualan%')
+                          ->orWhere('nama_akun', 'like', '%Material%');
+                    })
+                    ->first();
+
+                // Fallback for revenue if specific ones not found
+                $defaultRevenueCoa = Coa::where('tenant_id', $invoice->tenant_id)
                     ->where('tipe', 'Revenue')
+                    ->orderBy('kode_akun')
                     ->first();
 
                 // 3. Payment Account lookup (User choice or default Bank)
@@ -88,7 +102,7 @@ class InvoiceObserver
                         ->first();
                 }
 
-                if (!$piutangCoa || !$revenueCoa) {
+                if (!$piutangCoa || (!$tippingCoa && !$penjualanCoa && !$defaultRevenueCoa)) {
                     return;
                 }
 
@@ -97,6 +111,8 @@ class InvoiceObserver
 
                 $uangMuka = (float) ($invoice->uang_muka ?? 0);
                 $totalTagihan = (float) $invoice->total_tagihan;
+                $totalTipping = (float) $invoice->ritase()->sum('biaya_tipping');
+                $totalPenjualan = (float) $invoice->penjualan()->sum('total_harga');
 
                 if ($invoice->status === 'Paid') {
                     // IF PAID: Entire amount goes to Payment Account (Kas/Bank)
@@ -136,12 +152,34 @@ class InvoiceObserver
                     }
                 }
 
-                // Credit: Revenue (Gross)
-                if ($totalTagihan > 0) {
+                // Credit: Revenue (Split by Source)
+                
+                // 1. Tipping Revenue
+                if ($totalTipping > 0) {
                     $jurnalHeader->jurnalDetails()->create([
-                        'coa_id' => $revenueCoa->id,
+                        'coa_id' => $tippingCoa ? $tippingCoa->id : ($defaultRevenueCoa ? $defaultRevenueCoa->id : null),
                         'debit' => 0,
-                        'kredit' => $totalTagihan,
+                        'kredit' => $totalTipping,
+                    ]);
+                }
+
+                // 2. Sales Revenue
+                if ($totalPenjualan > 0) {
+                    $jurnalHeader->jurnalDetails()->create([
+                        'coa_id' => $penjualanCoa ? $penjualanCoa->id : ($defaultRevenueCoa ? $defaultRevenueCoa->id : null),
+                        'debit' => 0,
+                        'kredit' => $totalPenjualan,
+                    ]);
+                }
+
+                // 3. Any remaining difference (if rounding or manual adjustments)
+                $capturedRevenue = $totalTipping + $totalPenjualan;
+                $difference = $totalTagihan - $capturedRevenue;
+                if (abs($difference) > 0.01) {
+                     $jurnalHeader->jurnalDetails()->create([
+                        'coa_id' => $defaultRevenueCoa ? $defaultRevenueCoa->id : null,
+                        'debit' => 0,
+                        'kredit' => $difference,
                     ]);
                 }
 
