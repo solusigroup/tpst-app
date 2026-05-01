@@ -7,7 +7,11 @@
         <h1>Klien</h1>
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Klien</li></ol></nav>
     </div>
-    <a href="{{ route('admin.klien.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah Klien</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.klien.print', request()->all()) }}" class="btn btn-danger" target="_blank"><i class="cil-print me-1"></i> Cetak (PDF)</a>
+        <a href="{{ route('admin.klien.export-excel', request()->all()) }}" class="btn btn-success"><i class="cil-file me-1"></i> Export Excel</a>
+        <a href="{{ route('admin.klien.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah Klien</a>
+    </div>
 </div>
 
 <div class="card">

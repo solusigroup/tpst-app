@@ -13,19 +13,11 @@ class KlienController extends Controller
     {
         try {
             Gate::authorize('view_klien');
-            $query = Klien::query();
-
-            if ($request->filled('search')) {
-                $query->where('nama_klien', 'like', '%' . $request->search . '%');
-            }
-            if ($request->filled('jenis')) {
-                $query->where('jenis', $request->jenis);
-            }
+            $query = $this->getKlienQuery($request);
 
             $kliens = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
 
-            $view = view('admin.klien.index', compact('kliens'))->render();
-            return response($view);
+            return view('admin.klien.index', compact('kliens'));
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -130,5 +122,41 @@ class KlienController extends Controller
         Gate::authorize('view_klien');
         $klien->load('armada');
         return view('admin.klien.show', compact('klien'));
+    }
+
+    private function getKlienQuery(Request $request)
+    {
+        $query = Klien::query();
+
+        if ($request->filled('search')) {
+            $query->where('nama_klien', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        return $query;
+    }
+
+    public function exportExcel(Request $request)
+    {
+        Gate::authorize('view_klien');
+        $kliens = $this->getKlienQuery($request)->orderBy('nama_klien')->get();
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LaporanExcelExport('admin.klien.export', compact('kliens')), 
+            'Data_Klien_' . date('Ymd_His') . '.xlsx'
+        );
+    }
+
+    public function print(Request $request)
+    {
+        Gate::authorize('view_klien');
+        $kliens = $this->getKlienQuery($request)->orderBy('nama_klien')->get();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.klien.export', compact('kliens'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Data_Klien_' . date('Ymd_His') . '.pdf');
     }
 }

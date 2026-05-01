@@ -38,6 +38,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('ritase', RitaseController::class);
     Route::post('ritase/{ritase}/approve', [RitaseController::class, 'approve'])->name('ritase.approve');
     Route::post('ritase/{ritase}/post', [RitaseController::class, 'post'])->name('ritase.post');
+    Route::get('klien/export-excel', [KlienController::class, 'exportExcel'])->name('klien.export-excel');
+    Route::get('klien/print', [KlienController::class, 'print'])->name('klien.print');
     Route::resource('klien', KlienController::class);
     Route::resource('armada', ArmadaController::class);
     Route::resource('hasil-pilahan', HasilPilahanController::class)->parameters(['hasil-pilahan' => 'hasilPilahan']);
