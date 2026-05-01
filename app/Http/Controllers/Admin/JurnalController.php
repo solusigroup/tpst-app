@@ -28,6 +28,12 @@ class JurnalController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
+        if ($request->filled('start_date')) {
+            $query->where('tanggal', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('tanggal', '<=', $request->end_date);
+        }
 
         $jurnals = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 

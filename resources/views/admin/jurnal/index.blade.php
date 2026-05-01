@@ -15,14 +15,20 @@
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari referensi/deskripsi..." value="{{ request('search') }}"></div>
             <div class="col-auto">
+                <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}" placeholder="Mulai">
+            </div>
+            <div class="col-auto">
+                <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}" placeholder="Selesai">
+            </div>
+            <div class="col-auto">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
                     <option value="posted" {{ request('status') == 'posted' ? 'selected' : '' }}>Posted</option>
                     <option value="unposted" {{ request('status') == 'unposted' ? 'selected' : '' }}>Unposted</option>
                 </select>
             </div>
-            <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button></div>
-            @if(request()->hasAny(['search','status']))<div class="col-auto"><a href="{{ route('admin.jurnal.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
+            @if(request()->hasAny(['search','status','start_date','end_date']))<div class="col-auto"><a href="{{ route('admin.jurnal.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
