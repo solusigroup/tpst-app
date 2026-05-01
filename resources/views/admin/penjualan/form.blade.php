@@ -64,7 +64,7 @@
                 <label class="form-label">Akun Pembayaran (Kas/Bank) <span class="text-danger">*</span></label>
                 <select name="coa_pembayaran_id" class="form-select @error('coa_pembayaran_id') is-invalid @enderror" required>
                     @foreach($coas as $c)
-                        <option value="{{ $c->id }}" {{ old('coa_pembayaran_id', $penjualan->coa_pembayaran_id ?? '') == $c->id ? 'selected' : ( !isset($penjualan) && str_contains($c->nama_akun, 'Bank') ? 'selected' : '' ) }}>
+                        <option value="{{ $c->id }}" {{ old('coa_pembayaran_id', $penjualan->coa_pembayaran_id ?? ($coas->where('kode_akun', '1103')->first()->id ?? '')) == $c->id ? 'selected' : '' }}>
                             {{ $c->kode_akun }} - {{ $c->nama_akun }}
                         </option>
                     @endforeach
