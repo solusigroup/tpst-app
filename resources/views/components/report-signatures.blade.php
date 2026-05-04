@@ -10,7 +10,7 @@
         <div class="border-b border-gray-400 dark:border-gray-600 w-3/4 mx-auto pb-1 font-bold">
             {{ $tenant->director_name ?? '..........................' }}
         </div>
-        <p class="text-xs text-gray-500 mt-1">Direktur</p>
+        <p class="text-xs text-gray-500 mt-1">&nbsp;</p>
     </div>
     
     <div>
@@ -18,7 +18,7 @@
         <div class="border-b border-gray-400 dark:border-gray-600 w-3/4 mx-auto pb-1 font-bold">
             {{ $tenant->manager_name ?? '..........................' }}
         </div>
-        <p class="text-xs text-gray-500 mt-1">Manajer Operasional</p>
+        <p class="text-xs text-gray-500 mt-1">&nbsp;</p>
     </div>
 
     <div>
@@ -26,6 +26,6 @@
         <div class="border-b border-gray-400 dark:border-gray-600 w-3/4 mx-auto pb-1 font-bold">
             {{ $tenant->finance_name ?? '..........................' }}
         </div>
-        <p class="text-xs text-gray-500 mt-1">Finance & Accounting</p>
+        <p class="text-xs text-gray-500 mt-1">&nbsp;</p>
     </div>
 </div>

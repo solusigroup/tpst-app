@@ -28,7 +28,7 @@
                             <select name="armada_id" class="form-select @error('armada_id') is-invalid @enderror" required>
                                 <option value="">Pilih Armada...</option>
                                 @foreach($armadas as $armada)
-                                    <option value="{{ $armada->id }}" {{ old('armada_id') == $armada->id ? 'selected' : '' }}>
+                                    <option value="{{ $armada->id }}" data-berat-kosong="{{ $armada->berat_kosong }}" {{ old('armada_id') == $armada->id ? 'selected' : '' }}>
                                         {{ $armada->plat_nomor }} - {{ $armada->nama_armada }}
                                     </option>
                                 @endforeach
@@ -105,6 +105,7 @@
     const brutoInput = document.getElementById('berat_bruto');
     const tarraInput = document.getElementById('berat_tarra');
     const nettoInput = document.getElementById('berat_netto');
+    const armadaSelect = document.querySelector('select[name="armada_id"]');
 
     function calculateNetto() {
         const bruto = parseFloat(brutoInput.value) || 0;
@@ -112,8 +113,40 @@
         nettoInput.value = (bruto - tarra).toFixed(2);
     }
 
+    // Auto-fill tarra from armada berat_kosong
+    function onArmadaChange() {
+        const selectedOption = armadaSelect.options[armadaSelect.selectedIndex];
+        if (selectedOption && selectedOption.dataset.beratKosong) {
+            tarraInput.value = selectedOption.dataset.beratKosong;
+            calculateNetto();
+        }
+    }
+
     brutoInput.addEventListener('input', calculateNetto);
     tarraInput.addEventListener('input', calculateNetto);
+
+    // Support both TomSelect and vanilla select
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            if (armadaSelect.tomselect) {
+                const allOptions = [];
+                Array.from(armadaSelect.querySelectorAll('option')).forEach(opt => {
+                    if (opt.value) {
+                        allOptions.push({ value: opt.value, beratKosong: opt.dataset.beratKosong });
+                    }
+                });
+                armadaSelect.tomselect.on('change', function(value) {
+                    const selected = allOptions.find(a => a.value == value);
+                    if (selected && selected.beratKosong) {
+                        tarraInput.value = selected.beratKosong;
+                        calculateNetto();
+                    }
+                });
+            } else {
+                armadaSelect.addEventListener('change', onArmadaChange);
+            }
+        }, 300);
+    });
 </script>
 @endpush
 @endsection

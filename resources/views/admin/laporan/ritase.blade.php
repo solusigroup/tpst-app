@@ -11,10 +11,10 @@
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
         </button>
         <div class="btn-group shadow-sm">
-            <a href="{{ route('admin.laporan-operasional.ritase', array_merge(request()->all(), ['export' => 'pdf'])) }}" target="_blank" class="btn btn-danger" title="Export PDF">
+            <a href="{{ route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'export' => 'pdf']) }}" target="_blank" class="btn btn-danger" title="Export PDF">
                 <i class="cil-file me-1"></i> PDF
             </a>
-            <a href="{{ route('admin.laporan-operasional.ritase', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success" title="Export Excel">
+            <a href="{{ route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'export' => 'excel']) }}" class="btn btn-success" title="Export Excel">
                 <i class="cil-spreadsheet me-1"></i> Excel
             </a>
         </div>
@@ -262,7 +262,7 @@
                             <p class="mb-5">Dicetak pada: {{ now()->format('d/m/Y H:i') }}</p>
                             <div class="mt-5">
                                 <p class="fw-bold mb-0">( ____________________ )</p>
-                                <p class="text-secondary small">Admin Operasional</p>
+                                <p class="text-secondary small">&nbsp;</p>
                             </div>
                         </div>
                     </div>

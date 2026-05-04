@@ -62,7 +62,7 @@
             <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
+            <td class="text-end">{{ $r->biaya_tipping }}</td>
             <td>{{ ucfirst($r->status) }}</td>
         </tr>
         @endforeach
@@ -73,7 +73,7 @@
             <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
+            <td class="text-end">{{ $totals->total_tipping ?? 0 }}</td>
             <td></td>
         </tr>
     </tfoot>

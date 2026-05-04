@@ -217,7 +217,7 @@
                             <p class="mb-5">Dicetak pada: {{ now()->format('d/m/Y H:i') }}</p>
                             <div class="mt-5">
                                 <p class="fw-bold mb-0">( ____________________ )</p>
-                                <p class="text-secondary small">Admin Operasional</p>
+                                <p class="text-secondary small">&nbsp;</p>
                             </div>
                         </div>
                     </div>

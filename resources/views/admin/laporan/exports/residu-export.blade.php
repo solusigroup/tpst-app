@@ -53,7 +53,7 @@
                 <p>Dicetak pada: {{ now()->format('d/m/Y H:i') }}</p>
                 <div style="margin-top: 60px;">
                     <p><b>( ____________________ )</b></p>
-                    <p>Admin Operasional</p>
+                    <p>&nbsp;</p>
                 </div>
             </td>
         </tr>
