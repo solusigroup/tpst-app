@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
 
 use App\Models\HasilPilahan;
@@ -36,6 +37,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        // Super admin bypasses all permission/ability checks
+        Gate::before(function ($user, $ability) {
+            if ($user->isSuperAdmin()) {
+                return true;
+            }
+        });
 
         // Register Eloquent Observers for automatic accounting
         Ritase::observe(RitaseObserver::class);
