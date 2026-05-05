@@ -120,7 +120,11 @@ class KlienController extends Controller
     public function show(Klien $klien)
     {
         Gate::authorize('view_klien');
-        $klien->load('armada');
+        $klien->load(['armada', 'ritase' => function ($q) {
+            $q->with('armada')->orderByDesc('waktu_masuk');
+        }, 'penjualan' => function ($q) {
+            $q->orderByDesc('tanggal');
+        }]);
         return view('admin.klien.show', compact('klien'));
     }
 

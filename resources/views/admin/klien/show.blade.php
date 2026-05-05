@@ -69,12 +69,51 @@
                 </table>
             </div>
         </div>
+
+        {{-- Summary Cards --}}
+        <div class="row mb-4">
+            <div class="col-6">
+                <div class="card border-start border-4 border-primary">
+                    <div class="card-body py-3">
+                        <div class="text-muted small text-uppercase fw-semibold">Total Armada</div>
+                        <div class="fs-4 fw-bold text-primary">{{ $klien->armada->count() }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-start border-4 border-info">
+                    <div class="card-body py-3">
+                        <div class="text-muted small text-uppercase fw-semibold">Total Ritase</div>
+                        <div class="fs-4 fw-bold text-info">{{ $klien->ritase->count() }}</div>
+                    </div>
+                </div>
+            </div>
+            @if($klien->jenis === 'Offtaker')
+            <div class="col-6 mt-3">
+                <div class="card border-start border-4 border-success">
+                    <div class="card-body py-3">
+                        <div class="text-muted small text-uppercase fw-semibold">Total Penjualan</div>
+                        <div class="fs-4 fw-bold text-success">{{ $klien->penjualan->count() }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mt-3">
+                <div class="card border-start border-4 border-warning">
+                    <div class="card-body py-3">
+                        <div class="text-muted small text-uppercase fw-semibold">Nilai Penjualan</div>
+                        <div class="fs-5 fw-bold text-warning">Rp {{ number_format($klien->penjualan->sum('total_harga'), 0, ',', '.') }}</div>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
     </div>
     
     <div class="col-md-7">
+        {{-- Armada Table --}}
         <div class="card mb-4">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Daftar Armada ({{ $klien->armada->count() }})</h5>
+                <h5 class="card-title mb-0"><i class="cil-truck me-2"></i>Daftar Armada ({{ $klien->armada->count() }})</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -103,6 +142,107 @@
                 </div>
             </div>
         </div>
+
+        {{-- Ritase Table --}}
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="cil-transfer me-2"></i>Riwayat Ritase ({{ $klien->ritase->count() }})</h5>
+                <span class="badge bg-info fs-6">Total Netto: {{ number_format($klien->ritase->sum('berat_netto'), 2, ',', '.') }} kg</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th>No</th>
+                                <th>No. Tiket</th>
+                                <th>Armada</th>
+                                <th>Waktu Masuk</th>
+                                <th>Berat Netto</th>
+                                <th>Biaya Tipping</th>
+                                <th>Status</th>
+                                <th>Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($klien->ritase as $index => $ritaseItem)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>
+                                    <a href="{{ route('admin.ritase.show', $ritaseItem) }}" class="text-decoration-none fw-semibold">
+                                        {{ $ritaseItem->nomor_tiket ?? '-' }}
+                                    </a>
+                                </td>
+                                <td>{{ $ritaseItem->armada->plat_nomor ?? '-' }}</td>
+                                <td>{{ $ritaseItem->waktu_masuk ? $ritaseItem->waktu_masuk->format('d/m/Y H:i') : '-' }}</td>
+                                <td>{{ number_format($ritaseItem->berat_netto, 2, ',', '.') }} kg</td>
+                                <td>Rp {{ number_format($ritaseItem->biaya_tipping, 0, ',', '.') }}</td>
+                                <td>
+                                    @php $statusColors = ['masuk'=>'info','timbang'=>'warning','keluar'=>'primary','selesai'=>'success']; @endphp
+                                    <span class="badge bg-{{ $statusColors[$ritaseItem->status] ?? 'secondary' }}">{{ ucfirst($ritaseItem->status) }}</span>
+                                </td>
+                                <td>
+                                    @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
+                                    <span class="badge bg-{{ $invoiceColors[$ritaseItem->status_invoice] ?? 'secondary' }}">{{ $ritaseItem->status_invoice ?? 'Unbilled' }}</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">Belum ada data ritase untuk klien ini.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Penjualan Table (only for Offtaker) --}}
+        @if($klien->jenis === 'Offtaker')
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="cil-cart me-2"></i>Riwayat Penjualan ({{ $klien->penjualan->count() }})</h5>
+                <span class="badge bg-success fs-6">Total: Rp {{ number_format($klien->penjualan->sum('total_harga'), 0, ',', '.') }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th>No</th>
+                                <th>Tanggal</th>
+                                <th>Jenis Produk</th>
+                                <th>Berat (kg)</th>
+                                <th>Harga Satuan</th>
+                                <th>Total Harga</th>
+                                <th>Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($klien->penjualan as $index => $penjualanItem)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $penjualanItem->tanggal ? $penjualanItem->tanggal->format('d/m/Y') : '-' }}</td>
+                                <td>{{ $penjualanItem->jenis_produk }}</td>
+                                <td>{{ number_format($penjualanItem->berat_kg, 2, ',', '.') }}</td>
+                                <td>Rp {{ number_format($penjualanItem->harga_satuan, 0, ',', '.') }}</td>
+                                <td><strong>Rp {{ number_format($penjualanItem->total_harga, 0, ',', '.') }}</strong></td>
+                                <td>
+                                    @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
+                                    <span class="badge bg-{{ $invoiceColors[$penjualanItem->status_invoice] ?? 'secondary' }}">{{ $penjualanItem->status_invoice ?? 'Unbilled' }}</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">Belum ada data penjualan untuk klien ini.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection
