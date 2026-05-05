@@ -463,6 +463,110 @@ class LaporanController extends Controller
         return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'totals', 'rekapJenis'));
     }
 
+    public function rekapRitase(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $jenisKlien = $request->get('jenis_klien');
+        $klienId = $request->get('klien_id');
+
+        // Base query with filters
+        $baseQuery = Ritase::with(['armada', 'klien'])
+            ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
+            ->when($jenisKlien, function ($q) use ($jenisKlien) {
+                $q->whereHas('klien', fn ($qk) => $qk->where('jenis', $jenisKlien));
+            })
+            ->when($klienId, function ($q) use ($klienId) {
+                $q->where('ritase.klien_id', $klienId);
+            });
+
+        // Grand totals
+        $grandTotals = (clone $baseQuery)->reorder()->selectRaw('
+            COUNT(*) as total_ritase,
+            SUM(berat_bruto) as total_bruto,
+            SUM(berat_tarra) as total_tarra,
+            SUM(berat_netto) as total_netto,
+            SUM(biaya_tipping) as total_tipping
+        ')->first();
+
+        // Rekap per Jenis Klien (summary cards)
+        $rekapPerJenis = (clone $baseQuery)->reorder()
+            ->join('klien', 'ritase.klien_id', '=', 'klien.id')
+            ->selectRaw('klien.jenis, COUNT(*) as total_ritase, SUM(ritase.berat_netto) as total_netto, SUM(ritase.biaya_tipping) as total_tipping')
+            ->groupBy('klien.jenis')
+            ->orderBy('klien.jenis')
+            ->get();
+
+        // Rekap per Tanggal per Jenis Klien (pivot table)
+        $rekapHarian = (clone $baseQuery)->reorder()
+            ->join('klien', 'ritase.klien_id', '=', 'klien.id')
+            ->selectRaw('DATE(ritase.waktu_masuk) as tanggal, klien.jenis, COUNT(*) as total_ritase, SUM(ritase.berat_netto) as total_netto, SUM(ritase.biaya_tipping) as total_tipping')
+            ->groupBy(DB::raw('DATE(ritase.waktu_masuk)'), 'klien.jenis')
+            ->orderBy(DB::raw('DATE(ritase.waktu_masuk)'))
+            ->orderBy('klien.jenis')
+            ->get();
+
+        // Get all distinct jenis from the filtered dataset
+        $jenisTypes = $rekapHarian->pluck('jenis')->unique()->sort()->values();
+
+        // Pivot: group by tanggal
+        $pivotData = [];
+        foreach ($rekapHarian as $row) {
+            $tgl = $row->tanggal;
+            if (!isset($pivotData[$tgl])) {
+                $pivotData[$tgl] = [
+                    'tanggal' => $tgl,
+                    'jenis' => [],
+                    'total_ritase' => 0,
+                    'total_netto' => 0,
+                    'total_tipping' => 0,
+                ];
+            }
+            $pivotData[$tgl]['jenis'][$row->jenis] = [
+                'total_ritase' => $row->total_ritase,
+                'total_netto' => $row->total_netto,
+                'total_tipping' => $row->total_tipping,
+            ];
+            $pivotData[$tgl]['total_ritase'] += $row->total_ritase;
+            $pivotData[$tgl]['total_netto'] += $row->total_netto;
+            $pivotData[$tgl]['total_tipping'] += $row->total_tipping;
+        }
+        $pivotData = collect($pivotData)->values();
+
+        // Rekap per Klien detail
+        $rekapPerKlien = (clone $baseQuery)->reorder()
+            ->join('klien', 'ritase.klien_id', '=', 'klien.id')
+            ->selectRaw('klien.id as klien_id, klien.nama_klien, klien.jenis, COUNT(*) as total_ritase, SUM(ritase.berat_netto) as total_netto, SUM(ritase.biaya_tipping) as total_tipping')
+            ->groupBy('klien.id', 'klien.nama_klien', 'klien.jenis')
+            ->orderBy('klien.jenis')
+            ->orderBy('klien.nama_klien')
+            ->get();
+
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+
+        $data = compact(
+            'dari', 'sampai', 'jenisKlien', 'klienId', 'kliens',
+            'grandTotals', 'rekapPerJenis', 'pivotData', 'jenisTypes',
+            'rekapPerKlien'
+        );
+
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.rekap-ritase-export', $data)
+                ->setPaper('a4', 'landscape');
+            return $pdf->download('Rekap_Ritase_' . $dari . '_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.rekap-ritase-export', $data),
+                'Rekap_Ritase_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.rekap-ritase', $data);
+    }
+
     public function laporanPenjualan(Request $request)
     {
         Gate::authorize('view_laporan_operasional');

@@ -633,6 +633,9 @@
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.rekap-ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.rekap-ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
                     </li>
                     <li class="nav-item">

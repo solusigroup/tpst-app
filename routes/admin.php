@@ -87,6 +87,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Laporan Operasional
     Route::prefix('laporan-operasional')->name('laporan-operasional.')->group(function () {
         Route::get('ritase', [LaporanController::class, 'laporanRitase'])->name('ritase');
+        Route::get('rekap-ritase', [LaporanController::class, 'rekapRitase'])->name('rekap-ritase');
         Route::get('penjualan', [LaporanController::class, 'laporanPenjualan'])->name('penjualan');
         Route::get('hasil-pilahan', [LaporanController::class, 'laporanHasilPilahan'])->name('hasil-pilahan');
         Route::get('residu', [LaporanController::class, 'laporanResidu'])->name('residu');
