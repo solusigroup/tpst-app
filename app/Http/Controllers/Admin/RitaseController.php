@@ -99,6 +99,28 @@ class RitaseController extends Controller
         return $pdf->stream('Rekap_Ritase_' . date('Ymd_His') . '.pdf');
     }
 
+    /**
+     * API: Return distinct asal_sampah (jenis_sampah) values for a given klien_id.
+     */
+    public function asalSampahByKlien(Request $request)
+    {
+        $klienId = $request->get('klien_id');
+        if (!$klienId) {
+            return response()->json([]);
+        }
+
+        $items = Ritase::where('klien_id', $klienId)
+            ->whereNotNull('jenis_sampah')
+            ->where('jenis_sampah', '!=', '')
+            ->selectRaw('jenis_sampah, COUNT(*) as used_count')
+            ->groupBy('jenis_sampah')
+            ->orderByDesc('used_count')
+            ->limit(50)
+            ->pluck('jenis_sampah');
+
+        return response()->json($items);
+    }
+
     public function create()
     {
         Gate::authorize('create_ritase');
