@@ -81,13 +81,14 @@
                 <div class="card-header bg-white"><h6 class="mb-0 fw-semibold">Detail</h6></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Asal Sampah</label>
-                        <select name="jenis_sampah" id="jenis_sampah" class="form-select" placeholder="Ketik atau pilih asal sampah...">
+                        <label class="form-label">Asal Sampah <span class="text-danger">*</span></label>
+                        <select name="jenis_sampah" id="jenis_sampah" class="form-select @error('jenis_sampah') is-invalid @enderror" placeholder="Ketik atau pilih asal sampah..." required>
                             <option value="">-- Ketik atau pilih --</option>
                             @if(old('jenis_sampah', $ritase->jenis_sampah ?? ''))
                                 <option value="{{ old('jenis_sampah', $ritase->jenis_sampah ?? '') }}" selected>{{ old('jenis_sampah', $ritase->jenis_sampah ?? '') }}</option>
                             @endif
                         </select>
+                        @error('jenis_sampah') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         <div class="form-text">Pilih dari riwayat atau ketik baru. Otomatis tersimpan untuk klien ini.</div>
                     </div>
                     <div class="mb-3">
