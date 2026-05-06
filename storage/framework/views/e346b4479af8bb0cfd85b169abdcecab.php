@@ -547,13 +547,6 @@
             </li>
             <?php endif; ?>
 
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_ritase')): ?>
-            <li class="nav-item">
-                <a class="nav-link <?php echo e(request()->routeIs('admin.ritase.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.ritase.index')); ?>">
-                    <i class="nav-icon cil-truck"></i> Ritase
-                </a>
-            </li>
-            <?php endif; ?>
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_klien')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.klien.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.klien.index')); ?>">
@@ -568,6 +561,15 @@
                 </a>
             </li>
             <?php endif; ?>
+
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_ritase')): ?>
+            <li class="nav-item">
+                <a class="nav-link <?php echo e(request()->routeIs('admin.ritase.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.ritase.index')); ?>">
+                    <i class="nav-icon cil-truck"></i> Ritase
+                </a>
+            </li>
+            <?php endif; ?>
+
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_pengangkutan_residu')): ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo e(request()->routeIs('admin.pengangkutan-residu.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.pengangkutan-residu.index')); ?>">
@@ -629,6 +631,12 @@
                 <ul class="nav-group-items compact">
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.rekap-ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.rekap-ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.rekap-ritase-2') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.rekap-ritase-2')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase II</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>

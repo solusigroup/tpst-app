@@ -595,7 +595,7 @@ class LaporanController extends Controller
             }
         }
 
-        $rekapHarian = (clone $baseQuery)->selectRaw('DATE(waktu_masuk) as tanggal, COUNT(*) as total_ritase, SUM(berat_netto) as total_netto')
+        $rekapHarian = (clone $baseQuery)->reorder()->selectRaw('DATE(waktu_masuk) as tanggal, COUNT(*) as total_ritase, SUM(berat_netto) as total_netto')
             ->groupBy(DB::raw('DATE(waktu_masuk)'))
             ->orderBy(DB::raw('DATE(waktu_masuk)'))
             ->get();

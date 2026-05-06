@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('title', 'Laporan Ritase'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -10,10 +11,10 @@
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
         </button>
         <div class="btn-group shadow-sm">
-            <a href="<?php echo e(route('admin.laporan-operasional.ritase', array_merge(request()->all(), ['export' => 'pdf']))); ?>" target="_blank" class="btn btn-danger" title="Export PDF">
+            <a href="<?php echo e(route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'export' => 'pdf'])); ?>" target="_blank" class="btn btn-danger" title="Export PDF">
                 <i class="cil-file me-1"></i> PDF
             </a>
-            <a href="<?php echo e(route('admin.laporan-operasional.ritase', array_merge(request()->all(), ['export' => 'excel']))); ?>" class="btn btn-success" title="Export Excel">
+            <a href="<?php echo e(route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'export' => 'excel'])); ?>" class="btn btn-success" title="Export Excel">
                 <i class="cil-spreadsheet me-1"></i> Excel
             </a>
         </div>
@@ -25,10 +26,19 @@
         <div class="col-auto"><label class="form-label mb-0 small text-body-secondary">Dari</label><input type="date" name="dari" class="form-control" value="<?php echo e($dari); ?>"></div>
         <div class="col-auto"><label class="form-label mb-0 small text-body-secondary">Sampai</label><input type="date" name="sampai" class="form-control" value="<?php echo e($sampai); ?>"></div>
         <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Jenis Klien</label>
+            <select name="jenis_klien" class="form-select">
+                <option value="">-- Semua Jenis --</option>
+                <?php $__currentLoopData = ['DLH', 'Swasta', 'Offtaker', 'Internal']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $jk): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($jk); ?>" <?php echo e($jenisKlien == $jk ? 'selected' : ''); ?>><?php echo e($jk); ?></option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+        </div>
+        <div class="col-auto">
             <label class="form-label mb-0 small text-body-secondary">Klien</label>
             <select name="klien_id" class="form-select">
                 <option value="">-- Semua Klien --</option>
-                <?php $__currentLoopData = $kliens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $k): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($k->id); ?>" <?php echo e($klienId == $k->id ? 'selected' : ''); ?>><?php echo e($k->nama_klien); ?></option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                <?php $__currentLoopData = $kliens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $k): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($k->id); ?>" <?php echo e($klienId == $k->id ? 'selected' : ''); ?>><?php echo e($k->nama_klien); ?> (<?php echo e($k->jenis); ?>)</option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </select>
         </div>
         <div class="col-auto">
@@ -81,16 +91,29 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Tiket (M)</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $rows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
                         <td><?php echo e(\Carbon\Carbon::parse($r->waktu_masuk)->format('d M Y')); ?></td>
                         <td><strong><?php echo e($r->nomor_tiket); ?></strong></td>
-                        <td><?php echo e($r->tiket ?? '-'); ?></td>
                         <td><?php echo e($r->armada->plat_nomor ?? '-'); ?></td>
                         <td><?php echo e($r->armada->jenis_armada ?? '-'); ?></td>
                         <td><?php echo e($r->klien->nama_klien ?? '-'); ?></td>
+                        <td>
+                            <?php
+                                $jenisColors = [
+                                    'DLH' => 'info',
+                                    'Swasta' => 'primary',
+                                    'Offtaker' => 'success',
+                                    'Internal' => 'secondary'
+                                ];
+                                $color = $jenisColors[$r->klien->jenis] ?? 'light';
+                            ?>
+                            <span class="badge bg-<?php echo e($color); ?>"><?php echo e($r->klien->jenis ?? '-'); ?></span>
+                        </td>
+                        <td class="text-end"><?php echo e(number_format($r->berat_bruto, 2, ',', '.')); ?> kg</td>
+                        <td class="text-end"><?php echo e(number_format($r->berat_tarra, 2, ',', '.')); ?> kg</td>
                         <td class="text-end"><?php echo e(number_format($r->berat_netto, 2, ',', '.')); ?> kg</td>
                         <td class="text-end">Rp <?php echo e(number_format($r->biaya_tipping, 0, ',', '.')); ?></td>
                         <td>
@@ -103,11 +126,18 @@
                         </td>
                     </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <tr><td colspan="10" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                    <tr><td colspan="11" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                     <?php endif; ?>
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="6" class="text-end">TOTAL (<?php echo e(number_format($totals->total_rows ?? 0, 0, ',', '.')); ?> Ritase)</td><td class="text-end"><?php echo e(number_format($totals->total_netto ?? 0, 2, ',', '.')); ?> kg</td><td class="text-end">Rp <?php echo e(number_format($totals->total_tipping ?? 0, 0, ',', '.')); ?></td><td colspan="2"></td></tr>
+                    <tr>
+                        <td colspan="6" class="text-end">TOTAL (<?php echo e(number_format($totals->total_rows ?? 0, 0, ',', '.')); ?> Ritase)</td>
+                        <td class="text-end"><?php echo e(number_format($totals->total_bruto ?? 0, 2, ',', '.')); ?> kg</td>
+                        <td class="text-end"><?php echo e(number_format($totals->total_tarra ?? 0, 2, ',', '.')); ?> kg</td>
+                        <td class="text-end"><?php echo e(number_format($totals->total_netto ?? 0, 2, ',', '.')); ?> kg</td>
+                        <td class="text-end">Rp <?php echo e(number_format($totals->total_tipping ?? 0, 0, ',', '.')); ?></td>
+                        <td colspan="2"></td>
+                    </tr>
                 </tfoot>
             </table>
         </div>
@@ -189,8 +219,11 @@
                                 <th>Tanggal</th>
                                 <th>No Tiket</th>
                                 <th>Armada</th>
-                                <th>Jenis</th>
+                                <th>Jenis Armada</th>
                                 <th>Klien</th>
+                                <th>Jenis Klien</th>
+                                <th class="text-end">Bruto</th>
+                                <th class="text-end">Tarra</th>
                                 <th class="text-end">Netto (kg)</th>
                                 <th class="text-end">Tipping</th>
                                 <th>Status</th>
@@ -201,7 +234,14 @@
                                 $allRowsForPrint = \App\Models\Ritase::with(['armada', 'klien'])
                                     ->when($dari, fn($q)=>$q->whereDate('waktu_masuk','>=',$dari))
                                     ->when($sampai, fn($q)=>$q->whereDate('waktu_masuk','<=',$sampai))
-                                    ->when($klienId, fn($q)=>$q->where('klien_id',$klienId))
+                                    ->when($klienId, function ($q) use ($klienId) {
+                                        $selectedKlien = \App\Models\Klien::find($klienId);
+                                        if ($selectedKlien && ($selectedKlien->nama_klien === 'Dinas Lingkungan Hidup' || $selectedKlien->jenis === 'DLH')) {
+                                            $q->whereHas('klien', function ($qk) { $qk->where('jenis', 'DLH'); });
+                                        } else {
+                                            $q->where('ritase.klien_id', $klienId);
+                                        }
+                                    })
                                     ->when($status, fn($q)=>$q->where('status',$status))
                                     ->orderByDesc('waktu_masuk')
                                     ->get(); 
@@ -214,6 +254,9 @@
                                 <td><?php echo e($r->armada->plat_nomor ?? '-'); ?></td>
                                 <td><?php echo e($r->armada->jenis_armada ?? '-'); ?></td>
                                 <td><?php echo e($r->klien->nama_klien ?? '-'); ?></td>
+                                <td><?php echo e($r->klien->jenis ?? '-'); ?></td>
+                                <td class="text-end"><?php echo e(number_format($r->berat_bruto, 2, ',', '.')); ?></td>
+                                <td class="text-end"><?php echo e(number_format($r->berat_tarra, 2, ',', '.')); ?></td>
                                 <td class="text-end"><?php echo e(number_format($r->berat_netto, 2, ',', '.')); ?></td>
                                 <td class="text-end"><?php echo e(number_format($r->biaya_tipping, 0, ',', '.')); ?></td>
                                 <td><?php echo e(ucfirst($r->status)); ?></td>
@@ -222,7 +265,9 @@
                         </tbody>
                         <tfoot class="fw-bold">
                             <tr class="table-light border-dark">
-                                <td colspan="6" class="text-end">TOTAL KESELURUHAN</td>
+                                <td colspan="7" class="text-end">TOTAL KESELURUHAN</td>
+                                <td class="text-end"><?php echo e(number_format($totals->total_bruto ?? 0, 2, ',', '.')); ?></td>
+                                <td class="text-end"><?php echo e(number_format($totals->total_tarra ?? 0, 2, ',', '.')); ?></td>
                                 <td class="text-end"><?php echo e(number_format($totals->total_netto ?? 0, 2, ',', '.')); ?></td>
                                 <td class="text-end">Rp <?php echo e(number_format($totals->total_tipping ?? 0, 0, ',', '.')); ?></td>
                                 <td></td>
@@ -236,7 +281,7 @@
                             <p class="mb-5">Dicetak pada: <?php echo e(now()->format('d/m/Y H:i')); ?></p>
                             <div class="mt-5">
                                 <p class="fw-bold mb-0">( ____________________ )</p>
-                                <p class="text-secondary small">Admin Operasional</p>
+                                <p class="text-secondary small">&nbsp;</p>
                             </div>
                         </div>
                     </div>
@@ -256,35 +301,36 @@
 <?php $__env->startPush('styles'); ?>
 <style>
     @media print {
-        /* Sembunyikan semua elemen UI aplikasi */
+        body { 
+            overflow: visible !important; 
+            height: auto !important; 
+            background: white !important;
+        }
         .sidebar, .header, .mobile-bottom-nav, .modal-backdrop, .breadcrumb, .page-header, .card, form, .no-print, .d-print-none {
             display: none !important;
         }
-        
-        /* Reset layout agar penuh halaman */
         .wrapper { padding: 0 !important; margin: 0 !important; }
         .body { padding: 0 !important; margin: 0 !important; }
         .container-fluid { padding: 0 !important; margin: 0 !important; }
-        
-        /* Tampilkan Modal secara absolut di atas halaman */
         .modal {
             display: block !important;
-            position: absolute !important;
+            position: static !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             opacity: 1 !important;
             visibility: visible !important;
             background: white !important;
+            overflow: visible !important;
+            height: auto !important;
         }
         .modal-dialog {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-        }
-        .modal-header, .modal-footer {
-            display: none !important;
+            overflow: visible !important;
+            height: auto !important;
         }
         .modal-content, .modal-body {
             display: block !important;
@@ -294,14 +340,19 @@
             background: white !important;
             visibility: visible !important;
             opacity: 1 !important;
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
         }
-        
         #printArea {
             visibility: visible !important;
             opacity: 1 !important;
             display: block !important;
             padding: 0 !important;
             margin: 0 !important;
+            max-width: 100% !important;
+            min-height: auto !important;
+            box-shadow: none !important;
         }
         #printArea * {
             visibility: visible !important;

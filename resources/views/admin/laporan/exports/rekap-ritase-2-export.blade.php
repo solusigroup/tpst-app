@@ -34,7 +34,7 @@
     </tr>
     <tr>
         <td class="font-bold">BULAN</td>
-        <td>{{ \Carbon\Carbon::create()->month($bulan)->translatedFormat('F') }}</td>
+        <td>{{ \Carbon\Carbon::create()->month((int)$bulan)->translatedFormat('F') }}</td>
         <td class="font-bold">Tahun: {{ $tahun }}</td>
     </tr>
     <tr>

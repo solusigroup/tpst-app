@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('title', 'Laporan Pengangkutan Residu'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -195,7 +196,7 @@
                             <p class="mb-5">Dicetak pada: <?php echo e(now()->format('d/m/Y H:i')); ?></p>
                             <div class="mt-5">
                                 <p class="fw-bold mb-0">( ____________________ )</p>
-                                <p class="text-secondary small">Admin Operasional</p>
+                                <p class="text-secondary small">&nbsp;</p>
                             </div>
                         </div>
                     </div>
@@ -215,36 +216,62 @@
 <?php $__env->startPush('styles'); ?>
 <style>
     @media print {
-        /* Hide everything by default */
-        body * {
-            visibility: hidden;
-            overflow: visible !important;
+        body { 
+            overflow: visible !important; 
+            height: auto !important; 
+            background: white !important;
         }
-        /* Only show the printArea and its ancestors (to keep it in DOM structure) */
-        #printArea, #printArea * {
-            visibility: visible;
-        }
-        /* Position printArea at the very top of the printed page */
-        #printArea {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        /* Ensure the modal background and other UI elements are hidden */
-        .modal, .modal-backdrop, .sidebar, .header, .mobile-bottom-nav {
+        .sidebar, .header, .mobile-bottom-nav, .modal-backdrop, .breadcrumb, .page-header, .card, form, .no-print, .d-print-none {
             display: none !important;
         }
-        /* Show the modal-dialog/content but without its UI chrome during print */
-        .modal-dialog, .modal-content, .modal-body {
+        .wrapper { padding: 0 !important; margin: 0 !important; }
+        .body { padding: 0 !important; margin: 0 !important; }
+        .container-fluid { padding: 0 !important; margin: 0 !important; }
+        .modal {
+            display: block !important;
+            position: static !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background: white !important;
+            overflow: visible !important;
+            height: auto !important;
+        }
+        .modal-dialog {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            height: auto !important;
+        }
+        .modal-content, .modal-body {
             display: block !important;
             border: none !important;
             box-shadow: none !important;
             padding: 0 !important;
-            margin: 0 !important;
+            background: white !important;
+            visibility: visible !important;
+            opacity: 1 !important;
             overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        #printArea {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            min-height: auto !important;
+            box-shadow: none !important;
+        }
+        #printArea * {
+            visibility: visible !important;
+            opacity: 1 !important;
         }
     }
 </style>
