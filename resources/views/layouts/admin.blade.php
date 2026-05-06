@@ -623,36 +623,50 @@
                 </ul>
             </li>
             @endcan
-            @can('view_laporan_operasional')
+            @canany(['view_laporan_operasional', 'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2', 'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan', 'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah'])
             <li class="nav-group {{ request()->is('admin/laporan-operasional*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-clipboard"></i> Laporan Operasional
                 </a>
                 <ul class="nav-group-items compact">
+                    @canany(['view_laporan_operasional', 'view_laporan_ritase'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
                     </li>
+                    @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_rekap_ritase'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.rekap-ritase') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.rekap-ritase') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase</a>
                     </li>
+                    @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_rekap_ritase_2'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.rekap-ritase-2') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.rekap-ritase-2') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase II</a>
                     </li>
+                    @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_penjualan_op'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
                     </li>
+                    @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_hasil_pilahan'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.hasil-pilahan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
                     </li>
+                    @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_residu'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
                     </li>
+                    @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_kehadiran'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.kehadiran') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
                     </li>
+                    @endcanany
                 </ul>
             </li>
-            @endcan
+            @endcanany
 
             {{-- Keuangan --}}
             <li class="nav-title">Keuangan</li>

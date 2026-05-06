@@ -404,7 +404,9 @@ class LaporanController extends Controller
 
     public function laporanRitase(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -465,7 +467,9 @@ class LaporanController extends Controller
 
     public function rekapRitase(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_rekap_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -569,7 +573,9 @@ class LaporanController extends Controller
 
     public function rekapRitase2(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_rekap_ritase_2')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $bulan = $request->get('bulan', date('m'));
         $tahun = $request->get('tahun', date('Y'));
@@ -622,7 +628,9 @@ class LaporanController extends Controller
 
     public function laporanPenjualan(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_penjualan_op')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -655,7 +663,9 @@ class LaporanController extends Controller
 
     public function laporanHasilPilahan(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_hasil_pilahan')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -735,7 +745,9 @@ class LaporanController extends Controller
 
     public function laporanResidu(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_residu')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -769,7 +781,9 @@ class LaporanController extends Controller
 
     public function laporanKehadiran(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_kehadiran')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -812,7 +826,9 @@ class LaporanController extends Controller
 
     public function laporanUpah(Request $request)
     {
-        Gate::authorize('view_laporan_operasional');
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_upah')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $dari = $request->get('dari');
         $sampai = $request->get('sampai');

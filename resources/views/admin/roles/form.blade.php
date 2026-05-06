@@ -62,7 +62,7 @@
                                                     id="perm_{{ $perm->id }}" name="permissions[]" value="{{ $perm->name }}"
                                                     {{ (isset($rolePermissions) && in_array($perm->name, $rolePermissions)) ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="perm_{{ $perm->id }}">
-                                                    {{ str_replace('_', ' ', $perm->name) }}
+                                                    {{ $permLabels[$perm->name] ?? str_replace('_', ' ', $perm->name) }}
                                                 </label>
                                             </div>
                                         @endforeach

@@ -41,6 +41,16 @@ class RolePermissionSeeder extends Seeder
             'view_laporan_keuangan',
             'view_laporan_operasional',
             
+            // Laporan Operasional (Granular)
+            'view_laporan_ritase',
+            'view_laporan_rekap_ritase',
+            'view_laporan_rekap_ritase_2',
+            'view_laporan_penjualan_op',
+            'view_laporan_hasil_pilahan',
+            'view_laporan_residu',
+            'view_laporan_kehadiran',
+            'view_laporan_upah',
+            
             // HRD
             'view_attendance', 'create_attendance', 'update_attendance', 'delete_attendance',
             'view_employee_output', 'create_employee_output', 'update_employee_output', 'delete_employee_output',
@@ -86,6 +96,9 @@ class RolePermissionSeeder extends Seeder
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
             'view_laporan_keuangan', 'view_laporan_operasional',
+            'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
+            'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
+            'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah',
             
             // HRD
             'view_attendance', 'create_attendance', 'update_attendance', 'delete_attendance',
@@ -107,6 +120,9 @@ class RolePermissionSeeder extends Seeder
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
             'view_laporan_keuangan', 'view_laporan_operasional',
+            'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
+            'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
+            'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah',
             
             // HRD untuk Keuangan
             'view_wage_rate', 'create_wage_rate', 'update_wage_rate', 'delete_wage_rate',

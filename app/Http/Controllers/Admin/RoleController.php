@@ -25,10 +25,23 @@ class RoleController extends Controller
         abort_if(!auth()->user()->hasRole('super_admin'), 403, 'Akses ditolak. Hanya Super Admin yang diizinkan mengelola role.');
 
         $permissions = Permission::all()->groupBy(function($perm) {
-            return explode('_', $perm->name, 2)[1] ?? 'other'; // Grupping based on suffix, e.g. "klien" from "view_klien"
+            // Group all laporan operasional sub-permissions together
+            $laporanOpPerms = [
+                'view_laporan_operasional',
+                'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
+                'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
+                'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah',
+            ];
+            if (in_array($perm->name, $laporanOpPerms)) {
+                return 'laporan_operasional';
+            }
+            return explode('_', $perm->name, 2)[1] ?? 'other';
         });
 
-        return view('admin.roles.form', compact('permissions'));
+        // Human-readable labels for permissions
+        $permLabels = $this->getPermissionLabels();
+
+        return view('admin.roles.form', compact('permissions', 'permLabels'));
     }
 
     public function store(Request $request)
@@ -61,13 +74,23 @@ class RoleController extends Controller
         }
 
         $permissions = Permission::all()->groupBy(function($perm) {
+            $laporanOpPerms = [
+                'view_laporan_operasional',
+                'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
+                'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
+                'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah',
+            ];
+            if (in_array($perm->name, $laporanOpPerms)) {
+                return 'laporan_operasional';
+            }
             return explode('_', $perm->name, 2)[1] ?? 'other';
         });
 
         // Current permissions applied to this role
         $rolePermissions = $role->permissions->pluck('name')->toArray();
+        $permLabels = $this->getPermissionLabels();
 
-        return view('admin.roles.form', compact('role', 'permissions', 'rolePermissions'));
+        return view('admin.roles.form', compact('role', 'permissions', 'rolePermissions', 'permLabels'));
     }
 
     public function update(Request $request, Role $role)
@@ -115,5 +138,23 @@ class RoleController extends Controller
         $role->delete();
 
         return redirect()->route('admin.roles.index')->with('success', 'Role berhasil dihapus.');
+    }
+
+    /**
+     * Human-readable labels for permissions (especially granular laporan operasional).
+     */
+    private function getPermissionLabels(): array
+    {
+        return [
+            'view_laporan_operasional'    => 'Semua Laporan Operasional',
+            'view_laporan_ritase'         => 'Laporan Ritase',
+            'view_laporan_rekap_ritase'   => 'Rekap Ritase',
+            'view_laporan_rekap_ritase_2' => 'Rekap Ritase II',
+            'view_laporan_penjualan_op'   => 'Laporan Penjualan',
+            'view_laporan_hasil_pilahan'  => 'Laporan Hasil Pilahan',
+            'view_laporan_residu'         => 'Laporan Residu',
+            'view_laporan_kehadiran'      => 'Laporan Kehadiran',
+            'view_laporan_upah'           => 'Laporan Upah',
+        ];
     }
 }

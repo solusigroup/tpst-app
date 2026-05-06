@@ -623,33 +623,47 @@
                 </ul>
             </li>
             <?php endif; ?>
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view_laporan_operasional')): ?>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2', 'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan', 'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah'])): ?>
             <li class="nav-group <?php echo e(request()->is('admin/laporan-operasional*') ? 'show' : ''); ?>">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-clipboard"></i> Laporan Operasional
                 </a>
                 <ul class="nav-group-items compact">
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_ritase'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Ritase</a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_rekap_ritase'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.rekap-ritase') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.rekap-ritase')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase</a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_rekap_ritase_2'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.rekap-ritase-2') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.rekap-ritase-2')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase II</a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_penjualan_op'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_hasil_pilahan'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.hasil-pilahan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_residu'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.residu') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.residu')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_kehadiran'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.kehadiran')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </li>
             <?php endif; ?>
