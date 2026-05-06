@@ -567,6 +567,59 @@ class LaporanController extends Controller
         return view('admin.laporan.rekap-ritase', $data);
     }
 
+    public function rekapRitase2(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+
+        $bulan = $request->get('bulan', date('m'));
+        $tahun = $request->get('tahun', date('Y'));
+        $klienId = $request->get('klien_id');
+
+        $klien = null;
+        if ($klienId) {
+            $klien = \App\Models\Klien::find($klienId);
+        }
+
+        $baseQuery = Ritase::with(['klien'])
+            ->whereYear('waktu_masuk', $tahun)
+            ->whereMonth('waktu_masuk', $bulan);
+
+        if ($klienId) {
+            // Support filtering DLH broadly if the selected client is DLH Master
+            if ($klien && ($klien->nama_klien === 'Dinas Lingkungan Hidup' || $klien->jenis === 'DLH')) {
+                $baseQuery->whereHas('klien', function ($qk) {
+                    $qk->where('jenis', 'DLH');
+                });
+            } else {
+                $baseQuery->where('klien_id', $klienId);
+            }
+        }
+
+        $rekapHarian = (clone $baseQuery)->selectRaw('DATE(waktu_masuk) as tanggal, COUNT(*) as total_ritase, SUM(berat_netto) as total_netto')
+            ->groupBy(DB::raw('DATE(waktu_masuk)'))
+            ->orderBy(DB::raw('DATE(waktu_masuk)'))
+            ->get();
+
+        $grandTotalRitase = $rekapHarian->sum('total_ritase');
+        $grandTotalNetto = $rekapHarian->sum('total_netto');
+
+        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+
+        $data = compact('bulan', 'tahun', 'klienId', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto');
+
+        if ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.rekap-ritase-2-export', $data),
+                'Rekap_Ritase_II_' . $bulan . '_' . $tahun . '.xlsx'
+            );
+        } elseif ($request->export === 'pdf') {
+             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.rekap-ritase-2-export', $data);
+             return $pdf->download('Rekap_Ritase_II_' . $bulan . '_' . $tahun . '.pdf');
+        }
+
+        return view('admin.laporan.rekap-ritase-2', $data);
+    }
+
     public function laporanPenjualan(Request $request)
     {
         Gate::authorize('view_laporan_operasional');
