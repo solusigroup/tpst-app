@@ -82,7 +82,7 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Asal Sampah <span class="text-danger">*</span></label>
-                        <select name="jenis_sampah" id="jenis_sampah" class="form-select @error('jenis_sampah') is-invalid @enderror" placeholder="Ketik atau pilih asal sampah..." required>
+                        <select name="jenis_sampah" id="jenis_sampah" class="form-select no-search @error('jenis_sampah') is-invalid @enderror" placeholder="Ketik atau pilih asal sampah..." required>
                             <option value="">-- Ketik atau pilih --</option>
                             @if(old('jenis_sampah', $ritase->jenis_sampah ?? ''))
                                 <option value="{{ old('jenis_sampah', $ritase->jenis_sampah ?? '') }}" selected>{{ old('jenis_sampah', $ritase->jenis_sampah ?? '') }}</option>
