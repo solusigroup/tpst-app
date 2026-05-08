@@ -4,6 +4,10 @@
 <div class="text-center mb-4">
     <h2 style="margin:0">LAPORAN HASIL PILAHAN</h2>
     <p style="margin:5px 0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+    @if($userId)
+        @php $selectedEmp = $employees->firstWhere('id', $userId); @endphp
+        <p style="margin:5px 0">Karyawan: {{ $selectedEmp ? $selectedEmp->name : 'N/A' }}</p>
+    @endif
 </div>
 
 <h3 style="margin-bottom: 10px;">Ringkasan Stok Pilahan</h3>

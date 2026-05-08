@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use App\Models\PengangkutanResidu;
 use App\Models\WageCalculation;
+use App\Models\User;
 
 
 class LaporanController extends Controller
@@ -670,11 +671,13 @@ class LaporanController extends Controller
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $kategori = $request->get('kategori');
+        $userId = $request->get('user_id');
 
         $query = HasilPilahan::query()
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->orderByDesc('tanggal');
 
         $rows = $query->paginate(20)->withQueryString();
@@ -685,6 +688,7 @@ class LaporanController extends Controller
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->groupBy('kategori', 'jenis')
             ->get();
 
@@ -724,9 +728,17 @@ class LaporanController extends Controller
             'sisa_stok' => $totalSisaAll
         ];
 
+        $employees = User::role('karyawan')
+            ->where('position', 'Pemilah')
+            ->where('salary_type', 'borongan');
+        if (!auth()->user()->isSuperAdmin()) {
+            $employees->where('tenant_id', auth()->user()->tenant_id);
+        }
+        $employees = $employees->orderBy('name')->get();
+
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'dari', 'sampai', 'kategori', 'totals', 'stokSummary', 'summaryTotals');
+            $data = compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.hasil-pilahan-export', $data);
@@ -740,7 +752,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'totals', 'stokSummary', 'summaryTotals'));
+        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees'));
     }
 
     public function laporanResidu(Request $request)

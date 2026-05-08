@@ -32,6 +32,15 @@
                 @foreach(['Organik','Anorganik','B3','Residu'] as $c)<option value="{{ $c }}" {{ $kategori == $c ? 'selected' : '' }}>{{ $c }}</option>@endforeach
             </select>
         </div>
+        <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Karyawan</label>
+            <select name="user_id" class="form-select">
+                <option value="">-- Semua --</option>
+                @foreach($employees as $emp)
+                    <option value="{{ $emp->id }}" {{ $userId == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="col-auto"><button class="btn btn-primary" type="submit"><i class="cil-filter me-1"></i> Filter</button></div>
     </form>
 </div></div>
@@ -133,7 +142,11 @@
                     
                     <div class="text-center mb-4">
                         <h4 class="fw-bold text-uppercase mb-1">LAPORAN HASIL PILAHAN SAMPAH</h4>
-                        <p class="text-secondary">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+                        <p class="text-secondary mb-1">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+                        @if($userId)
+                            @php $selectedEmp = $employees->firstWhere('id', $userId); @endphp
+                            <p class="text-secondary small">Karyawan: {{ $selectedEmp ? $selectedEmp->name : 'N/A' }}</p>
+                        @endif
                     </div>
 
                     <h6 class="fw-bold mb-2">Ringkasan Stok Pilahan</h6>
@@ -187,6 +200,7 @@
                                     ->when($dari, fn($q)=>$q->whereDate('tanggal','>=',$dari))
                                     ->when($sampai, fn($q)=>$q->whereDate('tanggal','<=',$sampai))
                                     ->when($kategori, fn($q)=>$q->where('kategori',$kategori))
+                                    ->when($userId, fn($q)=>$q->where('user_id',$userId))
                                     ->orderByDesc('tanggal')
                                     ->get(); 
                             @endphp
