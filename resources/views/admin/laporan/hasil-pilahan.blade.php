@@ -99,9 +99,15 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Petugas</th><th class="text-end">Jml Bal</th><th class="text-end">Tonase</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Petugas</th><th class="text-end">Jml Bal</th><th class="text-end">Tonase</th><th class="text-end">Hrg Borongan / Kg</th><th class="text-end">Jml Upah</th></tr></thead>
                 <tbody>
+                    @php $pageTotalWage = 0; @endphp
                     @forelse($rows as $r)
+                    @php 
+                        $rate = $r->getWageRate();
+                        $wage = $r->getTotalWage();
+                        $pageTotalWage += $wage;
+                    @endphp
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
                         <td>
@@ -112,15 +118,19 @@
                         <td>{{ $r->officer }}</td>
                         <td class="text-end">{{ $r->jml_bal ? $r->jml_bal . ' Bal' : '-' }}</td>
                         <td class="text-end">{{ number_format($r->tonase, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-body-secondary small">{{ $rate ? 'Rp ' . number_format($rate->rate_per_unit, 0, ',', '.') : '-' }}</td>
+                        <td class="text-end fw-medium text-success">{{ $wage ? 'Rp ' . number_format($wage, 0, ',', '.') : '-' }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="text-center py-4 text-body-secondary">Belum ada data hasil pilahan.</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data hasil pilahan.</td></tr>
                     @endforelse
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold">
-                    <tr><td colspan="4" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Catatan)</td>
-                    <td class="text-end">{{ number_format($totals->total_bal ?? 0, 0, ',', '.') }} Bal</td>
-                    <td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }} kg</td></tr>
+                    <tr><td colspan="4" class="text-end">TOTAL HALAMAN INI</td>
+                    <td class="text-end">{{ number_format($rows->sum('jml_bal'), 0, ',', '.') }} Bal</td>
+                    <td class="text-end">{{ number_format($rows->sum('tonase'), 2, ',', '.') }} kg</td>
+                    <td></td>
+                    <td class="text-end text-success">Rp {{ number_format($pageTotalWage, 0, ',', '.') }}</td></tr>
                 </tfoot>
             </table>
         </div>
@@ -192,19 +202,27 @@
                                 <th>Petugas</th>
                                 <th class="text-end">Jml Bal</th>
                                 <th class="text-end">Tonase</th>
+                                <th class="text-end">Hrg / Kg</th>
+                                <th class="text-end">Jml Upah</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php 
-                                $allRowsForPrint = \App\Models\HasilPilahan::query()
+                                $allRowsForPrint = \App\Models\HasilPilahan::with(['wasteCategory.wageRates'])
                                     ->when($dari, fn($q)=>$q->whereDate('tanggal','>=',$dari))
                                     ->when($sampai, fn($q)=>$q->whereDate('tanggal','<=',$sampai))
                                     ->when($kategori, fn($q)=>$q->where('kategori',$kategori))
                                     ->when($userId, fn($q)=>$q->where('user_id',$userId))
                                     ->orderByDesc('tanggal')
                                     ->get(); 
+                                $grandTotalWage = 0;
                             @endphp
                             @foreach($allRowsForPrint as $index => $r)
+                            @php 
+                                $rate = $r->getWageRate();
+                                $wage = $r->getTotalWage();
+                                $grandTotalWage += $wage;
+                            @endphp
                             <tr>
                                 <td class="text-center">{{ $index + 1 }}</td>
                                 <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}</td>
@@ -213,14 +231,18 @@
                                 <td>{{ $r->officer }}</td>
                                 <td class="text-end">{{ $r->jml_bal ? $r->jml_bal . ' Bal' : '-' }}</td>
                                 <td class="text-end">{{ number_format($r->tonase, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ $rate ? number_format($rate->rate_per_unit, 0, ',', '.') : '-' }}</td>
+                                <td class="text-end fw-bold">{{ $wage ? number_format($wage, 0, ',', '.') : '-' }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="fw-bold table-light border-dark">
                             <tr>
                                 <td colspan="5" class="text-end">TOTAL</td>
-                                <td class="text-end">{{ number_format($totals->total_bal ?? 0, 0, ',', '.') }} Bal</td>
-                                <td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($allRowsForPrint->sum('jml_bal'), 0, ',', '.') }} Bal</td>
+                                <td class="text-end">{{ number_format($allRowsForPrint->sum('tonase'), 2, ',', '.') }} kg</td>
+                                <td></td>
+                                <td class="text-end">Rp {{ number_format($grandTotalWage, 0, ',', '.') }}</td>
                             </tr>
                         </tfoot>
                     </table>

@@ -52,10 +52,18 @@
             <th>Jenis</th>
             <th>Petugas</th>
             <th class="text-end">Tonase (kg)</th>
+            <th class="text-end">Hrg / Kg</th>
+            <th class="text-end">Jml Upah</th>
         </tr>
     </thead>
     <tbody>
+        @php $exportTotalWage = 0; @endphp
         @foreach($rows as $index => $r)
+        @php 
+            $rate = $r->getWageRate();
+            $wage = $r->getTotalWage();
+            $exportTotalWage += $wage;
+        @endphp
         <tr>
             <td class="text-center">{{ $index + 1 }}</td>
             <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}</td>
@@ -63,6 +71,8 @@
             <td>{{ $r->jenis }}</td>
             <td>{{ $r->officer }}</td>
             <td class="text-end">{{ number_format($r->tonase, 2, ',', '.') }}</td>
+            <td class="text-end">{{ $rate ? number_format($rate->rate_per_unit, 0, ',', '.') : '-' }}</td>
+            <td class="text-end">{{ $wage ? number_format($wage, 0, ',', '.') : '-' }}</td>
         </tr>
         @endforeach
     </tbody>
@@ -70,6 +80,8 @@
         <tr>
             <td colspan="5" class="text-end">TOTAL LOG</td>
             <td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }}</td>
+            <td></td>
+            <td class="text-end">{{ number_format($exportTotalWage, 0, ',', '.') }}</td>
         </tr>
     </tfoot>
 </table>

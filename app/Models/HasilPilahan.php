@@ -63,4 +63,21 @@ class HasilPilahan extends Model
     {
         return $this->belongsTo(WasteCategory::class);
     }
+
+    /**
+     * Get the active wage rate for this record.
+     */
+    public function getWageRate(): ?WageRate
+    {
+        return WageRate::getActiveRate($this->waste_category_id, $this->tanggal);
+    }
+
+    /**
+     * Calculate total wage for this record.
+     */
+    public function getTotalWage(): float
+    {
+        $rate = $this->getWageRate();
+        return $rate ? (float) ($this->tonase * $rate->rate_per_unit) : 0;
+    }
 }

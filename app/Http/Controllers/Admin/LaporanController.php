@@ -673,7 +673,7 @@ class LaporanController extends Controller
         $kategori = $request->get('kategori');
         $userId = $request->get('user_id');
 
-        $query = HasilPilahan::query()
+        $query = HasilPilahan::with(['wasteCategory.wageRates'])
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
