@@ -477,8 +477,9 @@ class LaporanController extends Controller
         $jenisKlien = $request->get('jenis_klien');
         $klienId = $request->get('klien_id');
 
-        // Base query with filters
+        // Base query with filters - Only approved ritase
         $baseQuery = Ritase::with(['armada', 'klien'])
+            ->where('ritase.is_approved', 1)
             ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
             ->when($jenisKlien, function ($q) use ($jenisKlien) {
@@ -588,6 +589,7 @@ class LaporanController extends Controller
         }
 
         $baseQuery = Ritase::with(['klien'])
+            ->where('is_approved', 1)
             ->whereYear('waktu_masuk', $tahun)
             ->whereMonth('waktu_masuk', $bulan);
 

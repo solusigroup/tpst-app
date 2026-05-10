@@ -29,7 +29,8 @@ class InvoiceItemController extends Controller
                     $q->orWhere('invoice_id', $invoiceId);
                 }
             })
-            // Optional: You might want to filter only specific operational statuses here like 'Selesai'
+            // Only show approved ritase
+            ->where('is_approved', 1)
             ->orderBy('waktu_masuk', 'asc')
             ->select('id', 'nomor_tiket', 'waktu_masuk', 'berat_netto', 'biaya_tipping', 'invoice_id');
 

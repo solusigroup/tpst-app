@@ -92,7 +92,7 @@ class Invoice extends Model
      */
     public function ritase(): HasMany
     {
-        return $this->hasMany(Ritase::class);
+        return $this->hasMany(Ritase::class)->where('is_approved', 1);
     }
 
     /**

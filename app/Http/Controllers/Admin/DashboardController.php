@@ -27,15 +27,15 @@ class DashboardController extends Controller
         $monthStart = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
         $monthEnd = $monthStart->copy()->endOfMonth();
 
-        // Stats
-        $tonaseHariIni = Ritase::whereDate('waktu_masuk', $today)->sum('berat_netto');
-        $tonaseBulanIni = Ritase::whereBetween('waktu_masuk', [$monthStart, $monthEnd])->sum('berat_netto');
+        // Stats - Only approved ritase
+        $tonaseHariIni = Ritase::where('is_approved', 1)->whereDate('waktu_masuk', $today)->sum('berat_netto');
+        $tonaseBulanIni = Ritase::where('is_approved', 1)->whereBetween('waktu_masuk', [$monthStart, $monthEnd])->sum('berat_netto');
         
-        $jumlahRitaseHariIni = Ritase::whereDate('waktu_masuk', $today)->count();
-        $jumlahRitaseBulanIni = Ritase::whereBetween('waktu_masuk', [$monthStart, $monthEnd])->count();
+        $jumlahRitaseHariIni = Ritase::where('is_approved', 1)->whereDate('waktu_masuk', $today)->count();
+        $jumlahRitaseBulanIni = Ritase::where('is_approved', 1)->whereBetween('waktu_masuk', [$monthStart, $monthEnd])->count();
 
-        // Residu dan Pilahan (Akumulasi / All-Time)
-        $tonaseAkumulasi = Ritase::sum('berat_netto');
+        // Residu dan Pilahan (Akumulasi / All-Time) - Based on approved ritase
+        $tonaseAkumulasi = Ritase::where('is_approved', 1)->sum('berat_netto');
         $residuAkumulasi = PengangkutanResidu::sum('berat_netto');
         $pilahanAkumulasi = HasilPilahan::sum('tonase');
 
@@ -53,6 +53,7 @@ class DashboardController extends Controller
 
         if (!auth()->user()->hasRole('ritase_only')) {
             $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
+                ->where('is_approved', 1)
                 ->where('biaya_tipping', '>', 0)
                 ->sum('biaya_tipping');
             $penjualanBulanIni = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
@@ -82,7 +83,7 @@ class DashboardController extends Controller
         $daysInMonth = $monthStart->daysInMonth;
         for ($d = 1; $d <= $daysInMonth; $d++) {
             $date = Carbon::createFromDate($selectedYear, $selectedMonth, $d);
-            $tonnage = Ritase::whereDate('waktu_masuk', $date)->sum('berat_netto');
+            $tonnage = Ritase::where('is_approved', 1)->whereDate('waktu_masuk', $date)->sum('berat_netto');
             $dailyTonnage->push([
                 'date' => $date->format('d/m'),
                 'tonnage' => round($tonnage, 2),

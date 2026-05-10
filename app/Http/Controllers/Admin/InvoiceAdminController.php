@@ -217,7 +217,7 @@ class InvoiceAdminController extends Controller
                     }
                     
                     // Recalculate totals for the merged master invoice
-                    $totalRitase = \App\Models\Ritase::where('invoice_id', $master->id)->sum('biaya_tipping');
+                    $totalRitase = $master->ritase()->sum('biaya_tipping');
                     $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('total_harga');
                     $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('jumlah_bayar');
                     
@@ -258,6 +258,7 @@ class InvoiceAdminController extends Controller
                     $q->whereNull('invoice_id')->orWhere('invoice_id', '!=', $invoice->id);
                 })
                 ->where('status_invoice', '!=', 'Paid') // Don't steal from paid invoices
+                ->where('is_approved', 1)
                 ->get();
 
             foreach ($missingRitase as $ritase) {
@@ -286,7 +287,7 @@ class InvoiceAdminController extends Controller
             }
 
             if ($count > 0) {
-                $totalRitase = \App\Models\Ritase::where('invoice_id', $invoice->id)->sum('biaya_tipping');
+                $totalRitase = $invoice->ritase()->sum('biaya_tipping');
                 $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('total_harga');
                 $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('jumlah_bayar');
 
