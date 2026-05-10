@@ -414,6 +414,7 @@ class LaporanController extends Controller
         $klienId = $request->get('klien_id');
         $jenisKlien = $request->get('jenis_klien');
         $status = $request->get('status');
+        $isApproved = $request->get('is_approved');
 
         $query = Ritase::with(['armada', 'klien'])
             ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
@@ -435,6 +436,7 @@ class LaporanController extends Controller
                 }
             })
             ->when($status, fn ($q) => $q->where('ritase.status', $status))
+            ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('ritase.is_approved', $isApproved))
             ->orderByDesc('ritase.waktu_masuk');
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_bruto) as total_bruto, SUM(berat_tarra) as total_tarra, SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
@@ -449,7 +451,7 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'totals', 'rekapJenis');
+            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.ritase-export', $data);
@@ -463,7 +465,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'totals', 'rekapJenis'));
+        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis'));
     }
 
     public function rekapRitase(Request $request)

@@ -164,13 +164,28 @@ unset($__errorArgs, $__bag); ?>
                 <div class="card-header bg-white"><h6 class="mb-0 fw-semibold">Detail</h6></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Asal Sampah</label>
-                        <select name="jenis_sampah" id="jenis_sampah" class="form-select" placeholder="Ketik atau pilih asal sampah...">
+                        <label class="form-label">Asal Sampah <span class="text-danger">*</span></label>
+                        <select name="jenis_sampah" id="jenis_sampah" class="form-select no-search <?php $__errorArgs = ['jenis_sampah'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" placeholder="Ketik atau pilih asal sampah..." required>
                             <option value="">-- Ketik atau pilih --</option>
                             <?php if(old('jenis_sampah', $ritase->jenis_sampah ?? '')): ?>
                                 <option value="<?php echo e(old('jenis_sampah', $ritase->jenis_sampah ?? '')); ?>" selected><?php echo e(old('jenis_sampah', $ritase->jenis_sampah ?? '')); ?></option>
                             <?php endif; ?>
                         </select>
+                        <?php $__errorArgs = ['jenis_sampah'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <div class="invalid-feedback"><?php echo e($message); ?></div> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         <div class="form-text">Pilih dari riwayat atau ketik baru. Otomatis tersimpan untuk klien ini.</div>
                     </div>
                     <div class="mb-3">

@@ -48,6 +48,7 @@
             <th class="text-end">Berat Netto (kg)</th>
             <th class="text-end">Biaya Tipping</th>
             <th>Status</th>
+            <th>Approve</th>
         </tr>
     </thead>
     <tbody>
@@ -64,6 +65,7 @@
             <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>
             <td class="text-end">{{ $r->biaya_tipping }}</td>
             <td>{{ ucfirst($r->status) }}</td>
+            <td>{{ $r->is_approved ? 'Yes' : 'No' }}</td>
         </tr>
         @endforeach
     </tbody>
@@ -74,7 +76,7 @@
             <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }}</td>
             <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }}</td>
             <td class="text-end">{{ $totals->total_tipping ?? 0 }}</td>
-            <td></td>
+            <td colspan="2"></td>
         </tr>
     </tfoot>
 </table>
