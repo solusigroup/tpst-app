@@ -41,7 +41,7 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Total Tagihan (Rp) <span class="text-danger">*</span></label>
-                <input type="number" id="total_tagihan" name="total_tagihan" class="form-control @error('total_tagihan') is-invalid @enderror" value="{{ old('total_tagihan', $invoice->total_tagihan ?? '0') }}" required readonly>
+                <input type="number" id="total_tagihan" name="total_tagihan" class="form-control @error('total_tagihan') is-invalid @enderror" value="{{ old('total_tagihan', $invoice->total_tagihan ?? '0') }}" required>
                 @error('total_tagihan') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-4">
@@ -186,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     uangMukaInput.addEventListener('input', calculateBalance);
+    totalTagihanInput.addEventListener('input', calculateBalance);
 
     function fetchItems() {
         const klienId = klienSelect.value;
