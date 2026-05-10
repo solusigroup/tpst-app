@@ -37,6 +37,12 @@
         <td>{{ \Carbon\Carbon::create()->month((int)$bulan)->translatedFormat('F') }}</td>
         <td class="font-bold">Tahun: {{ $tahun }}</td>
     </tr>
+    @if($isApproved !== null && $isApproved !== '')
+    <tr>
+        <td class="font-bold">STATUS APPROVAL</td>
+        <td colspan="2">{{ $isApproved == 1 ? 'Approved' : 'Not Approved' }}</td>
+    </tr>
+    @endif
     <tr>
         <td colspan="3" style="border: none !important;"></td>
     </tr>

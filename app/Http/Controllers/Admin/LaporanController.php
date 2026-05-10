@@ -478,10 +478,11 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $jenisKlien = $request->get('jenis_klien');
         $klienId = $request->get('klien_id');
+        $isApproved = $request->get('is_approved', 1);
 
-        // Base query with filters - Only approved ritase
+        // Base query with filters
         $baseQuery = Ritase::with(['armada', 'klien'])
-            ->where('ritase.is_approved', 1)
+            ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('ritase.is_approved', $isApproved))
             ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
             ->when($jenisKlien, function ($q) use ($jenisKlien) {
@@ -556,7 +557,7 @@ class LaporanController extends Controller
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
 
         $data = compact(
-            'dari', 'sampai', 'jenisKlien', 'klienId', 'kliens',
+            'dari', 'sampai', 'jenisKlien', 'klienId', 'isApproved', 'kliens',
             'grandTotals', 'rekapPerJenis', 'pivotData', 'jenisTypes',
             'rekapPerKlien'
         );
@@ -584,6 +585,7 @@ class LaporanController extends Controller
         $bulan = $request->get('bulan', date('m'));
         $tahun = $request->get('tahun', date('Y'));
         $klienId = $request->get('klien_id');
+        $isApproved = $request->get('is_approved', 1);
 
         $klien = null;
         if ($klienId) {
@@ -591,7 +593,7 @@ class LaporanController extends Controller
         }
 
         $baseQuery = Ritase::with(['klien'])
-            ->where('is_approved', 1)
+            ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('is_approved', $isApproved))
             ->whereYear('waktu_masuk', $tahun)
             ->whereMonth('waktu_masuk', $bulan);
 
@@ -616,7 +618,7 @@ class LaporanController extends Controller
 
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
 
-        $data = compact('bulan', 'tahun', 'klienId', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto');
+        $data = compact('bulan', 'tahun', 'klienId', 'isApproved', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto');
 
         if ($request->export === 'excel') {
             return \Maatwebsite\Excel\Facades\Excel::download(

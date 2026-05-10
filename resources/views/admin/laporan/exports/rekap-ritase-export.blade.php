@@ -7,6 +7,9 @@
     @if($jenisKlien)
         <p style="margin:2px 0; font-size:10px;">Filter Jenis Klien: {{ $jenisKlien }}</p>
     @endif
+    @if($isApproved !== null && $isApproved !== '')
+        <p style="margin:2px 0; font-size:10px;">Status Approval: {{ $isApproved == 1 ? 'Approved' : 'Not Approved' }}</p>
+    @endif
 </div>
 
 {{-- Ringkasan per Jenis Klien --}}

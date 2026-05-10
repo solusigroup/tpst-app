@@ -10,10 +10,10 @@
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
         </button>
         <div class="btn-group shadow-sm">
-            <a href="{{ route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'export' => 'pdf']) }}" target="_blank" class="btn btn-danger" title="Export PDF">
+            <a href="{{ route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'is_approved' => $isApproved, 'export' => 'pdf']) }}" target="_blank" class="btn btn-danger" title="Export PDF">
                 <i class="cil-file me-1"></i> PDF
             </a>
-            <a href="{{ route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'export' => 'excel']) }}" class="btn btn-success" title="Export Excel">
+            <a href="{{ route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'is_approved' => $isApproved, 'export' => 'excel']) }}" class="btn btn-success" title="Export Excel">
                 <i class="cil-spreadsheet me-1"></i> Excel
             </a>
         </div>
@@ -39,6 +39,14 @@
             <select name="klien_id" class="form-select">
                 <option value="">-- Semua Klien --</option>
                 @foreach($kliens as $k)<option value="{{ $k->id }}" {{ $klienId == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }} ({{ $k->jenis }})</option>@endforeach
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Approval</label>
+            <select name="is_approved" class="form-select">
+                <option value="">-- Semua --</option>
+                <option value="1" {{ $isApproved === '1' ? 'selected' : '' }}>Approved</option>
+                <option value="0" {{ $isApproved === '0' ? 'selected' : '' }}>Not Approved</option>
             </select>
         </div>
         <div class="col-auto"><button class="btn btn-primary" type="submit"><i class="cil-filter me-1"></i> Filter</button></div>
@@ -244,7 +252,10 @@
 
                     <div class="text-center mb-4">
                         <h4 class="fw-bold text-uppercase mb-1">REKAP RITASE PER TANGGAL & JENIS KLIEN</h4>
-                        <p class="text-secondary">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+                        <p class="text-secondary mb-0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+                        @if($isApproved !== null && $isApproved !== '')
+                            <p class="text-secondary small">Status Approval: {{ $isApproved == 1 ? 'Approved' : 'Not Approved' }}</p>
+                        @endif
                     </div>
 
                     {{-- Summary Per Jenis --}}
