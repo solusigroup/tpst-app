@@ -46,6 +46,7 @@ class KlienController extends Controller
                 'besaran_tarif' => 'nullable|numeric|min:0',
                 'kontak' => 'nullable|string',
                 'alamat' => 'nullable|string',
+                'armada_digunakan' => 'nullable|string|in:Milik Sendiri,DLH,TABUM,Lainnya',
             ]);
 
 
@@ -90,6 +91,7 @@ class KlienController extends Controller
             'besaran_tarif' => 'nullable|numeric|min:0',
             'kontak' => 'nullable|string',
             'alamat' => 'nullable|string',
+            'armada_digunakan' => 'nullable|string|in:Milik Sendiri,DLH,TABUM,Lainnya',
         ]);
 
 

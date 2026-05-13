@@ -38,7 +38,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Nama Klien</th><th>Jenis</th><th>Jenis Tarif</th><th>Besaran Tarif</th><th>Kontak</th><th>Dibuat</th><th class="text-end">Aksi</th></tr>
+                    <tr><th>Nama Klien</th><th>Jenis</th><th>Armada</th><th>Jenis Tarif</th><th>Besaran Tarif</th><th>Kontak</th><th>Dibuat</th><th class="text-end">Aksi</th></tr>
                 </thead>
                 <tbody>
                     @forelse($kliens as $item)
@@ -56,6 +56,7 @@
                             @endphp
                             <span class="badge {{ $badgeColor }}">{{ $item->jenis }}</span>
                         </td>
+                        <td>{{ $item->armada_digunakan ?? '-' }}</td>
                         <td>
                             @if($item->jenis_tarif) 
                                 <span class="badge border border-secondary text-secondary">{{ $item->jenis_tarif }}</span> 
@@ -76,7 +77,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data klien.</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data klien.</td></tr>
                     @endforelse
                 </tbody>
             </table>

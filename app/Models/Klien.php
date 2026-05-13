@@ -23,6 +23,7 @@ class Klien extends Model
         'besaran_tarif',
         'kontak',
         'alamat',
+        'armada_digunakan',
     ];
 
     protected $casts = [

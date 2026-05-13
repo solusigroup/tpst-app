@@ -27,6 +27,7 @@
                 <th>Jenis Tarif</th>
                 <th>Besaran Tarif</th>
                 <th>Kontak</th>
+                <th>Armada</th>
                 <th>Alamat</th>
                 <th>Dibuat Pada</th>
             </tr>
@@ -40,6 +41,7 @@
                 <td>{{ $item->jenis_tarif ?? '-' }}</td>
                 <td>{{ $item->besaran_tarif ? 'Rp ' . number_format($item->besaran_tarif, 0, ',', '.') : '-' }}</td>
                 <td>{{ $item->kontak ?? '-' }}</td>
+                <td>{{ $item->armada_digunakan ?? '-' }}</td>
                 <td>{{ $item->alamat ?? '-' }}</td>
                 <td>{{ $item->created_at?->format('d/m/Y H:i') }}</td>
             </tr>

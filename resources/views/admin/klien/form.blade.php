@@ -75,6 +75,16 @@
                                 <textarea name="alamat" class="form-control"
                                     rows="3">{{ old('alamat', $klien->alamat ?? '') }}</textarea>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Armada Digunakan</label>
+                                <select name="armada_digunakan" class="form-select @error('armada_digunakan') is-invalid @enderror">
+                                    <option value="">-- Pilih --</option>
+                                    @foreach(['Milik Sendiri' => 'Milik Sendiri', 'DLH' => 'DLH', 'TABUM' => 'TABUM', 'Lainnya' => 'Lainnya'] as $val => $label)
+                                        <option value="{{ $val }}" {{ old('armada_digunakan', $klien->armada_digunakan ?? '') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('armada_digunakan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                             <div class="col-12 d-flex gap-2">
                                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i>
                                     {{ isset($klien) ? 'Perbarui' : 'Simpan' }}</button>

@@ -47,6 +47,10 @@
                         </td>
                     </tr>
                     <tr>
+                        <th>Armada Digunakan</th>
+                        <td>: {{ $klien->armada_digunakan ?? '-' }}</td>
+                    </tr>
+                    <tr>
                         <th>Jenis Tarif</th>
                         <td>: {{ $klien->jenis_tarif ?? '-' }}</td>
                     </tr>
