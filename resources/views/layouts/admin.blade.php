@@ -782,8 +782,18 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.upah') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.upah') }}">
-                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Upah
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.upah.borongan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.upah.borongan') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Borongan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.upah.bulanan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.upah.bulanan') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Bulanan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.upah.harian') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.upah.harian') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Harian
                         </a>
                     </li>
                 </ul>

@@ -1,8 +1,8 @@
-@extends('admin.laporan.exports.layout', ['title' => 'Laporan Upah Karyawan'])
+@extends('admin.laporan.exports.layout', ['title' => $title])
 
 @section('content')
 <div class="text-center mb-4">
-    <h2 style="margin:0">LAPORAN PERHITUNGAN UPAH KARYAWAN</h2>
+    <h2 style="margin:0">{{ strtoupper($title) }}</h2>
     <p style="margin:5px 0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
 </div>
 
@@ -11,7 +11,8 @@
         <tr>
             <td style="width: 50%; vertical-align: top;">
                 <strong>Parameter Laporan:</strong><br>
-                Skema Upah: {{ $skemaUpah ?: 'Semua' }}<br>
+                Skema Upah: {{ $skemaUpah ? ucfirst($skemaUpah) : 'Semua' }}<br>
+                Status Bayar: {{ $status ? ($status == 'paid' ? 'PAID (Lunas)' : 'UNPAID (Belum)') : 'Semua' }}<br>
                 Total Record: {{ $totals->total_rows }}
             </td>
             <td style="width: 50%; vertical-align: top; text-align: right;">

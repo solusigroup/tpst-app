@@ -97,6 +97,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('residu', [LaporanController::class, 'laporanResidu'])->name('residu');
         Route::get('kehadiran', [LaporanController::class, 'laporanKehadiran'])->name('kehadiran');
         Route::get('upah', [LaporanController::class, 'laporanUpah'])->name('upah');
+        Route::get('upah/borongan', [LaporanController::class, 'laporanUpah'])->name('upah.borongan')->defaults('skema', 'borongan');
+        Route::get('upah/bulanan', [LaporanController::class, 'laporanUpah'])->name('upah.bulanan')->defaults('skema', 'bulanan');
+        Route::get('upah/harian', [LaporanController::class, 'laporanUpah'])->name('upah.harian')->defaults('skema', 'harian');
     });
 
     // HRD

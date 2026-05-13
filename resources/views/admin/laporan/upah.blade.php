@@ -1,10 +1,10 @@
 @extends('layouts.admin')
-@section('title', 'Laporan Perhitungan Upah Karyawan')
+@section('title', $title)
 
 @section('content')
 
 <div class="page-header d-print-none">
-    <div><h1>Laporan Perhitungan Upah Karyawan</h1></div>
+    <div><h1>{{ $title }}</h1></div>
     <div class="d-flex gap-2 align-items-center">
         <button type="button" class="btn btn-outline-primary shadow-sm" data-coreui-toggle="modal" data-coreui-target="#previewModal">
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
@@ -57,11 +57,22 @@
             </div>
             <div class="col-auto">
                 <label class="form-label mb-0 small text-body-secondary">Skema Upah</label>
-                <select name="skema_upah" class="form-select">
+                <select name="skema_upah" class="form-select" {{ $skemaUpah ? 'disabled' : '' }}>
                     <option value="">-- Semua --</option>
-                    <option value="harian" {{ request('skema_upah') == 'harian' ? 'selected' : '' }}>Harian</option>
-                    <option value="bulanan" {{ request('skema_upah') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
-                    <option value="borongan" {{ request('skema_upah') == 'borongan' ? 'selected' : '' }}>Borongan</option>
+                    <option value="harian" {{ (request('skema_upah') == 'harian' || $skemaUpah == 'harian') ? 'selected' : '' }}>Harian</option>
+                    <option value="bulanan" {{ (request('skema_upah') == 'bulanan' || $skemaUpah == 'bulanan') ? 'selected' : '' }}>Bulanan</option>
+                    <option value="borongan" {{ (request('skema_upah') == 'borongan' || $skemaUpah == 'borongan') ? 'selected' : '' }}>Borongan</option>
+                </select>
+                @if($skemaUpah)
+                    <input type="hidden" name="skema_upah" value="{{ $skemaUpah }}">
+                @endif
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small text-body-secondary">Status Bayar</label>
+                <select name="status" class="form-select">
+                    <option value="">-- Semua --</option>
+                    <option value="paid" {{ $status == 'paid' ? 'selected' : '' }}>PAID (Lunas)</option>
+                    <option value="unpaid" {{ $status == 'unpaid' ? 'selected' : '' }}>UNPAID (Belum)</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -212,7 +223,11 @@
                             <table class="table table-sm table-borderless">
                                 <tr>
                                     <td style="width: 150px;">Skema Upah</td>
-                                    <td>: {{ $skemaUpah ?: 'Semua' }}</td>
+                                    <td>: {{ $skemaUpah ? ucfirst($skemaUpah) : 'Semua' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Status Bayar</td>
+                                    <td>: {{ $status ? ($status == 'paid' ? 'Lunas (PAID)' : 'Belum (UNPAID)') : 'Semua' }}</td>
                                 </tr>
                                 <tr>
                                     <td>Total Record</td>

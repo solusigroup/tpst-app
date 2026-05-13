@@ -897,7 +897,7 @@ class LaporanController extends Controller
         return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals'));
     }
 
-    public function laporanUpah(Request $request)
+    public function laporanUpah(Request $request, $skema = null)
     {
         if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_upah')) {
             abort(403, 'Akses ditolak.');
@@ -907,7 +907,8 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai');
         $month = $request->get('month');
         $year = $request->get('year', date('Y'));
-        $skemaUpah = $request->get('skema_upah');
+        $skemaUpah = $skema ?: $request->get('skema_upah');
+        $status = $request->get('status');
 
         if ($month) {
             $dari = Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
@@ -923,6 +924,10 @@ class LaporanController extends Controller
             ->when($dari, fn ($q) => $q->whereDate('week_start', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('week_start', '<=', $sampai))
             ->when($skemaUpah, fn ($q) => $q->where('users.salary_type', $skemaUpah))
+            ->when($status, function($q) use ($status) {
+                if ($status === 'paid') return $q->where('wage_calculations.status', 'paid');
+                if ($status === 'unpaid') return $q->where('wage_calculations.status', '!=', 'paid');
+            })
             ->orderByDesc('week_start');
 
         $totals = (object)[
@@ -952,7 +957,7 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data = compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'totals');
+            $data = compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.upah-export', $data);
@@ -985,6 +990,7 @@ class LaporanController extends Controller
             ];
         }
 
-        return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'totals'));
+        $title = "Laporan Upah " . ($skemaUpah ? ucfirst($skemaUpah) : "Karyawan");
+        return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title'));
     }
 }
