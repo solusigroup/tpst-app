@@ -28,6 +28,11 @@ class InvoiceAdminController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
+        if ($request->filled('jenis')) {
+            $query->whereHas('klien', function($q) use ($request) {
+                $q->where('jenis', $request->jenis);
+            });
+        }
 
         $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
 

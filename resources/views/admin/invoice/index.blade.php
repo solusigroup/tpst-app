@@ -22,10 +22,23 @@
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari No. Invoice / Klien..." value="{{ request('search') }}" style="min-width: 250px;"></div>
             <div class="col-auto">
-                <select name="status" class="form-select"><option value="">Semua Status</option>@foreach(['Draft','Sent','Paid','Canceled'] as $s)<option value="{{ $s }}" {{ request('status')==$s?'selected':'' }}>{{ $s }}</option>@endforeach</select>
+                <select name="status" class="form-select">
+                    <option value="">Semua Status</option>
+                    @foreach(['Draft','Sent','Paid','Canceled'] as $s)
+                        <option value="{{ $s }}" {{ request('status')==$s?'selected':'' }}>{{ $s }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-auto">
+                <select name="jenis" class="form-select">
+                    <option value="">Semua Jenis Klien</option>
+                    @foreach(['DLH','Swasta','Offtaker','Internal'] as $j)
+                        <option value="{{ $j }}" {{ request('jenis')==$j?'selected':'' }}>{{ $j }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button></div>
-            @if(request()->hasAny(['search','status']))<div class="col-auto"><a href="{{ route('admin.invoice.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','status','jenis']))<div class="col-auto"><a href="{{ route('admin.invoice.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
