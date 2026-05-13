@@ -858,14 +858,29 @@ class LaporanController extends Controller
             abort(403, 'Akses ditolak.');
         }
 
-        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
-        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $dari = $request->get('dari');
+        $sampai = $request->get('sampai');
+        $month = $request->get('month');
+        $year = $request->get('year', date('Y'));
         $userId = $request->get('user_id');
+        $salaryType = $request->get('salary_type');
+        $mode = $request->get('mode', 'detail');
+
+        if ($month) {
+            $dari = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
+            $sampai = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+        } else {
+            $dari = $dari ?: now()->startOfMonth()->format('Y-m-d');
+            $sampai = $sampai ?: now()->format('Y-m-d');
+        }
 
         $query = \App\Models\Attendance::with('user')
+            ->join('users', 'attendances.user_id', '=', 'users.id')
+            ->select('attendances.*')
             ->when($dari, fn ($q) => $q->whereDate('attendance_date', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('attendance_date', '<=', $sampai))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->when($salaryType, fn ($q) => $q->where('users.salary_type', $salaryType))
             ->orderByDesc('attendance_date');
 
         $totals = (object)[
@@ -877,6 +892,36 @@ class LaporanController extends Controller
         ];
 
         $users = \App\Models\User::role('karyawan')->orderBy('name')->get();
+
+        if ($mode === 'rekap') {
+            $rekapData = \App\Models\User::role('karyawan')
+                ->when($salaryType, fn($q) => $q->where('salary_type', $salaryType))
+                ->when($userId, fn($q) => $q->where('id', $userId))
+                ->orderBy('name')
+                ->get();
+
+            foreach ($rekapData as $emp) {
+                $q = \App\Models\Attendance::where('user_id', $emp->id)
+                    ->whereBetween('attendance_date', [$dari, $sampai]);
+                
+                $emp->present_count = (clone $q)->where('status', 'present')->count();
+                $emp->absent_count = (clone $q)->where('status', 'absent')->count();
+                $emp->sick_count = (clone $q)->where('status', 'sick')->count();
+                $emp->leave_count = (clone $q)->where('status', 'leave')->count();
+                $emp->total_days = $emp->present_count + $emp->absent_count + $emp->sick_count + $emp->leave_count;
+            }
+
+            if ($request->export === 'pdf' || $request->export === 'excel') {
+                $data = compact('rekapData', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year');
+                if ($request->export === 'pdf') {
+                    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.attendance-rekap-export', $data)->setPaper('a4', 'landscape');
+                    return $pdf->download('Rekap_Kehadiran_' . $dari . '_' . $sampai . '.pdf');
+                }
+                // Excel rekap can be added here if needed
+            }
+
+            return view('admin.laporan.attendance-rekap', compact('rekapData', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year'));
+        }
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
@@ -894,7 +939,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals'));
+        return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year', 'totals'));
     }
 
     public function laporanUpah(Request $request, $skema = null)
