@@ -73,10 +73,12 @@ class EmployeeController extends Controller
             'daily_wage' => 'nullable|numeric|min:0',
             'payment_frequency' => 'nullable|in:Mingguan,Dua Mingguan',
             'photo' => 'nullable|image',
+            'ktp_photo' => 'required|image',
             'joined_at' => 'nullable|date',
             'ended_at' => 'nullable|date',
             'bpjs_status' => 'required|in:Aktif,Tidak Aktif',
             'bpjs_number' => 'nullable|string|max:50',
+            'is_active' => 'required|boolean',
         ]);
         
         if ($validated['salary_type'] !== 'bulanan') {
@@ -96,6 +98,11 @@ class EmployeeController extends Controller
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('employees', 'public');
             $validated['photo'] = $path;
+        }
+
+        if ($request->hasFile('ktp_photo')) {
+            $path = $request->file('ktp_photo')->store('ktp_photos', 'public');
+            $validated['ktp_photo'] = $path;
         }
 
         $user = User::create($validated);
@@ -147,10 +154,12 @@ class EmployeeController extends Controller
             'daily_wage' => 'nullable|numeric|min:0',
             'payment_frequency' => 'nullable|in:Mingguan,Dua Mingguan',
             'photo' => 'nullable|image',
+            'ktp_photo' => 'nullable|image',
             'joined_at' => 'nullable|date',
             'ended_at' => 'nullable|date',
             'bpjs_status' => 'required|in:Aktif,Tidak Aktif',
             'bpjs_number' => 'nullable|string|max:50',
+            'is_active' => 'required|boolean',
         ]);
 
         if ($validated['salary_type'] !== 'bulanan') {
@@ -164,12 +173,19 @@ class EmployeeController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            // Delete old photo
             if ($employee->photo) {
                 Storage::disk('public')->delete($employee->photo);
             }
             $path = $request->file('photo')->store('employees', 'public');
             $validated['photo'] = $path;
+        }
+
+        if ($request->hasFile('ktp_photo')) {
+            if ($employee->ktp_photo) {
+                Storage::disk('public')->delete($employee->ktp_photo);
+            }
+            $path = $request->file('ktp_photo')->store('ktp_photos', 'public');
+            $validated['ktp_photo'] = $path;
         }
 
         $employee->update($validated);
@@ -187,6 +203,9 @@ class EmployeeController extends Controller
 
         if ($employee->photo) {
             Storage::disk('public')->delete($employee->photo);
+        }
+        if ($employee->ktp_photo) {
+            Storage::disk('public')->delete($employee->ktp_photo);
         }
 
         $employee->delete();

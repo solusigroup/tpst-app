@@ -57,6 +57,8 @@
                                 <th>No. KTP</th>
                                 <th>Alamat</th>
                                 <th>Tipe Gaji</th>
+                                <th>Status</th>
+                                <th>Foto KTP</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -92,6 +94,22 @@
                                             @endif
                                         @else
                                             -
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if($emp->is_active)
+                                            <span class="badge bg-success">Aktif</span>
+                                        @else
+                                            <span class="badge bg-danger">Non-Aktif</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if($emp->ktp_photo)
+                                            <a href="{{ Storage::url($emp->ktp_photo) }}" target="_blank">
+                                                <img src="{{ Storage::url($emp->ktp_photo) }}" alt="KTP" class="img-thumbnail" style="max-height: 40px;">
+                                            </a>
+                                        @else
+                                            <span class="text-danger small"><i class="cil-warning"></i> Kosong</span>
                                         @endif
                                     </td>
                                     <td>

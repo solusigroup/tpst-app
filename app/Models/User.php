@@ -49,6 +49,8 @@ class User extends Authenticatable
         'ended_at',
         'bpjs_status',
         'bpjs_number',
+        'ktp_photo',
+        'is_active',
     ];
 
     /**
@@ -75,6 +77,7 @@ class User extends Authenticatable
             'is_super_admin' => 'boolean',
             'joined_at' => 'date',
             'ended_at' => 'date',
+            'is_active' => 'boolean',
         ];
     }
 

@@ -78,7 +78,15 @@
                             </select>
                             @error('bpjs_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <label class="form-label">Status Karyawan <span class="text-danger">*</span></label>
+                            <select name="is_active" class="form-select @error('is_active') is-invalid @enderror" required>
+                                <option value="1" {{ old('is_active', '1') == '1' ? 'selected' : '' }}>Aktif (Bekerja)</option>
+                                <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>Non-Aktif (Keluar)</option>
+                            </select>
+                            @error('is_active') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label">Nomor BPJS</label>
                             <input type="text" name="bpjs_number" class="form-control @error('bpjs_number') is-invalid @enderror" value="{{ old('bpjs_number') }}">
                             @error('bpjs_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -135,11 +143,19 @@
                         @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Foto Profil (Gunakan Kamera / Galeri)</label>
-                        <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
-                        <small class="text-muted">Format gambar: jpg, png, jpeg.</small>
-                        @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Foto Profil (Opsional)</label>
+                            <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
+                            <small class="text-muted">Gunakan Kamera / Galeri</small>
+                            @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Foto KTP <span class="text-danger">*Wajib</span></label>
+                            <input type="file" name="ktp_photo" class="form-control @error('ktp_photo') is-invalid @enderror" accept="image/*" capture="environment" required>
+                            <small class="text-muted">Lampirkan foto KTP asli karyawan.</small>
+                            @error('ktp_photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                     </div>
 
                     <div class="mt-4">

@@ -79,7 +79,15 @@
                             </select>
                             @error('bpjs_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <label class="form-label">Status Karyawan <span class="text-danger">*</span></label>
+                            <select name="is_active" class="form-select @error('is_active') is-invalid @enderror" required>
+                                <option value="1" {{ old('is_active', $employee->is_active) ? 'selected' : '' }}>Aktif (Bekerja)</option>
+                                <option value="0" {{ old('is_active', $employee->is_active) === false || old('is_active', $employee->is_active) === 0 ? 'selected' : '' }}>Non-Aktif (Keluar)</option>
+                            </select>
+                            @error('is_active') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label">Nomor BPJS</label>
                             <input type="text" name="bpjs_number" class="form-control @error('bpjs_number') is-invalid @enderror" value="{{ old('bpjs_number', $employee->bpjs_number) }}">
                             @error('bpjs_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -136,16 +144,29 @@
                         @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Foto Profil (Gunakan Kamera / Galeri)</label>
-                        @if($employee->photo)
-                            <div class="mb-2">
-                                <img src="{{ Storage::url($employee->photo) }}" alt="Foto" class="img-thumbnail" style="max-height: 150px;">
-                            </div>
-                        @endif
-                        <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
-                        <small class="text-muted">Format gambar: jpg, png, jpeg. Biarkan kosong jika tidak ingin mengubah foto.</small>
-                        @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Foto Profil (Opsional)</label>
+                            @if($employee->photo)
+                                <div class="mb-2">
+                                    <img src="{{ Storage::url($employee->photo) }}" alt="Foto" class="img-thumbnail" style="max-height: 100px;">
+                                </div>
+                            @endif
+                            <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
+                            <small class="text-muted">Biarkan kosong jika tidak ingin mengubah.</small>
+                            @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Foto KTP</label>
+                            @if($employee->ktp_photo)
+                                <div class="mb-2">
+                                    <img src="{{ Storage::url($employee->ktp_photo) }}" alt="KTP" class="img-thumbnail" style="max-height: 100px;">
+                                </div>
+                            @endif
+                            <input type="file" name="ktp_photo" class="form-control @error('ktp_photo') is-invalid @enderror" accept="image/*" capture="environment">
+                            <small class="text-muted">Biarkan kosong jika tidak ingin mengubah.</small>
+                            @error('ktp_photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                     </div>
 
                     <div class="mt-4">
