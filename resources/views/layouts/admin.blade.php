@@ -959,7 +959,7 @@
         {{-- Footer --}}
         <footer class="footer px-4 mt-auto">
             <div class="text-body-secondary small">
-                &copy; {{ date('Y') }} TPST App. All rights reserved.
+                &copy; {{ date('Y') }} <a href="https://simpleakunting.my.id/riwayathidupku.html" target="_blank" class="text-decoration-none text-body-secondary">TPST App</a>. All rights reserved.
             </div>
         </footer>
     </div>

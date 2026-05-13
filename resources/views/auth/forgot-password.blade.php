@@ -436,7 +436,7 @@
         </form>
 
         <div class="login-footer">
-            &copy; {{ date('Y') }} TPST App. All rights reserved.
+            &copy; {{ date('Y') }} <a href="https://simpleakunting.my.id/riwayathidupku.html" target="_blank" style="color: inherit; text-decoration: none;">TPST App</a>. All rights reserved.
         </div>
     </div>
 
