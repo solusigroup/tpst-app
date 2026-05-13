@@ -91,11 +91,11 @@ class Ritase extends Model
 
             // Auto-calculate tipping fee based on client's tariff
             if ($ritase->klien_id) {
-                // Ensure klien is loaded
-                $klien = $ritase->klien ?: \App\Models\Klien::find($ritase->klien_id);
+                // Ensure we get fresh klien data to avoid stale relation data
+                $klien = \App\Models\Klien::find($ritase->klien_id);
                 if ($klien) {
                     if ($klien->jenis_tarif === 'Per Ton') {
-                        $ritase->biaya_tipping = ($ritase->berat_netto / 1000) * ($klien->besaran_tarif ?? 0);
+                        $ritase->biaya_tipping = (($ritase->berat_netto ?? 0) / 1000) * ($klien->besaran_tarif ?? 0);
                     } elseif ($klien->jenis_tarif === 'Per Ritase') {
                         $ritase->biaya_tipping = $klien->besaran_tarif ?? 0;
                     } elseif ($klien->jenis_tarif === 'Bulanan') {

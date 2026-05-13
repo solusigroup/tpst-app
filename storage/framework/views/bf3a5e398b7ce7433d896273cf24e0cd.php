@@ -11,10 +11,10 @@
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
         </button>
         <div class="btn-group shadow-sm">
-            <a href="<?php echo e(route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'export' => 'pdf'])); ?>" target="_blank" class="btn btn-danger" title="Export PDF">
+            <a href="<?php echo e(route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'is_approved' => $isApproved, 'export' => 'pdf'])); ?>" target="_blank" class="btn btn-danger" title="Export PDF">
                 <i class="cil-file me-1"></i> PDF
             </a>
-            <a href="<?php echo e(route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'export' => 'excel'])); ?>" class="btn btn-success" title="Export Excel">
+            <a href="<?php echo e(route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'is_approved' => $isApproved, 'export' => 'excel'])); ?>" class="btn btn-success" title="Export Excel">
                 <i class="cil-spreadsheet me-1"></i> Excel
             </a>
         </div>
@@ -46,6 +46,14 @@
             <select name="status" class="form-select">
                 <option value="">-- Semua --</option>
                 <?php $__currentLoopData = ['masuk','timbang','keluar','selesai']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($s); ?>" <?php echo e($status == $s ? 'selected' : ''); ?>><?php echo e(ucfirst($s)); ?></option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Approval</label>
+            <select name="is_approved" class="form-select">
+                <option value="">-- Semua --</option>
+                <option value="1" <?php echo e($isApproved === '1' ? 'selected' : ''); ?>>Approved</option>
+                <option value="0" <?php echo e($isApproved === '0' ? 'selected' : ''); ?>>Not Approved</option>
             </select>
         </div>
         <div class="col-auto"><button class="btn btn-primary" type="submit"><i class="cil-filter me-1"></i> Filter</button></div>
@@ -91,7 +99,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Status Invoice</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Approve</th><th>Status Invoice</th></tr></thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $rows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
@@ -121,6 +129,12 @@
                             <span class="badge bg-<?php echo e($statusColors[$r->status] ?? 'secondary'); ?>"><?php echo e(ucfirst($r->status)); ?></span>
                         </td>
                         <td>
+                            <span class="badge bg-<?php echo e($r->is_approved ? 'success' : 'danger'); ?>">
+                                <?php echo e($r->is_approved ? 'Yes' : 'No'); ?>
+
+                            </span>
+                        </td>
+                        <td>
                             <?php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; ?>
                             <span class="badge bg-<?php echo e($invoiceColors[$r->status_invoice] ?? 'secondary'); ?>"><?php echo e($r->status_invoice ?? 'Unbilled'); ?></span>
                         </td>
@@ -136,7 +150,7 @@
                         <td class="text-end"><?php echo e(number_format($totals->total_tarra ?? 0, 2, ',', '.')); ?> kg</td>
                         <td class="text-end"><?php echo e(number_format($totals->total_netto ?? 0, 2, ',', '.')); ?> kg</td>
                         <td class="text-end">Rp <?php echo e(number_format($totals->total_tipping ?? 0, 0, ',', '.')); ?></td>
-                        <td colspan="2"></td>
+                        <td colspan="3"></td>
                     </tr>
                 </tfoot>
             </table>
@@ -243,6 +257,7 @@
                                         }
                                     })
                                     ->when($status, fn($q)=>$q->where('status',$status))
+                                    ->when($isApproved !== null && $isApproved !== '', fn($q)=>$q->where('ritase.is_approved', $isApproved))
                                     ->orderByDesc('waktu_masuk')
                                     ->get(); 
                             ?>

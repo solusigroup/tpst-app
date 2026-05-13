@@ -9,10 +9,10 @@
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
         </button>
         <div class="btn-group shadow-sm">
-            <a href="<?php echo e(route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'export' => 'pdf'])); ?>" target="_blank" class="btn btn-danger" title="Export PDF">
+            <a href="<?php echo e(route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'is_approved' => $isApproved, 'export' => 'pdf'])); ?>" target="_blank" class="btn btn-danger" title="Export PDF">
                 <i class="cil-file me-1"></i> PDF
             </a>
-            <a href="<?php echo e(route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'export' => 'excel'])); ?>" class="btn btn-success" title="Export Excel">
+            <a href="<?php echo e(route('admin.laporan-operasional.rekap-ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'is_approved' => $isApproved, 'export' => 'excel'])); ?>" class="btn btn-success" title="Export Excel">
                 <i class="cil-spreadsheet me-1"></i> Excel
             </a>
         </div>
@@ -38,6 +38,14 @@
             <select name="klien_id" class="form-select">
                 <option value="">-- Semua Klien --</option>
                 <?php $__currentLoopData = $kliens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $k): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($k->id); ?>" <?php echo e($klienId == $k->id ? 'selected' : ''); ?>><?php echo e($k->nama_klien); ?> (<?php echo e($k->jenis); ?>)</option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Approval</label>
+            <select name="is_approved" class="form-select">
+                <option value="">-- Semua --</option>
+                <option value="1" <?php echo e($isApproved === '1' ? 'selected' : ''); ?>>Approved</option>
+                <option value="0" <?php echo e($isApproved === '0' ? 'selected' : ''); ?>>Not Approved</option>
             </select>
         </div>
         <div class="col-auto"><button class="btn btn-primary" type="submit"><i class="cil-filter me-1"></i> Filter</button></div>
@@ -262,7 +270,10 @@
 
                     <div class="text-center mb-4">
                         <h4 class="fw-bold text-uppercase mb-1">REKAP RITASE PER TANGGAL & JENIS KLIEN</h4>
-                        <p class="text-secondary">Periode: <?php echo e(\Carbon\Carbon::parse($dari)->format('d/m/Y')); ?> - <?php echo e(\Carbon\Carbon::parse($sampai)->format('d/m/Y')); ?></p>
+                        <p class="text-secondary mb-0">Periode: <?php echo e(\Carbon\Carbon::parse($dari)->format('d/m/Y')); ?> - <?php echo e(\Carbon\Carbon::parse($sampai)->format('d/m/Y')); ?></p>
+                        <?php if($isApproved !== null && $isApproved !== ''): ?>
+                            <p class="text-secondary small">Status Approval: <?php echo e($isApproved == 1 ? 'Approved' : 'Not Approved'); ?></p>
+                        <?php endif; ?>
                     </div>
 
                     

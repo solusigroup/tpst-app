@@ -22,6 +22,12 @@
                 </button>
             </form>
         @endif
+        <form action="{{ route('admin.invoice.recalculate', $invoice) }}" method="POST" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-info text-white" onclick="return confirm('Hitung ulang semua rincian biaya berdasarkan tarif terbaru klien?')">
+                <i class="cil-calculator me-1"></i> Hitung Ulang Biaya
+            </button>
+        </form>
         <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-success">
             <i class="cil-print me-1"></i> Cetak
         </a>

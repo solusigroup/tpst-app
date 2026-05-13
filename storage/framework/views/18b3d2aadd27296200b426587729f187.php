@@ -43,7 +43,7 @@
                     <?php endfor; ?>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="tahun" class="form-label">Tahun</label>
                 <select name="tahun" id="tahun" class="form-select">
                     <?php for($i=date('Y'); $i>=2020; $i--): ?>
@@ -51,7 +51,15 @@
                     <?php endfor; ?>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label for="is_approved" class="form-label">Approval</label>
+                <select name="is_approved" id="is_approved" class="form-select">
+                    <option value="">Semua</option>
+                    <option value="1" <?php echo e($isApproved === '1' ? 'selected' : ''); ?>>Approved</option>
+                    <option value="0" <?php echo e($isApproved === '0' ? 'selected' : ''); ?>>Not Approved</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="cil-filter"></i> Filter
                 </button>

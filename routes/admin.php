@@ -59,6 +59,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
     Route::post('invoice/merge-drafts', [InvoiceAdminController::class, 'mergeDrafts'])->name('invoice.merge-drafts');
     Route::post('invoice/{invoice}/sync-dlh', [InvoiceAdminController::class, 'syncDlhItems'])->name('invoice.sync-dlh');
+    Route::post('invoice/{invoice}/recalculate', [InvoiceAdminController::class, 'recalculate'])->name('invoice.recalculate');
     Route::resource('invoice', InvoiceAdminController::class);
 
     // Buku Pembantu

@@ -133,11 +133,17 @@
                                 {{ $periodeLabel }} ({{ $invoice->ritase->count() }} Ritase)</p>
                         </td>
                         <td class="px-4 py-6 text-center font-sans align-top text-slate-600">
-                            {{ number_format($totalTonnageRitase / 1000, 2, ',', '.') }}
+                            @if($invoice->klien && $invoice->klien->jenis_tarif === 'Per Ritase')
+                                {{ $invoice->ritase->count() }} Ritase
+                            @else
+                                {{ number_format($totalTonnageRitase / 1000, 2, ',', '.') }}
+                            @endif
                         </td>
                         <td class="px-4 py-6 text-right font-sans align-top text-slate-600">
                             @if($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan')
                                 Rp {{ number_format($monthlyFee, 0, ',', '.') }} / Bln
+                            @elseif($invoice->klien && $invoice->klien->jenis_tarif === 'Per Ritase')
+                                Rp {{ number_format($invoice->klien->besaran_tarif ?? ($totalTipping / max(1, $invoice->ritase->count())), 0, ',', '.') }} / Rit
                             @else
                                 Rp {{ number_format($totalTipping / max(1, $totalTonnageRitase / 1000), 0, ',', '.') }}
                             @endif

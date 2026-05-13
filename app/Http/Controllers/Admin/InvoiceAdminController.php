@@ -216,6 +216,11 @@ class InvoiceAdminController extends Controller
                         $mergedCount++;
                     }
                     
+                    // Force recalculate biaya_tipping for each ritase to match current tariff
+                    foreach ($master->ritase as $r) {
+                        $r->save(); // Triggers the saving hook in model
+                    }
+
                     // Recalculate totals for the merged master invoice
                     $totalRitase = $master->ritase()->sum('biaya_tipping');
                     $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('total_harga');
@@ -292,6 +297,11 @@ class InvoiceAdminController extends Controller
             }
 
             if ($count > 0) {
+                // Force recalculate biaya_tipping for each ritase in this invoice
+                foreach ($invoice->ritase as $r) {
+                    $r->save(); // Triggers the saving hook
+                }
+
                 $totalRitase = $invoice->ritase()->sum('biaya_tipping');
                 $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('total_harga');
                 $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('jumlah_bayar');
@@ -309,5 +319,31 @@ class InvoiceAdminController extends Controller
         });
 
         return back()->with('success', "Berhasil menyinkronkan $count data baru ke invoice ini.");
+    }
+
+    public function recalculate(Invoice $invoice)
+    {
+        Gate::authorize('update_invoice');
+        
+        DB::transaction(function () use ($invoice) {
+            foreach ($invoice->ritase as $r) {
+                $r->save();
+            }
+
+            $totalRitase = $invoice->ritase()->sum('biaya_tipping');
+            $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('total_harga');
+            $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('jumlah_bayar');
+
+            $feeBulanan = ($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan') 
+                ? ($invoice->klien->besaran_tarif ?? 0) 
+                : 0;
+
+            $invoice->update([
+                'total_tagihan' => $totalRitase + $totalPenjualan + $feeBulanan,
+                'uang_muka' => $totalUangMuka,
+            ]);
+        });
+
+        return back()->with('success', 'Biaya invoice berhasil dihitung ulang.');
     }
 }
