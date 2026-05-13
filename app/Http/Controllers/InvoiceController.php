@@ -22,7 +22,7 @@ class InvoiceController extends Controller
             '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
         ];
         
-        $periodeLabel = $monthNames[$invoice->periode_bulan] . ' ' . $invoice->periode_tahun;
+        $periodeLabel = ($monthNames[str_pad($invoice->periode_bulan, 2, '0', STR_PAD_LEFT)] ?? $invoice->periode_bulan) . ' ' . $invoice->periode_tahun;
 
         return view('invoices.print', compact('invoice', 'totalTonnageRitase', 'totalTonnagePenjualan', 'periodeLabel'));
     }
