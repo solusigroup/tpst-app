@@ -152,7 +152,7 @@
                                     <img src="{{ Storage::url($employee->photo) }}" alt="Foto" class="img-thumbnail" style="max-height: 100px;">
                                 </div>
                             @endif
-                            <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" capture="environment">
+                            <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*">
                             <small class="text-muted">Biarkan kosong jika tidak ingin mengubah.</small>
                             @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -163,7 +163,7 @@
                                     <img src="{{ Storage::url($employee->ktp_photo) }}" alt="KTP" class="img-thumbnail" style="max-height: 100px;">
                                 </div>
                             @endif
-                            <input type="file" name="ktp_photo" class="form-control @error('ktp_photo') is-invalid @enderror" accept="image/*" capture="environment">
+                            <input type="file" name="ktp_photo" class="form-control @error('ktp_photo') is-invalid @enderror" accept="image/*">
                             <small class="text-muted">Biarkan kosong jika tidak ingin mengubah.</small>
                             @error('ktp_photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
