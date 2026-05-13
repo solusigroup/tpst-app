@@ -648,6 +648,9 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan-per-klien') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan-per-klien') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Penjualan Per Klien</a>
+                    </li>
                     @endcanany
                     @canany(['view_laporan_operasional', 'view_laporan_hasil_pilahan'])
                     <li class="nav-item">

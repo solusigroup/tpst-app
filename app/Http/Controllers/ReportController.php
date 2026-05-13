@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\JurnalHeader;
 use App\Models\JurnalDetail;
 use App\Models\Coa;
+use App\Models\Penjualan;
+use App\Models\Klien;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -364,5 +366,64 @@ class ReportController extends Controller
         $periodLabel = $monthNames[$month] . ' ' . $year;
 
         return view('reports.neraca-saldo', compact('rows', 'totalDebit', 'totalKredit', 'periodLabel', 'tenant'));
+    }
+
+    /**
+     * Build a printed Penjualan Per Klien report.
+     */
+    public function cetakPenjualanPerKlien(Request $request)
+    {
+        $month = $request->get('month', date('m'));
+        $year = $request->get('year', date('Y'));
+        $tenantId = auth()->user()->tenant_id;
+        $klienIdFilter = $request->get('klien_id');
+
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+        $query = Penjualan::with('klien')
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('tanggal', [$startDate, $endDate]);
+
+        if ($klienIdFilter) {
+            $query->where('klien_id', $klienIdFilter);
+        }
+
+        $penjualan = $query->orderBy('klien_id')
+            ->orderBy('tanggal')
+            ->get();
+
+        $grouped = $penjualan->groupBy('klien_id');
+
+        $reports = [];
+        foreach ($grouped as $klienId => $items) {
+            $klien = $items->first()->klien;
+            
+            // Frequency = count of unique dates
+            $frequency = $items->pluck('tanggal')->unique()->count();
+            
+            $reports[] = (object)[
+                'klien' => $klien,
+                'items' => $items,
+                'frequency' => $frequency,
+                'total_nominal' => $items->sum('total_harga')
+            ];
+        }
+
+        $tenant = auth()->user()->tenant;
+        $monthNames = [
+            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+        ];
+        $periodLabel = $monthNames[$month] . ' ' . $year;
+
+        return view('reports.penjualan-per-klien', [
+            'reports' => $reports,
+            'period' => $periodLabel,
+            'tenant' => $tenant,
+            'month' => $month,
+            'year' => $year,
+        ]);
     }
 }

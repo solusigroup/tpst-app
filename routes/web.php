@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/arus-kas', [ReportController::class, 'cetakArusKas'])->name('reports.arus-kas');
     Route::get('/reports/perubahan-ekuitas', [ReportController::class, 'cetakPerubahanEkuitas'])->name('reports.perubahan-ekuitas');
     Route::get('/reports/neraca-saldo', [ReportController::class, 'cetakNeracaSaldo'])->name('reports.neraca-saldo');
+    Route::get('/reports/penjualan-per-klien', [ReportController::class, 'cetakPenjualanPerKlien'])->name('reports.penjualan-per-klien');
 
     // Invoices
     Route::get('/invoices/{invoice}/print', [\App\Http\Controllers\InvoiceController::class, 'print'])->name('invoices.print');

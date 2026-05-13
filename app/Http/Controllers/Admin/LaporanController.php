@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\PengangkutanResidu;
 use App\Models\WageCalculation;
 use App\Models\User;
+use App\Models\Klien;
 
 
 class LaporanController extends Controller
@@ -674,6 +675,52 @@ class LaporanController extends Controller
 
         $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.penjualan', compact('rows', 'dari', 'sampai', 'totals'));
+    }
+
+    public function penjualanPerKlien(Request $request)
+    {
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_penjualan_op')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $klienId = $request->get('klien_id');
+
+        $query = Penjualan::with('klien')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->when($klienId, fn ($q) => $q->where('klien_id', $klienId));
+
+        $penjualan = $query->orderBy('klien_id')
+            ->orderBy('tanggal')
+            ->get();
+
+        $grouped = $penjualan->groupBy('klien_id');
+
+        $reports = [];
+        foreach ($grouped as $id => $items) {
+            $klien = $items->first()->klien;
+            $frequency = $items->pluck('tanggal')->unique()->count();
+            
+            $reports[] = (object)[
+                'klien' => $klien,
+                'items' => $items,
+                'frequency' => $frequency,
+                'total_nominal' => $items->sum('total_harga'),
+                'total_berat' => $items->sum('berat_kg')
+            ];
+        }
+
+        $kliens = Klien::orderBy('nama_klien')->get();
+        $data = compact('reports', 'dari', 'sampai', 'klienId', 'kliens');
+
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.penjualan-per-klien-export', $data);
+            return $pdf->download('Laporan_Penjualan_Per_Klien_' . $dari . '_' . $sampai . '.pdf');
+        }
+
+        return view('admin.laporan.penjualan-per-klien', $data);
     }
 
     public function laporanHasilPilahan(Request $request)
