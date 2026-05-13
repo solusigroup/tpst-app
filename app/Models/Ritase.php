@@ -88,6 +88,21 @@ class Ritase extends Model
 
         static::saving(function (Ritase $ritase) {
             $ritase->berat_netto = ($ritase->berat_bruto ?? 0) - ($ritase->berat_tarra ?? 0);
+
+            // Auto-calculate tipping fee based on client's tariff
+            if ($ritase->klien_id) {
+                // Ensure klien is loaded
+                $klien = $ritase->klien ?: \App\Models\Klien::find($ritase->klien_id);
+                if ($klien) {
+                    if ($klien->jenis_tarif === 'Per Ton') {
+                        $ritase->biaya_tipping = ($ritase->berat_netto / 1000) * ($klien->besaran_tarif ?? 0);
+                    } elseif ($klien->jenis_tarif === 'Per Ritase') {
+                        $ritase->biaya_tipping = $klien->besaran_tarif ?? 0;
+                    } elseif ($klien->jenis_tarif === 'Bulanan') {
+                        $ritase->biaya_tipping = 0; // Fixed monthly, not per-ritase
+                    }
+                }
+            }
         });
     }
 

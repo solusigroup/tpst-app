@@ -11,7 +11,14 @@
                 <label class="form-label">Klien <span class="text-danger">*</span></label>
                 <select name="klien_id" class="form-select @error('klien_id') is-invalid @enderror" required>
                     <option value="">-- Pilih --</option>
-                    @foreach($kliens as $k)<option value="{{ $k->id }}" {{ old('klien_id', $invoice->klien_id ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }}</option>@endforeach
+                    @foreach($kliens as $k)
+                        <option value="{{ $k->id }}" 
+                                data-jenis-tarif="{{ $k->jenis_tarif }}" 
+                                data-besaran-tarif="{{ $k->besaran_tarif }}"
+                                {{ old('klien_id', $invoice->klien_id ?? '') == $k->id ? 'selected' : '' }}>
+                            {{ $k->nama_klien }}
+                        </option>
+                    @endforeach
                 </select>@error('klien_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-3">
@@ -53,7 +60,10 @@
                 <label class="form-label">Sisa Tagihan (Rp)</label>
                 <input type="number" id="sisa_tagihan" class="form-control" value="{{ ($invoice->total_tagihan ?? 0) - ($invoice->uang_muka ?? 0) }}" readonly>
             </div>
-            <div class="col-12"><small class="text-muted">Total Tagihan dan Uang Muka dihitung otomatis berdasarkan item yang dipilih.</small></div>
+            <div class="col-12">
+                <small class="text-muted" id="tariff-info"></small><br>
+                <small class="text-muted">Total Tagihan dan Uang Muka dihitung otomatis berdasarkan item yang dipilih @if($kliens->where('jenis_tarif', 'Bulanan')->count() > 0) dan tarif bulanan (jika ada)@endif.</small>
+            </div>
             <div class="col-md-6">
                 <label class="form-label">Status <span class="text-danger">*</span></label>
                 <select name="status" class="form-select" required>
@@ -143,10 +153,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateTotal() {
         let total = 0;
         let dp = 0;
+        
+        // Sum from checkboxes
         document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
             total += parseFloat(cb.dataset.price || 0);
             dp += parseFloat(cb.dataset.dp || 0);
         });
+
+        // Add monthly fee if client is Bulanan
+        const selectedOption = klienSelect.options[klienSelect.selectedIndex];
+        const tariffInfo = document.getElementById('tariff-info');
+        if (selectedOption && selectedOption.value) {
+            const jenisTarif = selectedOption.dataset.jenisTarif;
+            const besaranTarif = parseFloat(selectedOption.dataset.besaranTarif || 0);
+            
+            tariffInfo.textContent = `Tarif Klien: ${jenisTarif} - Rp ${besaranTarif.toLocaleString('id-ID')}`;
+            
+            if (jenisTarif === 'Bulanan') {
+                total += besaranTarif;
+            }
+        } else {
+            tariffInfo.textContent = '';
+        }
+
         totalTagihanInput.value = total;
         uangMukaInput.value = dp;
         calculateBalance();

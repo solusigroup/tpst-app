@@ -312,7 +312,13 @@ class RitaseController extends Controller
             // Recalculate Invoice total
             $totalRitase = $invoice->ritase()->sum('biaya_tipping');
             $totalPenjualan = $invoice->penjualan()->sum('total_harga');
-            $invoice->update(['total_tagihan' => $totalRitase + $totalPenjualan]);
+            
+            // Add fixed monthly tipping fee if client is Bulanan
+            $feeBulanan = ($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan') 
+                ? ($invoice->klien->besaran_tarif ?? 0) 
+                : 0;
+
+            $invoice->update(['total_tagihan' => $totalRitase + $totalPenjualan + $feeBulanan]);
         });
 
         return redirect()->back()->with('success', 'Ritase berhasil di-approve dan ditambahkan ke Invoice Draft.');

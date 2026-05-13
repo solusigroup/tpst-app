@@ -98,26 +98,37 @@
                 @php $hasItems = false; @endphp
 
                 <!-- Ritase Section -->
-                @if($invoice->ritase->count() > 0)
-                    @php $hasItems = true; @endphp
+                @if($invoice->ritase->count() > 0 || ($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan'))
+                    @php 
+                        $hasItems = true; 
+                        $ritaseSum = $invoice->ritase->sum('biaya_tipping');
+                        $monthlyFee = ($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan') ? ($invoice->klien->besaran_tarif ?? 0) : 0;
+                        $totalTipping = $ritaseSum + $monthlyFee;
+                    @endphp
                     <tr>
                         <td class="px-4 py-6">
-                            <p class="font-bold text-base text-slate-900 uppercase">Jasa Pengelolaan Sampah (Tipping Fee)
-                            </p>
-                            <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-bold">Rincian Tiket:</p>
-                            <div class="mt-2 grid grid-cols-2 gap-x-8 gap-y-1">
-                                @foreach($invoice->ritase as $r)
-                                    <div
-                                        class="text-[10px] text-slate-500 font-sans flex justify-between border-b border-slate-50 pb-1">
-                                        <span>{{ $r->nomor_tiket }} ({{ $r->waktu_masuk->format('d/m/Y') }})</span>
-                                        <span class="font-bold text-slate-400">
-                                            {{ number_format($r->berat_netto / 1000, 2, ',', '.') }} Ton
-                                            <span class="ml-2 text-slate-500 inline-block min-w-[80px] text-right">Rp
-                                                {{ number_format($r->biaya_tipping, 0, ',', '.') }}</span>
-                                        </span>
-                                    </div>
-                                @endforeach
-                            </div>
+                            <p class="font-bold text-base text-slate-900 uppercase">Jasa Pengelolaan Sampah (Tipping Fee)</p>
+                            
+                            @if($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan')
+                                <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-bold">Jenis Tarif: Bulanan (Fixed Fee)</p>
+                            @endif
+
+                            @if($invoice->ritase->count() > 0)
+                                <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-wider font-bold">Rincian Tiket:</p>
+                                <div class="mt-2 grid grid-cols-2 gap-x-8 gap-y-1">
+                                    @foreach($invoice->ritase as $r)
+                                        <div class="text-[10px] text-slate-500 font-sans flex justify-between border-b border-slate-50 pb-1">
+                                            <span>{{ $r->nomor_tiket }} ({{ $r->waktu_masuk->format('d/m/Y') }})</span>
+                                            <span class="font-bold text-slate-400">
+                                                {{ number_format($r->berat_netto / 1000, 2, ',', '.') }} Ton
+                                                @if($r->biaya_tipping > 0)
+                                                    <span class="ml-2 text-slate-500 inline-block min-w-[80px] text-right">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                             <p class="text-slate-400 mt-4 text-[10px] font-bold italic uppercase">Periode Layanan:
                                 {{ $periodeLabel }} ({{ $invoice->ritase->count() }} Ritase)</p>
                         </td>
@@ -125,11 +136,14 @@
                             {{ number_format($totalTonnageRitase / 1000, 2, ',', '.') }}
                         </td>
                         <td class="px-4 py-6 text-right font-sans align-top text-slate-600">
-                            Rp
-                            {{ number_format($invoice->ritase->sum('biaya_tipping') / max(1, $totalTonnageRitase / 1000), 0, ',', '.') }}
+                            @if($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan')
+                                Rp {{ number_format($monthlyFee, 0, ',', '.') }} / Bln
+                            @else
+                                Rp {{ number_format($totalTipping / max(1, $totalTonnageRitase / 1000), 0, ',', '.') }}
+                            @endif
                         </td>
                         <td class="px-4 py-6 text-right font-bold font-sans align-top text-slate-900">
-                            Rp {{ number_format($invoice->ritase->sum('biaya_tipping'), 0, ',', '.') }}
+                            Rp {{ number_format($totalTipping, 0, ',', '.') }}
                         </td>
                     </tr>
                 @endif

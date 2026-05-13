@@ -441,6 +441,14 @@ class LaporanController extends Controller
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_bruto) as total_bruto, SUM(berat_tarra) as total_tarra, SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
 
+        // Add monthly fee to totals if a single Bulanan client is selected
+        if ($klienId) {
+            $selectedKlien = \App\Models\Klien::find($klienId);
+            if ($selectedKlien && $selectedKlien->jenis_tarif === 'Bulanan') {
+                $totals->total_tipping += $selectedKlien->besaran_tarif;
+            }
+        }
+
         $rekapJenis = (clone $query)->reorder()
             ->join('armada', 'ritase.armada_id', '=', 'armada.id')
             ->selectRaw('armada.jenis_armada, COUNT(*) as total_ritase, SUM(ritase.berat_netto) as total_netto')

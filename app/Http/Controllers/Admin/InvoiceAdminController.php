@@ -221,8 +221,13 @@ class InvoiceAdminController extends Controller
                     $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('total_harga');
                     $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $master->id)->sum('jumlah_bayar');
                     
+                    // Add fixed monthly tipping fee if client is Bulanan
+                    $feeBulanan = ($master->klien && $master->klien->jenis_tarif === 'Bulanan') 
+                        ? ($master->klien->besaran_tarif ?? 0) 
+                        : 0;
+
                     $master->update([
-                        'total_tagihan' => $totalRitase + $totalPenjualan,
+                        'total_tagihan' => $totalRitase + $totalPenjualan + $feeBulanan,
                         'uang_muka' => $totalUangMuka,
                         'coa_pembayaran_id' => $master->coa_pembayaran_id ?? \App\Models\Coa::where('kode_akun', '1102')->value('id'),
                         'keterangan' => empty($master->keterangan) ? 'Merged automatically' : $master->keterangan . ' (Merged)'
@@ -291,8 +296,13 @@ class InvoiceAdminController extends Controller
                 $totalPenjualan = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('total_harga');
                 $totalUangMuka = \App\Models\Penjualan::where('invoice_id', $invoice->id)->sum('jumlah_bayar');
 
+                // Add fixed monthly tipping fee if client is Bulanan
+                $feeBulanan = ($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan') 
+                    ? ($invoice->klien->besaran_tarif ?? 0) 
+                    : 0;
+
                 $invoice->update([
-                    'total_tagihan' => $totalRitase + $totalPenjualan,
+                    'total_tagihan' => $totalRitase + $totalPenjualan + $feeBulanan,
                     'uang_muka' => $totalUangMuka,
                 ]);
             }

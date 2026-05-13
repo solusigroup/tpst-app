@@ -136,6 +136,20 @@
                                 <td class="text-end pe-4 text-dark font-monospace">Rp {{ number_format($penjualan->total_harga, 0, ',', '.') }}</td>
                             </tr>
                             @endforeach
+
+                            @if($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan')
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="d-block fw-bold">Biaya Tipping (Bulanan)</span>
+                                    <small class="text-muted">Biaya tetap periode {{ $invoice->periode_bulan }} / {{ $invoice->periode_tahun }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ $invoice->klien->nama_klien ?? '-' }}</span>
+                                </td>
+                                <td>Tipping Fee</td>
+                                <td class="text-end pe-4 text-dark font-monospace">Rp {{ number_format($invoice->klien->besaran_tarif, 0, ',', '.') }}</td>
+                            </tr>
+                            @endif
                             
                             @if($invoice->ritase->isEmpty() && $invoice->penjualan->isEmpty())
                             <tr>
