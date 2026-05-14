@@ -688,6 +688,7 @@ class LaporanController extends Controller
         $klienId = $request->get('klien_id');
 
         $query = Penjualan::with('klien')
+            ->whereHas('klien', fn ($q) => $q->where('jenis', 'Offtaker'))
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($klienId, fn ($q) => $q->where('klien_id', $klienId));
@@ -712,7 +713,7 @@ class LaporanController extends Controller
             ];
         }
 
-        $kliens = Klien::orderBy('nama_klien')->get();
+        $kliens = Klien::where('jenis', 'Offtaker')->orderBy('nama_klien')->get();
         $data = compact('reports', 'dari', 'sampai', 'klienId', 'kliens');
 
         if ($request->export === 'pdf') {
