@@ -117,7 +117,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('wage-calculation/export-rekap', [WageCalculationController::class, 'exportRekap'])->name('wage-calculation.export-rekap');
         Route::post('wage-calculation/calculate', [WageCalculationController::class, 'calculate'])->name('wage-calculation.calculate');
         
-        Route::resource('wage-calculation', WageCalculationController::class)->only(['index', 'show']);
+        Route::resource('wage-calculation', WageCalculationController::class);
         
         Route::resource('employee', EmployeeController::class);
         Route::match(['post', 'patch'], 'wage-calculation/{wageCalculation}/approve', [WageCalculationController::class, 'approve'])->name('wage-calculation.approve');

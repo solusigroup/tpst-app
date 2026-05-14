@@ -130,6 +130,7 @@
                         <th class="text-end">Belum Dibayar</th>
                         <th class="text-center">Status</th>
                         <th>Tgl Bayar</th>
+                        <th class="text-end d-print-none">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,10 +174,23 @@
                             </span>
                         </td>
                         <td>{{ $r->paid_date ? \Carbon\Carbon::parse($r->paid_date)->format('d/m/Y') : '-' }}</td>
+                        <td class="text-end d-print-none">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('admin.hrd.wage-calculation.show', $r) }}" class="btn btn-outline-info" title="Detail"><i class="cil-search"></i></a>
+                                
+                                @if($r->status !== 'paid' && auth()->user()->hasRole(['manajemen', 'super_admin']))
+                                <form action="{{ route('admin.hrd.wage-calculation.destroy', $r) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus data perhitungan upah ini?')"><i class="cil-trash"></i></button>
+                                </form>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center py-4 text-body-secondary">
+                        <td colspan="13" class="text-center py-4 text-body-secondary">
                             Belum ada data upah pada periode ini.
                         </td>
                     </tr>
@@ -184,11 +198,11 @@
                 </tbody>
                 <tfoot class="border-top border-2 fw-bold bg-light">
                     <tr>
-                        <td colspan="4" class="text-end">TOTAL ({{ number_format($totals->total_rows, 0, ',', '.') }} Record)</td>
+                        <td colspan="7" class="text-end">TOTAL ({{ number_format($totals->total_rows, 0, ',', '.') }} Record)</td>
                         <td class="text-end text-primary">Rp {{ number_format($totals->total_wage, 0, ',', '.') }}</td>
                         <td class="text-end text-success">Rp {{ number_format($totals->total_paid, 0, ',', '.') }}</td>
                         <td class="text-end text-danger">Rp {{ number_format($totals->total_unpaid, 0, ',', '.') }}</td>
-                        <td colspan="2"></td>
+                        <td colspan="3"></td>
                     </tr>
                 </tfoot>
             </table>

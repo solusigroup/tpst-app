@@ -191,4 +191,17 @@ class WageCalculationController extends Controller
         return redirect()->route('admin.hrd.wage-calculation.show', $wageCalculation)
             ->with('success', 'Perhitungan upah berhasil diperbarui.');
     }
+
+    public function destroy(WageCalculation $wageCalculation)
+    {
+        $this->authorize('delete', $wageCalculation);
+
+        if ($wageCalculation->status === 'paid') {
+            return redirect()->back()->with('error', 'Data yang sudah dibayar tidak dapat dihapus.');
+        }
+
+        $wageCalculation->delete();
+
+        return redirect()->back()->with('success', 'Data perhitungan upah berhasil dihapus.');
+    }
 }

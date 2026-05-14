@@ -124,6 +124,14 @@
                                 <button type="button" class="btn btn-outline-primary" title="Bayar" data-coreui-toggle="modal" data-coreui-target="#payModal{{ $item->id }}"><i class="cil-money"></i></button>
                                 @endif
 
+                                @if($item->status !== 'paid' && auth()->user()->hasRole(['manajemen', 'super_admin']))
+                                <form action="{{ route('admin.hrd.wage-calculation.destroy', $item) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus data perhitungan upah ini?')"><i class="cil-trash"></i></button>
+                                </form>
+                                @endif
+
                                 <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\WageCalculation'), 'ref_id' => $item->id]) }}" class="btn btn-outline-secondary" title="Buat Jurnal"><i class="cil-book"></i></a>
                             </div>
 
