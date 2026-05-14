@@ -310,6 +310,7 @@ class LaporanController extends Controller
     public function bukuBesar(Request $request)
     {
         Gate::authorize('view_laporan_keuangan');
+        $title = $request->get('title', 'Buku Besar');
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
@@ -347,15 +348,15 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal');
+            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'title');
             
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.buku-besar-export', $data);
-                return $pdf->download('Buku_Besar_' . $dari . '_' . $sampai . '.pdf');
+                return $pdf->download($title . '_' . $dari . '_' . $sampai . '.pdf');
             } elseif ($request->export === 'excel') {
                 return \Maatwebsite\Excel\Facades\Excel::download(
                     new \App\Exports\LaporanExcelExport('admin.laporan.exports.buku-besar-export', $data), 
-                    'Buku_Besar_' . $dari . '_' . $sampai . '.xlsx'
+                    $title . '_' . $dari . '_' . $sampai . '.xlsx'
                 );
             }
         }
@@ -399,7 +400,23 @@ class LaporanController extends Controller
             }
         }
 
-        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal'));
+        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal', 'title'));
+    }
+
+    public function bukuKas(Request $request)
+    {
+        $coa = Coa::where('nama_akun', 'like', '%Kas%')->where('kode_akun', 'like', '11%')->first();
+        if (!$coa) abort(404, 'Akun Kas tidak ditemukan.');
+        $request->merge(['coa_id' => $coa->id, 'title' => 'Buku Kas']);
+        return $this->bukuBesar($request);
+    }
+
+    public function bukuBank(Request $request)
+    {
+        $coa = Coa::where('nama_akun', 'like', '%Bank Jatim%')->first();
+        if (!$coa) abort(404, 'Akun Bank Jatim tidak ditemukan.');
+        $request->merge(['coa_id' => $coa->id, 'title' => 'Buku Bank Jatim']);
+        return $this->bukuBesar($request);
     }
 
     // ─── Laporan Operasional ───

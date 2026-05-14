@@ -1,8 +1,8 @@
-@extends('admin.laporan.exports.layout', ['title' => 'Buku Besar'])
+@extends('admin.laporan.exports.layout', ['title' => $title ?? 'Buku Besar'])
 
 @section('content')
 <div class="text-center mb-4">
-    <h2 style="font-size: 16px; margin: 0; font-weight: bold;">BUKU BESAR</h2>
+    <h2 style="font-size: 16px; margin: 0; font-weight: bold;">{{ strtoupper($title ?? 'BUKU BESAR') }}</h2>
     <p style="margin: 5px 0 0 0; color: #555;">Periode: {{ \Carbon\Carbon::parse($dari)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p>
     @if($coaId)
         <p style="margin: 5px 0 0 0; color: #555;">Akun: {{ $coas->where('id', $coaId)->first()->kode_akun ?? '' }} - {{ $coas->where('id', $coaId)->first()->nama_akun ?? '' }}</p>

@@ -84,6 +84,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('arus-kas', [LaporanController::class, 'arusKas'])->name('arus-kas');
         Route::get('perubahan-ekuitas', [LaporanController::class, 'perubahanEkuitas'])->name('perubahan-ekuitas');
         Route::get('buku-besar', [LaporanController::class, 'bukuBesar'])->name('buku-besar');
+        Route::get('buku-kas', [LaporanController::class, 'bukuKas'])->name('buku-kas');
+        Route::get('buku-bank', [LaporanController::class, 'bukuBank'])->name('buku-bank');
     });
 
     // Laporan Operasional

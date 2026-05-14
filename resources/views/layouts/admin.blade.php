@@ -620,6 +620,12 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan.buku-besar') ? 'active' : '' }}" href="{{ route('admin.laporan.buku-besar') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.buku-kas') ? 'active' : '' }}" href="{{ route('admin.laporan.buku-kas') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Kas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan.buku-bank') ? 'active' : '' }}" href="{{ route('admin.laporan.buku-bank') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Bank Jatim</a>
+                    </li>
                 </ul>
             </li>
             @endcan

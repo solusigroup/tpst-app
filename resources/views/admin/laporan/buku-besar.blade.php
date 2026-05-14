@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Buku Besar')
+@section('title', $title ?? 'Buku Besar')
 
 @section('content')
 <div class="d-none d-print-block">
@@ -7,7 +7,7 @@
 </div>
 
 <div class="page-header d-print-none flex-wrap d-flex justify-content-between align-items-center">
-    <div><h1 class="mb-0">Buku Besar</h1></div>
+    <div><h1 class="mb-0">{{ $title ?? 'Buku Besar' }}</h1></div>
     <div class="d-flex gap-2">
         <button class="btn btn-outline-secondary" onclick="window.print()"><i class="cil-print me-1"></i> Print</button>
         <form action="{{ url()->current() }}" method="GET" class="d-inline">
