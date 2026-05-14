@@ -57,9 +57,14 @@ class WageCalculation extends Model
         // Ensure we have a Carbon instance for easier date manipulation
         $carbonWeekStart = Carbon::instance($weekStart)->startOfDay();
         
-        // Determine pay period based on frequency
-        $daysToAdd = ($user && $user->payment_frequency === 'Dua Mingguan') ? 13 : 6;
-        $weekEnd = $carbonWeekStart->copy()->addDays($daysToAdd)->endOfDay();
+        // Determine pay period based on salary type and frequency
+        if ($user && $user->salary_type === 'bulanan') {
+            $carbonWeekStart = $carbonWeekStart->copy()->startOfMonth();
+            $weekEnd = $carbonWeekStart->copy()->endOfMonth()->endOfDay();
+        } else {
+            $daysToAdd = ($user && $user->payment_frequency === 'Dua Mingguan') ? 13 : 6;
+            $weekEnd = $carbonWeekStart->copy()->addDays($daysToAdd)->endOfDay();
+        }
 
         $outputs = EmployeeOutput::where('user_id', $userId)
             ->where('tenant_id', $tenantId)
