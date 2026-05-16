@@ -26,6 +26,15 @@
                     @error('unit')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
+                <div class="col-md-6">
+                    <label class="form-label">Harga Jual <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" name="selling_price" step="0.01" class="form-control @error('selling_price') is-invalid @enderror" value="{{ old('selling_price', 0) }}" required>
+                        @error('selling_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
                 <div class="col-md-12">
                     <label class="form-label">Deskripsi</label>
                     <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror">{{ old('description') }}</textarea>

@@ -16,10 +16,12 @@ class WasteCategory extends Model
         'name',
         'description',
         'unit',
+        'selling_price',
         'is_active',
     ];
 
     protected $casts = [
+        'selling_price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
@@ -36,5 +38,18 @@ class WasteCategory extends Model
     public function employeeOutputs(): HasMany
     {
         return $this->hasMany(EmployeeOutput::class);
+    }
+
+    public function getActiveWageRateAttribute()
+    {
+        return $this->wageRates()
+            ->where('is_active', true)
+            ->where('effective_date', '<=', now())
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            })
+            ->latest('effective_date')
+            ->first();
     }
 }

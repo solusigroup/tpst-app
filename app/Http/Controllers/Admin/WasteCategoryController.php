@@ -31,6 +31,7 @@ class WasteCategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'unit' => 'required|string|max:50',
+            'selling_price' => 'required|numeric|min:0',
         ]);
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
@@ -55,6 +56,7 @@ class WasteCategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'unit' => 'required|string|max:50',
+            'selling_price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
