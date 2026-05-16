@@ -25,6 +25,7 @@ class Penjualan extends Model
     protected $fillable = [
         'tenant_id',
         'klien_id',
+        'waste_category_id',
         'tanggal',
         'jenis_produk',
         'berat_kg',
@@ -69,6 +70,14 @@ class Penjualan extends Model
     public function klien(): BelongsTo
     {
         return $this->belongsTo(Klien::class);
+    }
+
+    /**
+     * Get the waste category this penjualan belongs to.
+     */
+    public function wasteCategory(): BelongsTo
+    {
+        return $this->belongsTo(WasteCategory::class);
     }
 
     /**

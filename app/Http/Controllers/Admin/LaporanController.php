@@ -779,13 +779,24 @@ class LaporanController extends Controller
             ->get()
             ->keyBy('jenis_produk');
 
+        $upahAgg = \App\Models\EmployeeOutput::selectRaw('waste_categories.name as jenis, SUM(paid_quantity) as total_paid')
+            ->join('waste_categories', 'employee_outputs.waste_category_id', '=', 'waste_categories.id')
+            ->when($dari, fn ($q) => $q->whereDate('output_date', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('output_date', '<=', $sampai))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->groupBy('waste_categories.name')
+            ->get()
+            ->keyBy('jenis');
+
         $stokSummary = [];
         $totalPilahanAll = 0;
         $totalTerjualAll = 0;
+        $totalPaidAll = 0;
         $totalSisaAll = 0;
 
         foreach ($pilahanAgg as $item) {
             $jual = isset($penjualanAgg[$item->jenis]) ? $penjualanAgg[$item->jenis]->total_keluar : 0;
+            $paid = isset($upahAgg[$item->jenis]) ? $upahAgg[$item->jenis]->total_paid : 0;
             $sisa = $item->gross_tonase - $jual;
             
             $stokSummary[] = (object)[
@@ -793,17 +804,20 @@ class LaporanController extends Controller
                 'jenis' => $item->jenis,
                 'total_pilahan' => $item->gross_tonase,
                 'total_terjual' => $jual,
+                'total_paid_wage' => $paid,
                 'sisa_stok' => $sisa
             ];
 
             $totalPilahanAll += $item->gross_tonase;
             $totalTerjualAll += $jual;
+            $totalPaidAll += $paid;
             $totalSisaAll += $sisa;
         }
 
         $summaryTotals = (object)[
             'total_pilahan' => $totalPilahanAll,
             'total_terjual' => $totalTerjualAll,
+            'total_paid_wage' => $totalPaidAll,
             'sisa_stok' => $totalSisaAll
         ];
 

@@ -648,6 +648,9 @@
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.penjualan-per-klien') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.penjualan-per-klien')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Penjualan Per Klien</a>
+                    </li>
                     <?php endif; ?>
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_hasil_pilahan'])): ?>
                     <li class="nav-item">
@@ -779,8 +782,18 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.upah') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.upah')); ?>">
-                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Upah
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.upah.borongan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.upah.borongan')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Borongan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.upah.bulanan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.upah.bulanan')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Bulanan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.upah.harian') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.upah.harian')); ?>">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Harian
                         </a>
                     </li>
                 </ul>
@@ -960,7 +973,7 @@
         
         <footer class="footer px-4 mt-auto">
             <div class="text-body-secondary small">
-                &copy; <?php echo e(date('Y')); ?> TPST App. All rights reserved.
+                &copy; <?php echo e(date('Y')); ?> <a href="https://simpleakunting.my.id/riwayathidupku.html" target="_blank" class="text-decoration-none text-body-secondary">TPST App</a>. All rights reserved.
             </div>
         </footer>
     </div>

@@ -59,6 +59,7 @@
                         <th>Jenis</th>
                         <th class="text-end">Total Pilahan</th>
                         <th class="text-end">Terjual</th>
+                        <th class="text-end">Terbayar Upah</th>
                         <th class="text-end">Sisa Stok</th>
                     </tr>
                 </thead>
@@ -72,6 +73,7 @@
                         <td class="fw-medium">{{ $stok->jenis }}</td>
                         <td class="text-end text-primary">{{ number_format($stok->total_pilahan, 2, ',', '.') }} kg</td>
                         <td class="text-end text-danger">{{ number_format($stok->total_terjual, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-success">{{ number_format($stok->total_paid_wage, 2, ',', '.') }} kg</td>
                         <td class="text-end fw-bold {{ $stok->sisa_stok > 0 ? 'text-success' : 'text-body-secondary' }}">{{ number_format($stok->sisa_stok, 2, ',', '.') }} kg</td>
                     </tr>
                     @empty
@@ -84,6 +86,7 @@
                         <td colspan="2" class="text-end">TOTAL KESELURUHAN</td>
                         <td class="text-end text-primary">{{ number_format($summaryTotals->total_pilahan, 2, ',', '.') }} kg</td>
                         <td class="text-end text-danger">{{ number_format($summaryTotals->total_terjual, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-success">{{ number_format($summaryTotals->total_paid_wage, 2, ',', '.') }} kg</td>
                         <td class="text-end text-success">{{ number_format($summaryTotals->sisa_stok, 2, ',', '.') }} kg</td>
                     </tr>
                 </tfoot>
@@ -167,6 +170,7 @@
                                 <th>Jenis</th>
                                 <th class="text-end">Total Pilahan</th>
                                 <th class="text-end">Terjual</th>
+                                <th class="text-end">Terbayar Upah</th>
                                 <th class="text-end">Sisa Stok</th>
                             </tr>
                         </thead>
@@ -177,6 +181,7 @@
                                 <td>{{ $stok->jenis }}</td>
                                 <td class="text-end">{{ number_format($stok->total_pilahan, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($stok->total_terjual, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($stok->total_paid_wage, 2, ',', '.') }} kg</td>
                                 <td class="text-end fw-bold">{{ number_format($stok->sisa_stok, 2, ',', '.') }} kg</td>
                             </tr>
                             @endforeach
@@ -186,6 +191,7 @@
                                 <td colspan="2" class="text-end">TOTAL</td>
                                 <td class="text-end">{{ number_format($summaryTotals->total_pilahan, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($summaryTotals->total_terjual, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($summaryTotals->total_paid_wage, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($summaryTotals->sisa_stok, 2, ',', '.') }} kg</td>
                             </tr>
                         </tfoot>

@@ -99,7 +99,6 @@ class PenjualanController extends Controller
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
         $validated['jumlah_bayar'] = $validated['jumlah_bayar'] ?? 0;
 
-        $tenantId = auth()->user()->tenant_id;
         if (!$tenantId) {
             $firstTenant = \App\Models\Tenant::first();
             if ($firstTenant) {
@@ -107,6 +106,14 @@ class PenjualanController extends Controller
             }
         }
         $validated['tenant_id'] = $tenantId;
+
+        // Auto-populate waste_category_id based on jenis_produk name
+        $category = \App\Models\WasteCategory::where('tenant_id', $tenantId)
+            ->where('name', $validated['jenis_produk'])
+            ->first();
+        if ($category) {
+            $validated['waste_category_id'] = $category->id;
+        }
 
         DB::transaction(function () use ($validated) {
             Penjualan::create($validated);
@@ -166,6 +173,14 @@ class PenjualanController extends Controller
                 }
             }
             $validated['tenant_id'] = $tenantId;
+        }
+
+        // Auto-populate waste_category_id based on jenis_produk name
+        $category = \App\Models\WasteCategory::where('tenant_id', $penjualan->tenant_id ?? auth()->user()->tenant_id)
+            ->where('name', $validated['jenis_produk'])
+            ->first();
+        if ($category) {
+            $validated['waste_category_id'] = $category->id;
         }
 
         DB::transaction(function () use ($penjualan, $validated) {

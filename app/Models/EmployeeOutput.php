@@ -16,6 +16,7 @@ class EmployeeOutput extends Model
         'waste_category_id',
         'output_date',
         'quantity',
+        'paid_quantity',
         'unit',
         'notes',
     ];
@@ -23,6 +24,7 @@ class EmployeeOutput extends Model
     protected $casts = [
         'output_date' => 'date',
         'quantity' => 'decimal:2',
+        'paid_quantity' => 'decimal:2',
     ];
 
     public function tenant(): BelongsTo
