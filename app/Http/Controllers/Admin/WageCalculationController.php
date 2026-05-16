@@ -70,6 +70,37 @@ class WageCalculationController extends Controller
         return view('admin.hrd.wage-calculation.show', compact('wageCalculation', 'outputs', 'attendances'));
     }
 
+    public function edit(WageCalculation $wageCalculation)
+    {
+        $this->authorize('update', $wageCalculation);
+
+        if ($wageCalculation->status === 'paid') {
+            return redirect()->back()->with('error', 'Data yang sudah dibayar tidak dapat diubah.');
+        }
+
+        return view('admin.hrd.wage-calculation.edit', compact('wageCalculation'));
+    }
+
+    public function update(Request $request, WageCalculation $wageCalculation)
+    {
+        $this->authorize('update', $wageCalculation);
+
+        if ($wageCalculation->status === 'paid') {
+            return redirect()->back()->with('error', 'Data yang sudah dibayar tidak dapat diubah.');
+        }
+
+        $validated = $request->validate([
+            'total_wage' => 'required|numeric|min:0',
+            'overtime_pay' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
+        ]);
+
+        $wageCalculation->update($validated);
+
+        return redirect()->route('admin.hrd.wage-calculation.show', $wageCalculation)
+            ->with('success', 'Data perhitungan upah berhasil diperbarui.');
+    }
+
     public function calculate(Request $request)
     {
         $validated = $request->validate([

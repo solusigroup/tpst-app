@@ -178,6 +178,10 @@
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.hrd.wage-calculation.show', $r) }}" class="btn btn-outline-info" title="Detail"><i class="cil-search"></i></a>
                                 
+                                @if($r->status !== 'paid')
+                                <a href="{{ route('admin.hrd.wage-calculation.edit', $r) }}" class="btn btn-outline-primary" title="Edit"><i class="cil-pencil"></i></a>
+                                @endif
+
                                 @if($r->status !== 'paid' && auth()->user()->hasRole(['manajemen', 'super_admin']))
                                 <form action="{{ route('admin.hrd.wage-calculation.destroy', $r) }}" method="POST" class="d-inline">
                                     @csrf
