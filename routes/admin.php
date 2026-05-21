@@ -31,6 +31,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         return response()->json(['status' => 'OK', 'message' => 'The code was successfully pulled!']);
     });
     Route::get('/test500-controller', [\App\Http\Controllers\Admin\Test500Controller::class, 'index']);
+    Route::get('/logs-debug', function() {
+        $logPath = storage_path('logs/laravel.log');
+        if (!file_exists($logPath)) {
+            return response('Log file does not exist.', 404);
+        }
+        $content = file_get_contents($logPath);
+        return response(substr($content, -20000), 200)->header('Content-Type', 'text/plain');
+    });
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional
