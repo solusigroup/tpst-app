@@ -104,4 +104,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Tenant::class);
     }
+
+    /**
+     * Get the tenant ID or fall back to the first available tenant ID.
+     */
+    public function getEffectiveTenantId(): ?int
+    {
+        return $this->tenant_id ?? Tenant::withoutGlobalScope(\App\Scopes\TenantScope::class)->first()?->id;
+    }
 }

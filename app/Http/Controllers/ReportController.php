@@ -68,12 +68,7 @@ class ReportController extends Controller
         $tenant = auth()->user()->tenant;
 
         // Format for Indonesian display
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        $periodLabel = $monthNames[$month] . ' ' . $year;
+        $periodLabel = \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year;
 
         return view('reports.laba-rugi', [
             'revenue' => $revenueDetails,
@@ -149,12 +144,7 @@ class ReportController extends Controller
         $selisih = abs($aset - $totalPasiva);
 
         $tenant = auth()->user()->tenant;
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        $periodLabel = 'Per ' . Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('d') . ' ' . $monthNames[$month] . ' ' . $year;
+        $periodLabel = 'Per ' . Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('d') . ' ' . \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year;
 
         return view('reports.posisi-keuangan', compact(
             'month', 'year', 'aset', 'liabilitas', 'ekuitasDasar', 
@@ -226,12 +216,7 @@ class ReportController extends Controller
         $saldoAkhir = $saldoAwal + $totalKasBersih;
 
         $tenant = auth()->user()->tenant;
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        $periodLabel = $monthNames[$month] . ' ' . $year;
+        $periodLabel = \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year;
 
         return view('reports.arus-kas', compact(
             'operasi', 'totalKasMasuk', 'totalKasKeluar', 'totalKasBersih',
@@ -314,12 +299,7 @@ class ReportController extends Controller
         $totalSaldoAkhir += $labaRugi;
 
         $tenant = auth()->user()->tenant;
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        $periodLabel = $monthNames[$month] . ' ' . $year;
+        $periodLabel = \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year;
 
         return view('reports.perubahan-ekuitas', compact(
             'rows', 'labaRugi', 'totalSaldoAwal', 'totalPenambahan', 'totalPengurangan', 'totalSaldoAkhir',
@@ -358,12 +338,7 @@ class ReportController extends Controller
         $totalKredit = $rows->sum('total_kredit');
 
         $tenant = auth()->user()->tenant;
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        $periodLabel = $monthNames[$month] . ' ' . $year;
+        $periodLabel = \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year;
 
         return view('reports.neraca-saldo', compact('rows', 'totalDebit', 'totalKredit', 'periodLabel', 'tenant'));
     }
@@ -411,12 +386,7 @@ class ReportController extends Controller
         }
 
         $tenant = auth()->user()->tenant;
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        $periodLabel = $monthNames[$month] . ' ' . $year;
+        $periodLabel = \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year;
 
         return view('reports.penjualan-per-klien', [
             'reports' => $reports,

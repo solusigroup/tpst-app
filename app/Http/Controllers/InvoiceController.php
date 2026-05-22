@@ -16,13 +16,7 @@ class InvoiceController extends Controller
         $totalTonnageRitase = $invoice->ritase->sum('berat_netto');
         $totalTonnagePenjualan = $invoice->penjualan->sum('berat_kg');
         
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-        
-        $periodeLabel = ($monthNames[str_pad($invoice->periode_bulan, 2, '0', STR_PAD_LEFT)] ?? $invoice->periode_bulan) . ' ' . $invoice->periode_tahun;
+        $periodeLabel = \App\Helpers\DateHelper::indonesianMonthName($invoice->periode_bulan) . ' ' . $invoice->periode_tahun;
 
         return view('invoices.print', compact('invoice', 'totalTonnageRitase', 'totalTonnagePenjualan', 'periodeLabel'));
     }

@@ -161,14 +161,7 @@ class RitaseController extends Controller
 
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
 
-        $tenantId = auth()->user()->tenant_id;
-        if (!$tenantId) {
-            $firstTenant = \App\Models\Tenant::first();
-            if ($firstTenant) {
-                $tenantId = $firstTenant->id;
-            }
-        }
-        $validated['tenant_id'] = $tenantId;
+        $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
 
         DB::transaction(function () use ($validated) {
             Ritase::create($validated);
@@ -230,14 +223,7 @@ class RitaseController extends Controller
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
 
         if (empty($ritase->tenant_id)) {
-            $tenantId = auth()->user()->tenant_id;
-            if (!$tenantId) {
-                $firstTenant = \App\Models\Tenant::first();
-                if ($firstTenant) {
-                    $tenantId = $firstTenant->id;
-                }
-            }
-            $validated['tenant_id'] = $tenantId;
+            $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
         }
 
         DB::transaction(function () use ($ritase, $validated) {
@@ -310,15 +296,7 @@ class RitaseController extends Controller
             ]);
 
             // Recalculate Invoice total
-            $totalRitase = $invoice->ritase()->sum('biaya_tipping');
-            $totalPenjualan = $invoice->penjualan()->sum('total_harga');
-            
-            // Add fixed monthly tipping fee if client is Bulanan
-            $feeBulanan = ($invoice->klien && $invoice->klien->jenis_tarif === 'Bulanan') 
-                ? ($invoice->klien->besaran_tarif ?? 0) 
-                : 0;
-
-            $invoice->update(['total_tagihan' => $totalRitase + $totalPenjualan + $feeBulanan]);
+            $invoice->recalculateTotals();
         });
 
         return redirect()->back()->with('success', 'Ritase berhasil di-approve dan ditambahkan ke Invoice Draft.');

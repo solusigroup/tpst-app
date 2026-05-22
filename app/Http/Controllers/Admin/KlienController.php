@@ -51,15 +51,7 @@ class KlienController extends Controller
 
 
 
-            $tenantId = auth()->user()->tenant_id;
-            if (!$tenantId) {
-                // If the user has no tenant (Superadmin), default to the first tenant to prevent 1048 constraint violation
-                $firstTenant = \App\Models\Tenant::first();
-                if ($firstTenant) {
-                    $tenantId = $firstTenant->id;
-                }
-            }
-            $validated['tenant_id'] = $tenantId;
+            $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
 
             Klien::create($validated);
 
@@ -97,14 +89,7 @@ class KlienController extends Controller
 
 
         if (empty($klien->tenant_id)) {
-            $tenantId = auth()->user()->tenant_id;
-            if (!$tenantId) {
-                $firstTenant = \App\Models\Tenant::first();
-                if ($firstTenant) {
-                    $tenantId = $firstTenant->id;
-                }
-            }
-            $validated['tenant_id'] = $tenantId;
+            $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
         }
 
         $klien->update($validated);

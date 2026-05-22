@@ -51,14 +51,7 @@ class ArmadaController extends Controller
             'berat_kosong' => 'nullable|numeric|min:0',
         ]);
 
-        $tenantId = auth()->user()->tenant_id;
-        if (!$tenantId) {
-            $firstTenant = \App\Models\Tenant::first();
-            if ($firstTenant) {
-                $tenantId = $firstTenant->id;
-            }
-        }
-        $validated['tenant_id'] = $tenantId;
+        $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
 
         Armada::create($validated);
 
@@ -86,14 +79,7 @@ class ArmadaController extends Controller
         ]);
 
         if (empty($armada->tenant_id)) {
-            $tenantId = auth()->user()->tenant_id;
-            if (!$tenantId) {
-                $firstTenant = \App\Models\Tenant::first();
-                if ($firstTenant) {
-                    $tenantId = $firstTenant->id;
-                }
-            }
-            $validated['tenant_id'] = $tenantId;
+            $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
         }
 
         $armada->update($validated);

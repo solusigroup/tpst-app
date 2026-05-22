@@ -110,4 +110,30 @@ class Invoice extends Model
     {
         return $this->morphMany(JurnalHeader::class, 'referensi');
     }
+
+    /**
+     * Recalculate and update the invoice's total_tagihan and uang_muka.
+     */
+    public function recalculateTotals(): void
+    {
+        // Force recalculate biaya_tipping for each ritase
+        foreach ($this->ritase as $r) {
+            $r->save();
+        }
+
+        $totalRitase = $this->ritase()->sum('biaya_tipping');
+        $totalPenjualan = $this->penjualan()->sum('total_harga');
+        $totalUangMuka = $this->penjualan()->sum('jumlah_bayar');
+
+        // Add fixed monthly tipping fee if client is Bulanan
+        $feeBulanan = ($this->klien && $this->klien->jenis_tarif === 'Bulanan')
+            ? ($this->klien->besaran_tarif ?? 0)
+            : 0;
+
+        $this->update([
+            'total_tagihan' => $totalRitase + $totalPenjualan + $feeBulanan,
+            'uang_muka' => $totalUangMuka,
+        ]);
+    }
 }
+

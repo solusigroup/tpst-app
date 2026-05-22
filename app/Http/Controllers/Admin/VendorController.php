@@ -44,14 +44,7 @@ class VendorController extends Controller
                 'alamat' => 'nullable|string',
             ]);
 
-            $tenantId = auth()->user()->tenant_id;
-            if (!$tenantId) {
-                $firstTenant = \App\Models\Tenant::first();
-                if ($firstTenant) {
-                    $tenantId = $firstTenant->id;
-                }
-            }
-            $validated['tenant_id'] = $tenantId;
+            $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
 
             Vendor::create($validated);
 
