@@ -339,12 +339,14 @@ class InvoiceAdminController extends Controller
         $pesan .= "Harap segera melakukan pembayaran sebelum *{$tglJatuhTempo}*.\n\n";
         $pesan .= "Terima kasih.";
 
-        $berhasil = \App\Services\WhatsAppService::sendMessage($klien->kontak, $pesan);
-
-        if ($berhasil) {
-            return back()->with('success', 'Pengingat WhatsApp berhasil dikirim ke ' . $klien->nama_klien . '.');
-        } else {
-            return back()->with('error', 'Gagal mengirim pesan WhatsApp. Pastikan token API telah dikonfigurasi dengan benar.');
+        // Format phone number to international format (replace leading 0 with 62)
+        $phone = preg_replace('/[^0-9]/', '', $klien->kontak);
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
         }
+
+        $url = "https://api.whatsapp.com/send?phone={$phone}&text=" . urlencode($pesan);
+
+        return redirect()->away($url);
     }
 }

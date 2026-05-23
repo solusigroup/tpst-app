@@ -199,9 +199,9 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     @if(in_array($invoice->klien->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($invoice->status, ['Paid', 'Canceled']))
-                    <form method="POST" action="{{ route('admin.invoice.send-wa', $invoice) }}" class="m-0">
+                    <form method="POST" action="{{ route('admin.invoice.send-wa', $invoice) }}" class="m-0" target="_blank">
                         @csrf
-                        <button type="submit" class="btn btn-success text-white text-start border d-flex justify-content-between align-items-center w-100" onclick="return confirm('Kirim pengingat WhatsApp ke {{ $invoice->klien->nama_klien ?? '-' }}?')">
+                        <button type="submit" class="btn btn-success text-white text-start border d-flex justify-content-between align-items-center w-100" onclick="return confirm('Buka WhatsApp untuk mengirim pesan ke {{ $invoice->klien->nama_klien ?? '-' }}?')">
                             <span><i class="cib-whatsapp me-2"></i>Kirim Pengingat WA</span>
                             <i class="cil-chevron-right small text-white-50"></i>
                         </button>
