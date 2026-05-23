@@ -13,9 +13,35 @@
 <div class="card">
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
-            <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari jenis produk..." value="{{ request('search') }}"></div>
-            <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button></div>
-            @if(request('search'))<div class="col-auto"><a href="{{ route('admin.penjualan.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            <div class="col-auto">
+                <label class="form-label mb-0 small text-body-secondary">Dari Tanggal</label>
+                <input type="date" name="dari" class="form-control" value="{{ request('dari', $dari ?? '') }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small text-body-secondary">Sampai Tanggal</label>
+                <input type="date" name="sampai" class="form-control" value="{{ request('sampai', $sampai ?? '') }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small text-body-secondary">Pembeli / Klien</label>
+                <select name="klien_id" class="form-select">
+                    <option value="">Semua Pembeli</option>
+                    @foreach($kliens ?? [] as $k)
+                        <option value="{{ $k->id }}" {{ request('klien_id', $klienId ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small text-body-secondary">Jenis Produk</label>
+                <input type="text" name="search" class="form-control" placeholder="Cari jenis produk..." value="{{ request('search') }}">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" type="submit"><i class="cil-search me-1"></i> Terapkan Filter</button>
+            </div>
+            @if(request('search') || request('klien_id') || request('dari') || request('sampai'))
+            <div class="col-auto">
+                <a href="{{ route('admin.penjualan.index') }}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+            @endif
         </form>
     </div>
     <div class="card-body p-0">

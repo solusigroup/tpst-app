@@ -46,15 +46,23 @@ class PenjualanController extends Controller
     }
     public function index(Request $request)
     {
-        $query = Penjualan::with('klien');
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $klienId = $request->get('klien_id');
+
+        $query = Penjualan::with('klien')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->when($klienId, fn ($q) => $q->where('klien_id', $klienId));
 
         if ($request->filled('search')) {
             $query->where('jenis_produk', 'like', '%' . $request->search . '%');
         }
 
         $penjualans = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        $kliens = Klien::where('jenis', 'Offtaker')->orderBy('nama_klien')->get();
 
-        return view('admin.penjualan.index', compact('penjualans'));
+        return view('admin.penjualan.index', compact('penjualans', 'dari', 'sampai', 'klienId', 'kliens'));
     }
 
     public function create()
