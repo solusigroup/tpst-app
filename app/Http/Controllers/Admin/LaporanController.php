@@ -1070,4 +1070,88 @@ class LaporanController extends Controller
         $title = "Laporan Upah " . ($skemaUpah ? ucfirst($skemaUpah) : "Karyawan");
         return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title'));
     }
+
+    public function kartuStokItem(Request $request)
+    {
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_hasil_pilahan')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $jenisItem = $request->get('jenis');
+
+        // Dapatkan semua jenis item yang ada di DB untuk dropdown
+        $jenisHasilPilahan = DB::table('hasil_pilahan')->select('jenis')->distinct()->pluck('jenis');
+        $jenisPenjualan = DB::table('penjualan')->select('jenis_produk')->distinct()->pluck('jenis_produk');
+        $semuaJenis = $jenisHasilPilahan->concat($jenisPenjualan)->unique()->sort()->values();
+
+        $mutasi = collect();
+        $saldoAwal = 0;
+
+        if ($jenisItem) {
+            // Hitung Saldo Awal (sebelum tanggal $dari)
+            $masukSebelum = DB::table('hasil_pilahan')
+                ->where('jenis', $jenisItem)
+                ->whereDate('tanggal', '<', $dari)
+                ->sum('tonase');
+                
+            $keluarSebelum = DB::table('penjualan')
+                ->where('jenis_produk', $jenisItem)
+                ->whereDate('tanggal', '<', $dari)
+                ->sum('berat_kg');
+                
+            $saldoAwal = $masukSebelum - $keluarSebelum;
+
+            // Tarik Mutasi Masuk (Produksi) pada rentang tanggal
+            $produksi = DB::table('hasil_pilahan')
+                ->where('jenis', $jenisItem)
+                ->whereDate('tanggal', '>=', $dari)
+                ->whereDate('tanggal', '<=', $sampai)
+                ->select([
+                    'id',
+                    'tanggal',
+                    DB::raw("'Masuk' as tipe"),
+                    DB::raw('tonase as jumlah_masuk'),
+                    DB::raw('0 as jumlah_keluar'),
+                    DB::raw("CONCAT('Hasil Pilahan oleh ', officer) as keterangan")
+                ])->get();
+
+            // Tarik Mutasi Keluar (Penjualan) pada rentang tanggal
+            $penjualan = DB::table('penjualan')
+                ->join('klien', 'penjualan.klien_id', '=', 'klien.id')
+                ->where('penjualan.jenis_produk', $jenisItem)
+                ->whereDate('penjualan.tanggal', '>=', $dari)
+                ->whereDate('penjualan.tanggal', '<=', $sampai)
+                ->select([
+                    'penjualan.id',
+                    'penjualan.tanggal',
+                    DB::raw("'Keluar' as tipe"),
+                    DB::raw('0 as jumlah_masuk'),
+                    DB::raw('penjualan.berat_kg as jumlah_keluar'),
+                    DB::raw("CONCAT('Penjualan ke ', klien.nama_klien) as keterangan")
+                ])->get();
+
+            // Gabungkan dan urutkan berdasarkan tanggal
+            $mutasi = $produksi->concat($penjualan)->sortBy([
+                ['tanggal', 'asc'],
+                ['tipe', 'desc'], // Jika tanggal sama, Masuk dulu baru Keluar
+                ['id', 'asc']
+            ])->values();
+        }
+
+        $data = compact('dari', 'sampai', 'jenisItem', 'semuaJenis', 'mutasi', 'saldoAwal');
+
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.kartu-stok-item-export', $data);
+            return $pdf->download('Kartu_Stok_Item_' . $jenisItem . '_' . $dari . '_' . $sampai . '.pdf');
+        } elseif ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.kartu-stok-item-export', $data), 
+                'Kartu_Stok_Item_' . $jenisItem . '_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.kartu-stok-item', $data);
+    }
 }
