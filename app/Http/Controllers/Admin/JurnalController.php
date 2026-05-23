@@ -86,7 +86,7 @@ class JurnalController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'deskripsi' => 'nullable|string',
-            'bukti_transaksi' => 'nullable|image|max:2048',
+            'bukti_transaksi' => 'nullable|image|max:5120',
             'details' => 'required|array|min:2',
             'details.*.coa_id' => 'required|exists:coa,id',
             'details.*.debit' => 'nullable|numeric|min:0',
@@ -167,7 +167,7 @@ class JurnalController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'deskripsi' => 'nullable|string',
-            'bukti_transaksi' => 'nullable|image|max:2048',
+            'bukti_transaksi' => 'nullable|image|max:5120',
             'details' => 'required|array|min:2',
             'details.*.coa_id' => 'required|exists:coa,id',
             'details.*.debit' => 'nullable|numeric|min:0',

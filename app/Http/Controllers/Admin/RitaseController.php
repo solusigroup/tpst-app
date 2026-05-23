@@ -144,9 +144,9 @@ class RitaseController extends Controller
             'biaya_tipping' => 'nullable|numeric|min:0',
             'status' => 'required|in:masuk,timbang,keluar,selesai',
             'tiket' => 'nullable|string',
-            'foto_tiket' => 'nullable|image|max:2048',
-            'foto_tiket_bruto' => 'nullable|image|max:2048',
-            'foto_tiket_tarra' => 'nullable|image|max:2048',
+            'foto_tiket' => 'nullable|image|max:5120',
+            'foto_tiket_bruto' => 'nullable|image|max:5120',
+            'foto_tiket_tarra' => 'nullable|image|max:5120',
         ]);
 
         if ($request->hasFile('foto_tiket')) {
@@ -193,9 +193,9 @@ class RitaseController extends Controller
             'biaya_tipping' => 'nullable|numeric|min:0',
             'status' => 'required|in:masuk,timbang,keluar,selesai',
             'tiket' => 'nullable|string',
-            'foto_tiket' => 'nullable|image|max:2048',
-            'foto_tiket_bruto' => 'nullable|image|max:2048',
-            'foto_tiket_tarra' => 'nullable|image|max:2048',
+            'foto_tiket' => 'nullable|image|max:5120',
+            'foto_tiket_bruto' => 'nullable|image|max:5120',
+            'foto_tiket_tarra' => 'nullable|image|max:5120',
         ]);
 
         if ($request->hasFile('foto_tiket')) {

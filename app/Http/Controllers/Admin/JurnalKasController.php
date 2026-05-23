@@ -56,7 +56,7 @@ class JurnalKasController extends Controller
             'coa_id' => 'required|exists:coa,id',
             'jumlah' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
-            'bukti_transaksi' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_transaksi' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'contactable_type_id' => 'nullable|string',
         ]);
 
@@ -113,7 +113,7 @@ class JurnalKasController extends Controller
             'coa_id' => 'required|exists:coa,id',
             'jumlah' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
-            'bukti_transaksi' => ($jurnalKas->bukti_transaksi ? 'nullable' : 'required') . '|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_transaksi' => ($jurnalKas->bukti_transaksi ? 'nullable' : 'required') . '|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'contactable_type_id' => 'nullable|string',
         ]);
 

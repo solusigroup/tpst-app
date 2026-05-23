@@ -108,7 +108,7 @@
                         <input type="text" name="tiket" class="form-control" value="{{ old('tiket', $ritase->tiket ?? '') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Foto Timbangan Bruto (Maks 2MB)</label>
+                        <label class="form-label">Foto Timbangan Bruto (Maks 5MB)</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_bruto').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
@@ -133,7 +133,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Foto Timbangan Tarra (Maks 2MB)</label>
+                        <label class="form-label">Foto Timbangan Tarra (Maks 5MB)</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_tarra').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
