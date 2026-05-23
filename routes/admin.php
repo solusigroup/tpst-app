@@ -105,6 +105,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('penjualan', [LaporanController::class, 'laporanPenjualan'])->name('penjualan');
         Route::get('penjualan-per-klien', [LaporanController::class, 'penjualanPerKlien'])->name('penjualan-per-klien');
         Route::get('hasil-pilahan', [LaporanController::class, 'laporanHasilPilahan'])->name('hasil-pilahan');
+        Route::get('kartu-stok-item', [LaporanController::class, 'kartuStokItem'])->name('kartu-stok-item');
         Route::get('residu', [LaporanController::class, 'laporanResidu'])->name('residu');
         Route::get('kehadiran', [LaporanController::class, 'laporanKehadiran'])->name('kehadiran');
         Route::get('upah', [LaporanController::class, 'laporanUpah'])->name('upah');
