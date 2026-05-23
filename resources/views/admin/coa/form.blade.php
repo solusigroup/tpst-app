@@ -24,7 +24,7 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Tipe <span class="text-danger">*</span></label>
-                <select name="tipe" id="tipe" class="form-select @error('tipe') is-invalid @enderror" required onchange="updateKlasifikasi()">
+                <select name="tipe" id="tipe" class="form-select no-search @error('tipe') is-invalid @enderror" required onchange="updateKlasifikasi()">
                     <option value="">-- Pilih --</option>
                     @foreach(['Asset','Liability','Equity','Revenue','Expense'] as $t)
                         <option value="{{ $t }}" {{ old('tipe', $coa->tipe ?? '') == $t ? 'selected' : '' }}>{{ $t }}</option>
@@ -34,7 +34,7 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Klasifikasi <span class="text-danger">*</span></label>
-                <select name="klasifikasi" id="klasifikasi" class="form-select @error('klasifikasi') is-invalid @enderror" required>
+                <select name="klasifikasi" id="klasifikasi" class="form-select no-search @error('klasifikasi') is-invalid @enderror" required>
                     <option value="">-- Pilih Tipe dulu --</option>
                 </select>
                 @error('klasifikasi') <div class="invalid-feedback">{{ $message }}</div> @enderror
