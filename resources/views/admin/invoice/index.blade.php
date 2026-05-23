@@ -64,6 +64,14 @@
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('invoices.print', $item) }}" target="_blank" class="btn btn-outline-success" title="Cetak"><i class="cil-print"></i></a>
                                 <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->id]) }}" class="btn btn-outline-info" title="Buat Jurnal"><i class="cil-book"></i></a>
+                                @if(in_array($item->klien->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($item->status, ['Paid', 'Canceled']))
+                                    <form method="POST" action="{{ route('admin.invoice.send-wa', $item) }}" class="d-inline">
+                                        @csrf
+                                        <button type="submit" onclick="return confirm('Kirim pengingat WhatsApp ke {{ $item->klien->nama_klien ?? '-' }}?')" class="btn btn-outline-success" title="Kirim WA">
+                                            <i class="cib-whatsapp"></i>
+                                        </button>
+                                    </form>
+                                @endif
                                 <a href="{{ route('admin.invoice.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
                                 <form method="POST" action="{{ route('admin.invoice.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                             </div>

@@ -198,6 +198,15 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @if(in_array($invoice->klien->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($invoice->status, ['Paid', 'Canceled']))
+                    <form method="POST" action="{{ route('admin.invoice.send-wa', $invoice) }}" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-success text-white text-start border d-flex justify-content-between align-items-center w-100" onclick="return confirm('Kirim pengingat WhatsApp ke {{ $invoice->klien->nama_klien ?? '-' }}?')">
+                            <span><i class="cib-whatsapp me-2"></i>Kirim Pengingat WA</span>
+                            <i class="cil-chevron-right small text-white-50"></i>
+                        </button>
+                    </form>
+                    @endif
                     <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $invoice->id]) }}" class="btn btn-light text-start border d-flex justify-content-between align-items-center">
                         <span><i class="cil-book me-2"></i>Buat Jurnal Ledger</span>
                         <i class="cil-chevron-right small text-muted"></i>

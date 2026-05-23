@@ -305,4 +305,46 @@ class InvoiceAdminController extends Controller
 
         return back()->with('success', 'Biaya invoice berhasil dihitung ulang.');
     }
+
+    public function sendWhatsappReminder(Invoice $invoice)
+    {
+        Gate::authorize('view_invoice'); // Or create a specific permission for this
+        
+        $invoice->load('klien');
+        $klien = $invoice->klien;
+
+        if (!$klien) {
+            return back()->with('error', 'Klien tidak ditemukan untuk invoice ini.');
+        }
+
+        if (!in_array($klien->jenis, ['Swasta', 'Offtaker'])) {
+            return back()->with('error', 'Pengingat WA hanya dapat dikirim ke klien Swasta dan Offtaker.');
+        }
+
+        if (in_array($invoice->status, ['Paid', 'Canceled'])) {
+            return back()->with('error', 'Tidak dapat mengirim pengingat karena status invoice sudah ' . $invoice->status . '.');
+        }
+
+        if (empty($klien->kontak)) {
+            return back()->with('error', 'Nomor kontak klien belum diisi. Silakan lengkapi data klien terlebih dahulu.');
+        }
+
+        $bulan = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
+        $periode = ($bulan[$invoice->periode_bulan] ?? $invoice->periode_bulan) . ' ' . $invoice->periode_tahun;
+        $totalTagihan = 'Rp ' . number_format($invoice->total_tagihan, 0, ',', '.');
+        $tglJatuhTempo = \Carbon\Carbon::parse($invoice->tanggal_jatuh_tempo)->translatedFormat('d F Y');
+        
+        $pesan = "Halo {$klien->nama_klien},\n\n";
+        $pesan .= "Ini adalah pengingat pembayaran Invoice No *{$invoice->nomor_invoice}* untuk periode *{$periode}* sebesar *{$totalTagihan}*.\n\n";
+        $pesan .= "Harap segera melakukan pembayaran sebelum *{$tglJatuhTempo}*.\n\n";
+        $pesan .= "Terima kasih.";
+
+        $berhasil = \App\Services\WhatsAppService::sendMessage($klien->kontak, $pesan);
+
+        if ($berhasil) {
+            return back()->with('success', 'Pengingat WhatsApp berhasil dikirim ke ' . $klien->nama_klien . '.');
+        } else {
+            return back()->with('error', 'Gagal mengirim pesan WhatsApp. Pastikan token API telah dikonfigurasi dengan benar.');
+        }
+    }
 }
