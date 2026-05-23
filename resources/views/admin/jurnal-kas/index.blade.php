@@ -4,7 +4,12 @@
 @section('content')
 <div class="page-header">
     <div>
-        <h1>Jurnal Kas</h1>
+        <div class="d-flex align-items-center gap-3">
+            <h1>Jurnal Kas</h1>
+            <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 fs-6 rounded-pill shadow-sm">
+                <i class="cil-wallet me-1"></i> Saldo Kas: Rp {{ number_format($saldoKas ?? 0, 0, ',', '.') }}
+            </div>
+        </div>
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Jurnal Kas</li></ol></nav>
     </div>
     <a href="{{ route('admin.jurnal-kas.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah</a>

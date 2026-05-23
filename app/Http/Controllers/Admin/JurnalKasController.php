@@ -25,7 +25,16 @@ class JurnalKasController extends Controller
 
         $jurnalKas = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
-        return view('admin.jurnal-kas.index', compact('jurnalKas'));
+        // Menghitung Saldo Kas saat ini
+        $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+        $saldoKas = 0;
+        if ($kas) {
+            $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('debit');
+            $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('kredit');
+            $saldoKas = $saldoDebit - $saldoKredit;
+        }
+
+        return view('admin.jurnal-kas.index', compact('jurnalKas', 'saldoKas'));
     }
 
     public function create()
