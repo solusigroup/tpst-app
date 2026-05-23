@@ -48,12 +48,20 @@ class WageCalculationController extends Controller
     {
         $this->authorize('view', $wageCalculation);
 
+        $outputIdsInDetails = [];
+        if (is_array($wageCalculation->details)) {
+            $outputIdsInDetails = array_filter(array_column($wageCalculation->details, 'employee_output_id'));
+        }
+
         $outputs = EmployeeOutput::where('user_id', $wageCalculation->user_id)
             ->where('tenant_id', $wageCalculation->tenant_id)
-            ->whereBetween('output_date', [
-                $wageCalculation->week_start,
-                $wageCalculation->week_end
-            ])
+            ->where(function ($query) use ($wageCalculation, $outputIdsInDetails) {
+                $query->whereBetween('output_date', [
+                    $wageCalculation->week_start,
+                    $wageCalculation->week_end
+                ])
+                ->orWhereIn('id', $outputIdsInDetails);
+            })
             ->with(['wasteCategory'])
             ->orderBy('output_date')
             ->get();
@@ -190,12 +198,20 @@ class WageCalculationController extends Controller
     {
         $this->authorize('view', $wageCalculation);
 
+        $outputIdsInDetails = [];
+        if (is_array($wageCalculation->details)) {
+            $outputIdsInDetails = array_filter(array_column($wageCalculation->details, 'employee_output_id'));
+        }
+
         $outputs = EmployeeOutput::where('user_id', $wageCalculation->user_id)
             ->where('tenant_id', $wageCalculation->tenant_id)
-            ->whereBetween('output_date', [
-                $wageCalculation->week_start,
-                $wageCalculation->week_end
-            ])
+            ->where(function ($query) use ($wageCalculation, $outputIdsInDetails) {
+                $query->whereBetween('output_date', [
+                    $wageCalculation->week_start,
+                    $wageCalculation->week_end
+                ])
+                ->orWhereIn('id', $outputIdsInDetails);
+            })
             ->with(['wasteCategory'])
             ->orderBy('output_date')
             ->get();

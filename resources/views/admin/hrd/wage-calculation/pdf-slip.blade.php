@@ -55,15 +55,39 @@
     </tr>
 </table>
 
+@php
+    $isBorongan = ($wageCalculation->user->salary_type ?? 'borongan') === 'borongan';
+    $detailsMap = [];
+    if (is_array($wageCalculation->details)) {
+        foreach ($wageCalculation->details as $detail) {
+            if (isset($detail['employee_output_id'])) {
+                $detailsMap[$detail['employee_output_id']] = $detail;
+            }
+        }
+    }
+@endphp
+
 <h4>Rincian Hasil Output:</h4>
 <table class="data-table">
     <thead>
-        <tr>
-            <th width="50" class="text-center">No</th>
-            <th>Tanggal Output</th>
-            <th>Kategori Sampah</th>
-            <th class="text-end">Kuantitas</th>
-        </tr>
+        @if($isBorongan)
+            <tr>
+                <th width="30" class="text-center">No</th>
+                <th>Tanggal Output</th>
+                <th>Kategori Sampah</th>
+                <th class="text-end">Hasil Pilah</th>
+                <th class="text-end">Terjual</th>
+                <th class="text-end">Tarif</th>
+                <th class="text-end">Total</th>
+            </tr>
+        @else
+            <tr>
+                <th width="50" class="text-center">No</th>
+                <th>Tanggal Output</th>
+                <th>Kategori Sampah</th>
+                <th class="text-end">Kuantitas</th>
+            </tr>
+        @endif
     </thead>
     <tbody>
         @forelse($outputs as $index => $out)
@@ -71,14 +95,38 @@
             <td class="text-center">{{ $index + 1 }}</td>
             <td>{{ \Carbon\Carbon::parse($out->output_date)->format('d/m/Y') }}</td>
             <td>{{ $out->wasteCategory->name ?? '-' }}</td>
-            <td class="text-end">{{ number_format($out->quantity, 2, ',', '.') }} {{ $out->unit }}</td>
+            @if($isBorongan)
+                @php
+                    $detail = $detailsMap[$out->id] ?? null;
+                    $qtyPaid = $detail['quantity_paid'] ?? 0;
+                    $rate = $detail['rate'] ?? 0;
+                    $subtotal = $detail['subtotal'] ?? 0;
+                @endphp
+                <td class="text-end">{{ number_format($out->quantity, 2, ',', '.') }} {{ $out->unit }}</td>
+                <td class="text-end">{{ number_format($qtyPaid, 2, ',', '.') }} {{ $out->unit }}</td>
+                <td class="text-end">Rp {{ number_format($rate, 0, ',', '.') }}</td>
+                <td class="text-end">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+            @else
+                <td class="text-end">{{ number_format($out->quantity, 2, ',', '.') }} {{ $out->unit }}</td>
+            @endif
         </tr>
         @empty
         <tr>
-            <td colspan="4" class="text-center">Tidak ada catatan output pada periode ini.</td>
+            <td colspan="{{ $isBorongan ? 7 : 4 }}" class="text-center">Tidak ada catatan output pada periode ini.</td>
         </tr>
         @endforelse
     </tbody>
+    @if($isBorongan && $outputs->isNotEmpty())
+        <tfoot>
+            <tr style="background-color: #f2f2f2; font-weight: bold;">
+                <td colspan="3" class="text-center">Total Terbayar</td>
+                <td class="text-end">-</td>
+                <td class="text-end">{{ number_format($wageCalculation->total_quantity, 2, ',', '.') }} kg</td>
+                <td class="text-end">-</td>
+                <td class="text-end">Rp {{ number_format($wageCalculation->total_wage, 0, ',', '.') }}</td>
+            </tr>
+        </tfoot>
+    @endif
 </table>
 
 <div class="total-box">

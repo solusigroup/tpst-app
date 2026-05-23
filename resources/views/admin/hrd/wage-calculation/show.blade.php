@@ -122,24 +122,89 @@
         @endif
 
         <div class="card">
-            <div class="card-header bg-white"><strong>Rincian Output Karyawan</strong></div>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <strong>Rincian Output Karyawan</strong>
+                @php
+                    $isBorongan = ($wageCalculation->user->salary_type ?? 'borongan') === 'borongan';
+                    $detailsMap = [];
+                    if (is_array($wageCalculation->details)) {
+                        foreach ($wageCalculation->details as $detail) {
+                            if (isset($detail['employee_output_id'])) {
+                                $detailsMap[$detail['employee_output_id']] = $detail;
+                            }
+                        }
+                    }
+                @endphp
+                @if($isBorongan)
+                    <span class="badge bg-primary">Perhitungan Borongan Aktif</span>
+                @endif
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
-                            <tr><th>Tanggal</th><th>Kategori Sampah</th><th class="text-end">Jumlah</th></tr>
+                            @if($isBorongan)
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kategori Sampah</th>
+                                    <th class="text-end">Hasil Pilah</th>
+                                    <th class="text-end">Terjual (Paid)</th>
+                                    <th class="text-end">Tarif</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            @else
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kategori Sampah</th>
+                                    <th class="text-end">Jumlah</th>
+                                </tr>
+                            @endif
                         </thead>
                         <tbody>
                             @forelse($outputs as $out)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($out->output_date)->format('d/m/Y') }}</td>
                                 <td><span class="badge bg-secondary">{{ $out->wasteCategory->name }}</span></td>
-                                <td class="text-end">{{ number_format($out->quantity, 2, ',', '.') }} {{ $out->unit }}</td>
+                                @if($isBorongan)
+                                    @php
+                                        $detail = $detailsMap[$out->id] ?? null;
+                                        $qtyPaid = $detail['quantity_paid'] ?? 0;
+                                        $rate = $detail['rate'] ?? 0;
+                                        $subtotal = $detail['subtotal'] ?? 0;
+                                    @endphp
+                                    <td class="text-end">{{ number_format($out->quantity, 2, ',', '.') }} {{ $out->unit }}</td>
+                                    <td class="text-end">
+                                        @if($qtyPaid > 0)
+                                            <span class="badge bg-success">{{ number_format($qtyPaid, 2, ',', '.') }} {{ $out->unit }}</span>
+                                        @else
+                                            <span class="badge bg-light text-muted">0,00 {{ $out->unit }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">Rp {{ number_format($rate, 0, ',', '.') }}</td>
+                                    <td class="text-end"><strong>Rp {{ number_format($subtotal, 0, ',', '.') }}</strong></td>
+                                @else
+                                    <td class="text-end">{{ number_format($out->quantity, 2, ',', '.') }} {{ $out->unit }}</td>
+                                @endif
                             </tr>
                             @empty
-                            <tr><td colspan="3" class="text-center py-4 text-body-secondary">Tidak ada catatan output pada periode ini.</td></tr>
+                            <tr>
+                                <td colspan="{{ $isBorongan ? 6 : 3 }}" class="text-center py-4 text-body-secondary">
+                                    Tidak ada catatan output pada periode ini.
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
+                        @if($isBorongan && $outputs->isNotEmpty())
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="2">Total Terbayar</th>
+                                    <th class="text-end">-</th>
+                                    <th class="text-end">{{ number_format($wageCalculation->total_quantity, 2, ',', '.') }} kg</th>
+                                    <th class="text-end">-</th>
+                                    <th class="text-end text-primary">Rp {{ number_format($wageCalculation->total_wage, 0, ',', '.') }}</th>
+                                </tr>
+                            </tfoot>
+                        @endif
                     </table>
                 </div>
             </div>
