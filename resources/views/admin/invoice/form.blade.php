@@ -2,7 +2,14 @@
 @section('title', isset($invoice) ? 'Edit Invoice' : 'Buat Invoice')
 
 @section('content')
-<div class="page-header"><div><h1>{{ isset($invoice) ? 'Edit' : 'Buat' }} Invoice</h1></div></div>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div><h1>{{ isset($invoice) ? 'Edit' : 'Buat' }} Invoice</h1></div>
+    <div>
+        <a href="{{ route('admin.invoice.index') }}" class="btn btn-outline-secondary">
+            <i class="cil-arrow-left me-1"></i> Kembali
+        </a>
+    </div>
+</div>
 <div class="row"><div class="col-lg-8"><div class="card"><div class="card-body">
     <form method="POST" action="{{ isset($invoice) ? route('admin.invoice.update', $invoice) : route('admin.invoice.store') }}">
         @csrf @if(isset($invoice)) @method('PUT') @endif
@@ -142,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check if we are editing an invoice
     const invoiceId = "{{ isset($invoice) ? $invoice->id : '' }}";
+    let isInitialLoad = true;
 
     function formatRupiah(number) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
@@ -230,7 +238,10 @@ document.addEventListener('DOMContentLoaded', function() {
         noItemsDiv.style.display = 'none';
         ritaseList.innerHTML = '';
         penjualanList.innerHTML = '';
-        totalTagihanInput.value = 0; // reset calculated total until fetched
+        
+        if (!invoiceId || !isInitialLoad) {
+            totalTagihanInput.value = 0; // reset calculated total until fetched
+        }
         
         // Reset select all checkboxes
         if (selectAllRitase) selectAllRitase.checked = false;
@@ -292,9 +303,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('.item-checkbox').forEach(cb => {
                         cb.addEventListener('change', calculateTotal);
                     });
-                    // Initial calculation for pre-selected items (during edit mode)
-                    calculateTotal();
+                    
+                    // Initial calculation for pre-selected items
+                    if (!invoiceId || !isInitialLoad) {
+                        calculateTotal();
+                    } else {
+                        updateSelectAllState();
+                    }
                 }
+                
+                isInitialLoad = false;
             })
             .catch(err => {
                 console.error('Error fetching items:', err);
