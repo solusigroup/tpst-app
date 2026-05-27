@@ -65,8 +65,13 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.jurnal-kas.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
-                                <form method="POST" action="{{ route('admin.jurnal-kas.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                @if($item->is_jurnal_umum)
+                                    <a href="{{ route('admin.jurnal.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit Jurnal Umum"><i class="cil-pencil"></i></a>
+                                    <form method="POST" action="{{ route('admin.jurnal.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus Jurnal Umum ini?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                @else
+                                    <a href="{{ route('admin.jurnal-kas.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit Jurnal Kas"><i class="cil-pencil"></i></a>
+                                    <form method="POST" action="{{ route('admin.jurnal-kas.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                @endif
                             </div>
                         </td>
                     </tr>

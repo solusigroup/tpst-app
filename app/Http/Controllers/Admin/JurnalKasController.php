@@ -14,13 +14,37 @@ class JurnalKasController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('view_jurnal_kas');
-        $query = JurnalKas::with('coaLawan');
+        
+        $kasCoas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->pluck('id')->toArray();
+
+        $query = \App\Models\JurnalHeader::with(['jurnalDetails.coa', 'referensi'])
+            ->where(function($q) use ($kasCoas, $request) {
+                // 1. From Jurnal Kas
+                $q->where('referensi_type', \App\Models\JurnalKas::class);
+                
+                if ($request->filled('jenis')) {
+                    $q->whereHasMorph('referensi', [\App\Models\JurnalKas::class], function($jurnalKasQuery) use ($request) {
+                        $jurnalKasQuery->where('tipe', $request->jenis == 'masuk' ? 'Penerimaan' : 'Pengeluaran');
+                    });
+                }
+
+                // 2. From General Journal (Only Kas Masuk)
+                // General journals are included ONLY if we are not filtering exclusively for 'keluar'
+                if ($request->jenis != 'keluar') {
+                    $q->orWhere(function($subQ) use ($kasCoas) {
+                        $subQ->where(function($q3) {
+                            $q3->where('referensi_type', '!=', \App\Models\JurnalKas::class)
+                               ->orWhereNull('referensi_type');
+                        })
+                        ->whereHas('jurnalDetails', function($detailQ) use ($kasCoas) {
+                            $detailQ->whereIn('coa_id', $kasCoas)->where('debit', '>', 0);
+                        });
+                    });
+                }
+            });
 
         if ($request->filled('search')) {
             $query->where('deskripsi', 'like', '%' . $request->search . '%');
-        }
-        if ($request->filled('jenis')) {
-            $query->where('tipe', $request->jenis == 'masuk' ? 'Penerimaan' : 'Pengeluaran');
         }
         if ($request->filled('dari')) {
             $query->whereDate('tanggal', '>=', $request->dari);
@@ -29,7 +53,36 @@ class JurnalKasController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai);
         }
 
-        $jurnalKas = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        $paginator = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+
+        $paginator->getCollection()->transform(function ($header) use ($kasCoas) {
+            if ($header->referensi_type === \App\Models\JurnalKas::class && $header->referensi) {
+                $kas = $header->referensi;
+                $kas->is_jurnal_umum = false;
+                $kas->loadMissing('coaLawan');
+                return $kas;
+            } else {
+                $kasDetail = $header->jurnalDetails->first(fn($d) => in_array($d->coa_id, $kasCoas) && $d->debit > 0);
+                $lawanDetails = $header->jurnalDetails->filter(fn($d) => !in_array($d->coa_id, $kasCoas) || $d->kredit > 0);
+                $lawanDetail = $lawanDetails->first();
+                
+                $virtualKas = new \App\Models\JurnalKas();
+                $virtualKas->id = $header->id; // ID JurnalHeader!
+                $virtualKas->tanggal = $header->tanggal;
+                $virtualKas->tipe = 'Penerimaan';
+                $virtualKas->nominal = $kasDetail ? $kasDetail->debit : 0;
+                $virtualKas->deskripsi = $header->deskripsi;
+                $virtualKas->status = $header->status;
+                $virtualKas->bukti_transaksi = $header->bukti_transaksi;
+                $virtualKas->is_jurnal_umum = true;
+
+                $virtualKas->setRelation('coaLawan', $lawanDetails->count() > 1 ? (object)['nama_akun' => 'Multiple Accounts'] : ($lawanDetail ? $lawanDetail->coa : null));
+
+                return $virtualKas;
+            }
+        });
+
+        $jurnalKas = $paginator;
 
         // Menghitung Saldo Kas saat ini
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
