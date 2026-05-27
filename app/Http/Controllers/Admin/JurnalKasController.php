@@ -29,9 +29,11 @@ class JurnalKasController extends Controller
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
         $saldoKas = 0;
         if ($kas) {
-            $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('debit');
-            $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('kredit');
-            $saldoKas = $saldoDebit - $saldoKredit;
+            $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $kas->id)
+                ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                ->value('saldo') ?? 0;
         }
 
         return view('admin.jurnal-kas.index', compact('jurnalKas', 'saldoKas'));
@@ -75,9 +77,11 @@ class JurnalKasController extends Controller
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
         if ($data['tipe'] === 'Pengeluaran' && $kas) {
-            $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('debit');
-            $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('kredit');
-            $saldoKas = $saldoDebit - $saldoKredit;
+            $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $kas->id)
+                ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                ->value('saldo') ?? 0;
 
             if ($data['nominal'] > $saldoKas) {
                 return back()->withInput()->withErrors(['jumlah' => 'Saldo Kas tidak mencukupi untuk pengeluaran ini. Sisa saldo saat ini: Rp ' . number_format($saldoKas, 0, ',', '.')]);
@@ -135,9 +139,11 @@ class JurnalKasController extends Controller
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
         if ($data['tipe'] === 'Pengeluaran' && $kas) {
-            $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('debit');
-            $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $kas->id)->sum('kredit');
-            $saldoKas = $saldoDebit - $saldoKredit;
+            $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $kas->id)
+                ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                ->value('saldo') ?? 0;
             
             // Mengembalikan efek dari mutasi sebelumnya ke saldo awal
             if ($jurnalKas->tipe === 'Pengeluaran') {
