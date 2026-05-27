@@ -1303,6 +1303,8 @@ class LaporanController extends Controller
         }
 
         return view('admin.laporan.kartu-stok-item', $data);
+    }
+
     public function invoicePerKlien(Request $request)
     {
         Gate::authorize('view_laporan_operasional');
