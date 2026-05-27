@@ -54,6 +54,19 @@ class VendorController extends Controller
         }
     }
 
+    public function show(Vendor $vendor)
+    {
+        Gate::authorize('view_vendor');
+        
+        $hutang = \App\Models\BukuPembantu::with('jurnalHeader')
+            ->where('contactable_type', \App\Models\Vendor::class)
+            ->where('contactable_id', $vendor->id)
+            ->orderByDesc('tanggal')
+            ->get();
+            
+        return view('admin.vendor.show', compact('vendor', 'hutang'));
+    }
+
     public function edit(Vendor $vendor)
     {
         Gate::authorize('update_vendor');

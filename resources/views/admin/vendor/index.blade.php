@@ -50,7 +50,11 @@
                 <tbody>
                     @forelse($vendors as $item)
                     <tr>
-                        <td><strong>{{ $item->nama_vendor }}</strong></td>
+                        <td>
+                            <a href="{{ route('admin.vendor.show', $item) }}" class="text-decoration-none fw-bold">
+                                {{ $item->nama_vendor }}
+                            </a>
+                        </td>
                         <td>{{ $item->kontak ?? '-' }}</td>
                         <td>{{ $item->alamat ?? '-' }}</td>
                         <td>{{ $item->created_at?->format('d/m/Y H:i') }}</td>
