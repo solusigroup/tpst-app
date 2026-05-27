@@ -316,6 +316,7 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $coaId = $request->get('coa_id');
 
+        $sortDate = $request->get('sort_date', 'asc');
         $query = JurnalDetail::query()
             ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
             ->join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
@@ -328,7 +329,7 @@ class LaporanController extends Controller
                 'jurnal_header.tanggal', 'jurnal_header.deskripsi',
                 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe',
             ])
-            ->orderBy('jurnal_header.tanggal')
+            ->orderBy('jurnal_header.tanggal', $sortDate)
             ->orderBy('jurnal_header.id')
             ->orderBy('jurnal_detail.id');
 
@@ -348,7 +349,7 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'title');
+            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'title', 'sortDate');
             
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.buku-besar-export', $data);
@@ -385,7 +386,7 @@ class LaporanController extends Controller
                 ->where('jurnal_detail.coa_id', $coaId)
                 ->whereDate('jurnal_header.tanggal', '>=', $dari)
                 ->whereDate('jurnal_header.tanggal', '<=', $sampai)
-                ->orderBy('jurnal_header.tanggal')
+                ->orderBy('jurnal_header.tanggal', $sortDate)
                 ->orderBy('jurnal_header.id')
                 ->orderBy('jurnal_detail.id')
                 ->take($offset)
@@ -400,7 +401,7 @@ class LaporanController extends Controller
             }
         }
 
-        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal', 'title'));
+        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal', 'title', 'sortDate'));
     }
 
     public function bukuKas(Request $request)
@@ -434,6 +435,7 @@ class LaporanController extends Controller
         $status = $request->get('status');
         $isApproved = $request->get('is_approved');
 
+        $sortDate = $request->get('sort_date', 'desc');
         $query = Ritase::with(['armada', 'klien'])
             ->when($dari, fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
@@ -455,7 +457,7 @@ class LaporanController extends Controller
             })
             ->when($status, fn ($q) => $q->where('ritase.status', $status))
             ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('ritase.is_approved', $isApproved))
-            ->orderByDesc('ritase.waktu_masuk');
+            ->orderBy('ritase.waktu_masuk', $sortDate);
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_bruto) as total_bruto, SUM(berat_tarra) as total_tarra, SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
 
@@ -477,7 +479,7 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis');
+            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.ritase-export', $data);
@@ -491,7 +493,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis'));
+        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate'));
     }
 
     public function rekapRitase(Request $request)
@@ -618,6 +620,7 @@ class LaporanController extends Controller
             $klien = \App\Models\Klien::find($klienId);
         }
 
+        $sortDate = $request->get('sort_date', 'asc');
         $baseQuery = Ritase::with(['klien'])
             ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('is_approved', $isApproved))
             ->whereYear('waktu_masuk', $tahun)
@@ -636,7 +639,7 @@ class LaporanController extends Controller
 
         $rekapHarian = (clone $baseQuery)->reorder()->selectRaw('DATE(waktu_masuk) as tanggal, COUNT(*) as total_ritase, SUM(berat_netto) as total_netto')
             ->groupBy(DB::raw('DATE(waktu_masuk)'))
-            ->orderBy(DB::raw('DATE(waktu_masuk)'))
+            ->orderBy(DB::raw('DATE(waktu_masuk)'), $sortDate)
             ->get();
 
         $grandTotalRitase = $rekapHarian->sum('total_ritase');
@@ -644,7 +647,7 @@ class LaporanController extends Controller
 
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
 
-        $data = compact('bulan', 'tahun', 'klienId', 'isApproved', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto');
+        $data = compact('bulan', 'tahun', 'klienId', 'isApproved', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto', 'sortDate');
 
         if ($request->export === 'excel') {
             return \Maatwebsite\Excel\Facades\Excel::download(
@@ -668,16 +671,18 @@ class LaporanController extends Controller
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
 
+        $sortDate = $request->get('sort_date', 'desc');
+        $sortDate = $request->get('sort_date', 'asc');
         $query = Penjualan::with('klien')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
-            ->orderByDesc('tanggal');
+            ->orderBy('tanggal', $sortDate);
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_kg) as total_berat, SUM(total_harga) as total_harga, COUNT(*) as total_rows')->first();
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'dari', 'sampai', 'totals');
+            $data = compact('rows', 'dari', 'sampai', 'totals', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.penjualan-export', $data);
@@ -691,7 +696,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.penjualan', compact('rows', 'dari', 'sampai', 'totals'));
+        return view('admin.laporan.penjualan', compact('rows', 'dari', 'sampai', 'totals', 'sortDate'));
     }
 
     public function penjualanPerKlien(Request $request)
@@ -704,6 +709,8 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $klienId = $request->get('klien_id');
 
+        $sortDate = $request->get('sort_date', 'desc');
+        $sortDate = $request->get('sort_date', 'asc');
         $query = Penjualan::with('klien')
             ->whereHas('klien', fn ($q) => $q->where('jenis', 'Offtaker'))
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
@@ -711,7 +718,7 @@ class LaporanController extends Controller
             ->when($klienId, fn ($q) => $q->where('klien_id', $klienId));
 
         $penjualan = $query->orderBy('klien_id')
-            ->orderBy('tanggal')
+            ->orderBy('tanggal', $sortDate)
             ->get();
 
         $grouped = $penjualan->groupBy('klien_id');
@@ -731,7 +738,7 @@ class LaporanController extends Controller
         }
 
         $kliens = Klien::where('jenis', 'Offtaker')->orderBy('nama_klien')->get();
-        $data = compact('reports', 'dari', 'sampai', 'klienId', 'kliens');
+        $data = compact('reports', 'dari', 'sampai', 'klienId', 'kliens', 'sortDate');
 
         if ($request->export === 'pdf') {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.penjualan-per-klien-export', $data);
@@ -752,12 +759,13 @@ class LaporanController extends Controller
         $kategori = $request->get('kategori');
         $userId = $request->get('user_id');
 
+        $sortDate = $request->get('sort_date', 'desc');
         $query = HasilPilahan::with(['wasteCategory.wageRates'])
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
-            ->orderByDesc('tanggal');
+            ->orderBy('tanggal', $sortDate);
 
         $rows = $query->paginate(20)->withQueryString();
         $totals = (clone $query)->reorder()->selectRaw('SUM(tonase) as total_tonase, SUM(jml_bal) as total_bal, COUNT(*) as total_rows')->first();
@@ -831,7 +839,7 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees');
+            $data = compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.hasil-pilahan-export', $data);
@@ -845,7 +853,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees'));
+        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees', 'sortDate'));
     }
 
     public function laporanResidu(Request $request)
@@ -857,16 +865,17 @@ class LaporanController extends Controller
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
 
+        $sortDate = $request->get('sort_date', 'desc');
         $query = PengangkutanResidu::with('armada')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
-            ->orderByDesc('tanggal');
+            ->orderBy('tanggal', $sortDate);
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_netto) as total_netto, SUM(biaya_retribusi) as total_biaya, COUNT(*) as total_rows')->first();
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'dari', 'sampai', 'totals');
+            $data = compact('rows', 'dari', 'sampai', 'totals', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.residu-export', $data);
@@ -881,7 +890,7 @@ class LaporanController extends Controller
 
         $rows = $query->paginate(20)->withQueryString();
 
-        return view('admin.laporan.residu', compact('rows', 'dari', 'sampai', 'totals'));
+        return view('admin.laporan.residu', compact('rows', 'dari', 'sampai', 'totals', 'sortDate'));
     }
 
     public function laporanKehadiran(Request $request)
@@ -906,6 +915,7 @@ class LaporanController extends Controller
             $sampai = $sampai ?: now()->format('Y-m-d');
         }
 
+        $sortDate = $request->get('sort_date', 'desc');
         $query = \App\Models\Attendance::with('user')
             ->join('users', 'attendances.user_id', '=', 'users.id')
             ->select('attendances.*')
@@ -913,7 +923,7 @@ class LaporanController extends Controller
             ->when($sampai, fn ($q) => $q->whereDate('attendance_date', '<=', $sampai))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->when($salaryType, fn ($q) => $q->where('users.salary_type', $salaryType))
-            ->orderByDesc('attendance_date');
+            ->orderBy('attendance_date', $sortDate);
 
         $totals = (object)[
             'present' => (clone $query)->where('status', 'present')->count(),
@@ -944,7 +954,7 @@ class LaporanController extends Controller
             }
 
             if ($request->export === 'pdf' || $request->export === 'excel') {
-                $data = compact('rekapData', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year');
+                $data = compact('rekapData', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year', 'sortDate');
                 if ($request->export === 'pdf') {
                     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.attendance-rekap-export', $data)->setPaper('a4', 'landscape');
                     return $pdf->download('Rekap_Kehadiran_' . $dari . '_' . $sampai . '.pdf');
@@ -952,12 +962,12 @@ class LaporanController extends Controller
                 // Excel rekap can be added here if needed
             }
 
-            return view('admin.laporan.attendance-rekap', compact('rekapData', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year'));
+            return view('admin.laporan.attendance-rekap', compact('rekapData', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year', 'sortDate'));
         }
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals');
+            $data = compact('rows', 'users', 'dari', 'sampai', 'userId', 'totals', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.attendance-export', $data);
@@ -971,7 +981,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year', 'totals'));
+        return view('admin.laporan.attendance', compact('rows', 'users', 'dari', 'sampai', 'userId', 'salaryType', 'mode', 'month', 'year', 'totals', 'sortDate'));
     }
 
     public function laporanUpah(Request $request, $skema = null)
@@ -995,6 +1005,7 @@ class LaporanController extends Controller
             $sampai = $sampai ?: now()->format('Y-m-d');
         }
 
+        $sortDate = $request->get('sort_date', 'desc');
         $query = WageCalculation::with('user')
             ->join('users', 'wage_calculations.user_id', '=', 'users.id')
             ->select('wage_calculations.*')
@@ -1005,7 +1016,7 @@ class LaporanController extends Controller
                 if ($status === 'paid') return $q->where('wage_calculations.status', 'paid');
                 if ($status === 'unpaid') return $q->where('wage_calculations.status', '!=', 'paid');
             })
-            ->orderByDesc('week_start');
+            ->orderBy('week_start', $sortDate);
 
         $totals = (object)[
             'total_wage' => (clone $query)->sum('total_wage'),
@@ -1034,7 +1045,7 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data = compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title');
+            $data = compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.upah-export', $data);
@@ -1068,7 +1079,7 @@ class LaporanController extends Controller
         }
 
         $title = "Laporan Upah " . ($skemaUpah ? ucfirst($skemaUpah) : "Karyawan");
-        return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title'));
+        return view('admin.laporan.upah', compact('rows', 'dari', 'sampai', 'month', 'year', 'skemaUpah', 'status', 'totals', 'title', 'sortDate'));
     }
 
     public function kartuStokItem(Request $request)

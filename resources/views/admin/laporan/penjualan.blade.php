@@ -25,7 +25,14 @@
     <form method="GET" class="row g-2 align-items-end">
         <div class="col-auto"><label class="form-label mb-0 small text-body-secondary">Dari</label><input type="date" name="dari" class="form-control" value="{{ $dari }}"></div>
         <div class="col-auto"><label class="form-label mb-0 small text-body-secondary">Sampai</label><input type="date" name="sampai" class="form-control" value="{{ $sampai }}"></div>
-        <div class="col-auto"><button class="btn btn-primary" type="submit"><i class="cil-filter me-1"></i> Filter</button></div>
+                <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Urutan Tanggal</label>
+            <select name="sort_date" class="form-select">
+                <option value="desc" {{ (isset($sortDate) && $sortDate == 'desc') ? 'selected' : '' }}>Terbaru (Descending)</option>
+                <option value="asc" {{ (isset($sortDate) && $sortDate == 'asc') ? 'selected' : '' }}>Terlama (Ascending)</option>
+            </select>
+        </div>
+<div class="col-auto"><button class="btn btn-primary" type="submit"><i class="cil-filter me-1"></i> Filter</button></div>
     </form>
 </div></div>
 

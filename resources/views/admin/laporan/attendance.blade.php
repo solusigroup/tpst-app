@@ -83,7 +83,14 @@
                     <option value="rekap" {{ $mode == 'rekap' ? 'selected' : '' }}>REKAP BULANAN</option>
                 </select>
             </div>
-            <div class="col-auto">
+                    <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Urutan Tanggal</label>
+            <select name="sort_date" class="form-select">
+                <option value="desc" {{ (isset($sortDate) && $sortDate == 'desc') ? 'selected' : '' }}>Terbaru (Descending)</option>
+                <option value="asc" {{ (isset($sortDate) && $sortDate == 'asc') ? 'selected' : '' }}>Terlama (Ascending)</option>
+            </select>
+        </div>
+<div class="col-auto">
                 <button class="btn btn-primary" type="submit">
                     <i class="cil-filter me-1"></i> Filter
                 </button>
