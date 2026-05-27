@@ -22,6 +22,12 @@ class JurnalKasController extends Controller
         if ($request->filled('jenis')) {
             $query->where('tipe', $request->jenis == 'masuk' ? 'Penerimaan' : 'Pengeluaran');
         }
+        if ($request->filled('dari')) {
+            $query->whereDate('tanggal', '>=', $request->dari);
+        }
+        if ($request->filled('sampai')) {
+            $query->whereDate('tanggal', '<=', $request->sampai);
+        }
 
         $jurnalKas = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 

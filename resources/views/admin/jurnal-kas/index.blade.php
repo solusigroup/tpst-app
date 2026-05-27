@@ -17,12 +17,24 @@
 <div class="card">
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
-            <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari deskripsi..." value="{{ request('search') }}"></div>
             <div class="col-auto">
-                <select name="jenis" class="form-select"><option value="">Semua</option><option value="masuk" {{ request('jenis')=='masuk'?'selected':'' }}>Kas Masuk</option><option value="keluar" {{ request('jenis')=='keluar'?'selected':'' }}>Kas Keluar</option></select>
+                <label class="form-label small text-muted mb-1">Dari Tanggal</label>
+                <input type="date" name="dari" class="form-control form-control-sm" value="{{ request('dari') }}">
             </div>
-            <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button></div>
-            @if(request()->hasAny(['search','jenis']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            <div class="col-auto">
+                <label class="form-label small text-muted mb-1">Sampai Tanggal</label>
+                <input type="date" name="sampai" class="form-control form-control-sm" value="{{ request('sampai') }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label small text-muted mb-1">Cari Keterangan</label>
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari deskripsi..." value="{{ request('search') }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label small text-muted mb-1">Jenis</label>
+                <select name="jenis" class="form-select form-select-sm"><option value="">Semua</option><option value="masuk" {{ request('jenis')=='masuk'?'selected':'' }}>Kas Masuk</option><option value="keluar" {{ request('jenis')=='keluar'?'selected':'' }}>Kas Keluar</option></select>
+            </div>
+            <div class="col-auto"><button class="btn btn-sm btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
+            @if(request()->hasAny(['search','jenis','dari','sampai']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
