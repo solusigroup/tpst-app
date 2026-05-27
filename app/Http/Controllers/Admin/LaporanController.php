@@ -25,48 +25,90 @@ class LaporanController extends Controller
     public function labaRugi(Request $request)
     {
         try {
-        Gate::authorize('view_laporan_keuangan');
-        
-        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
-        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+            Gate::authorize('view_laporan_keuangan');
+            
+            $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+            $sampai = $request->get('sampai', now()->format('Y-m-d'));
+            
+            $penyajian = $request->get('penyajian', 'single');
+            $dariPembanding = $request->get('dari_pembanding', now()->subMonth()->startOfMonth()->format('Y-m-d'));
+            $sampaiPembanding = $request->get('sampai_pembanding', now()->subMonth()->endOfMonth()->format('Y-m-d'));
 
-        $query = Coa::query()
-            ->select([
-                'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
-                DB::raw("CASE
-                    WHEN coa.tipe = 'Revenue' THEN COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0)
-                    WHEN coa.tipe = 'Expense' THEN COALESCE(SUM(jd.debit), 0) - COALESCE(SUM(jd.kredit), 0)
-                    ELSE 0
-                END as saldo"),
-            ])
-            ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
-            ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
-            ->whereIn('coa.tipe', ['Revenue', 'Expense'])
-            ->where('jh.status', 'posted')
-            ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
-            ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
-            ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
-            ->orderBy('coa.kode_akun')
-            ->get();
+            $queryCurrent = DB::table('coa')
+                ->select([
+                    'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
+                    DB::raw("CASE
+                        WHEN coa.tipe = 'Revenue' THEN COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0)
+                        WHEN coa.tipe = 'Expense' THEN COALESCE(SUM(jd.debit), 0) - COALESCE(SUM(jd.kredit), 0)
+                        ELSE 0
+                    END as saldo"),
+                ])
+                ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
+                ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->whereIn('coa.tipe', ['Revenue', 'Expense'])
+                ->where('jh.status', 'posted')
+                ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
+                ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
+                ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
+                ->get()->keyBy('id');
 
-        $pendapatan = $query->where('tipe', 'Revenue');
-        $beban = $query->where('tipe', 'Expense');
-        $totalPendapatan = $pendapatan->sum('saldo');
-        $totalBeban = $beban->sum('saldo');
-        $labaRugiBersih = $totalPendapatan - $totalBeban;
-        $data = compact('pendapatan', 'beban', 'totalPendapatan', 'totalBeban', 'labaRugiBersih', 'dari', 'sampai');
+            $queryPembanding = collect();
+            if ($penyajian === 'komparatif') {
+                $queryPembanding = DB::table('coa')
+                    ->select([
+                        'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
+                        DB::raw("CASE
+                            WHEN coa.tipe = 'Revenue' THEN COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0)
+                            WHEN coa.tipe = 'Expense' THEN COALESCE(SUM(jd.debit), 0) - COALESCE(SUM(jd.kredit), 0)
+                            ELSE 0
+                        END as saldo"),
+                    ])
+                    ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
+                    ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                    ->whereIn('coa.tipe', ['Revenue', 'Expense'])
+                    ->where('jh.status', 'posted')
+                    ->when($dariPembanding, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dariPembanding))
+                    ->when($sampaiPembanding, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampaiPembanding))
+                    ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
+                    ->get()->keyBy('id');
+            }
 
-        if ($request->export === 'pdf') {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.laba-rugi-export', $data);
-            return $pdf->download('Laba_Rugi_' . $dari . '_' . $sampai . '.pdf');
-        } elseif ($request->export === 'excel') {
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new \App\Exports\LaporanExcelExport('admin.laporan.exports.laba-rugi-export', $data), 
-                'Laba_Rugi_' . $dari . '_' . $sampai . '.xlsx'
+            $allCoaIds = $queryCurrent->keys()->merge($queryPembanding->keys())->unique();
+            $coas = Coa::whereIn('id', $allCoaIds)->orderBy('kode_akun')->get();
+
+            foreach ($coas as $coa) {
+                $coa->saldo = isset($queryCurrent[$coa->id]) ? $queryCurrent[$coa->id]->saldo : 0;
+                $coa->saldo_pembanding = isset($queryPembanding[$coa->id]) ? $queryPembanding[$coa->id]->saldo : 0;
+            }
+
+            $pendapatan = $coas->where('tipe', 'Revenue');
+            $beban = $coas->where('tipe', 'Expense');
+            
+            $totalPendapatan = $pendapatan->sum('saldo');
+            $totalBeban = $beban->sum('saldo');
+            $labaRugiBersih = $totalPendapatan - $totalBeban;
+
+            $totalPendapatanPembanding = $pendapatan->sum('saldo_pembanding');
+            $totalBebanPembanding = $beban->sum('saldo_pembanding');
+            $labaRugiBersihPembanding = $totalPendapatanPembanding - $totalBebanPembanding;
+
+            $data = compact(
+                'pendapatan', 'beban', 'totalPendapatan', 'totalBeban', 'labaRugiBersih', 
+                'dari', 'sampai', 'penyajian', 'dariPembanding', 'sampaiPembanding',
+                'totalPendapatanPembanding', 'totalBebanPembanding', 'labaRugiBersihPembanding'
             );
-        }
 
-        return view('admin.laporan.laba-rugi', $data);
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.laba-rugi-export', $data);
+                return $pdf->download('Laba_Rugi_' . $dari . '_' . $sampai . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.laba-rugi-export', $data), 
+                    'Laba_Rugi_' . $dari . '_' . $sampai . '.xlsx'
+                );
+            }
+
+            return view('admin.laporan.laba-rugi', $data);
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -122,8 +164,10 @@ class LaporanController extends Controller
         Gate::authorize('view_laporan_keuangan');
 
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $penyajian = $request->get('penyajian', 'single');
+        $sampaiPembanding = $request->get('sampai_pembanding', now()->subYear()->endOfYear()->format('Y-m-d'));
 
-        $query = Coa::query()
+        $queryCurrent = DB::table('coa')
             ->select([
                 'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
                 DB::raw("CASE
@@ -137,14 +181,40 @@ class LaporanController extends Controller
             ->where('jh.status', 'posted')
             ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
             ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
-            ->orderBy('coa.kode_akun')
-            ->get();
+            ->get()->keyBy('id');
 
-        $asetLancar = $query->where('klasifikasi', 'Aset Lancar');
-        $asetTidakLancar = $query->where('klasifikasi', 'Aset Tidak Lancar');
-        $liabilitasJP = $query->where('klasifikasi', 'Liabilitas Jangka Pendek');
-        $liabilitasJPj = $query->where('klasifikasi', 'Liabilitas Jangka Panjang');
-        $ekuitas = $query->where('klasifikasi', 'Ekuitas');
+        $queryPembanding = collect();
+        if ($penyajian === 'komparatif') {
+            $queryPembanding = DB::table('coa')
+                ->select([
+                    'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
+                    DB::raw("CASE
+                        WHEN coa.tipe = 'Asset' THEN COALESCE(SUM(jd.debit), 0) - COALESCE(SUM(jd.kredit), 0)
+                        ELSE COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0)
+                    END as saldo"),
+                ])
+                ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
+                ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->whereIn('coa.tipe', ['Asset', 'Liability', 'Equity'])
+                ->where('jh.status', 'posted')
+                ->when($sampaiPembanding, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampaiPembanding))
+                ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
+                ->get()->keyBy('id');
+        }
+
+        $allCoaIds = $queryCurrent->keys()->merge($queryPembanding->keys())->unique();
+        $coas = Coa::whereIn('id', $allCoaIds)->orderBy('kode_akun')->get();
+
+        foreach ($coas as $coa) {
+            $coa->saldo = isset($queryCurrent[$coa->id]) ? $queryCurrent[$coa->id]->saldo : 0;
+            $coa->saldo_pembanding = isset($queryPembanding[$coa->id]) ? $queryPembanding[$coa->id]->saldo : 0;
+        }
+
+        $asetLancar = $coas->where('klasifikasi', 'Aset Lancar');
+        $asetTidakLancar = $coas->where('klasifikasi', 'Aset Tidak Lancar');
+        $liabilitasJP = $coas->where('klasifikasi', 'Liabilitas Jangka Pendek');
+        $liabilitasJPj = $coas->where('klasifikasi', 'Liabilitas Jangka Panjang');
+        $ekuitas = $coas->where('klasifikasi', 'Ekuitas');
 
         // Menghitung Laba/Rugi Berjalan untuk diseimbangkan ke Ekuitas
         $labaRugi = DB::table('jurnal_detail as jd')
@@ -156,6 +226,18 @@ class LaporanController extends Controller
             ->selectRaw("COALESCE(SUM(CASE WHEN coa.tipe = 'Revenue' THEN jd.kredit - jd.debit ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN coa.tipe = 'Expense' THEN jd.debit - jd.kredit ELSE 0 END), 0) as laba_rugi")
             ->value('laba_rugi') ?? 0;
 
+        $labaRugiPembanding = 0;
+        if ($penyajian === 'komparatif') {
+            $labaRugiPembanding = DB::table('jurnal_detail as jd')
+                ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->join('coa', 'jd.coa_id', '=', 'coa.id')
+                ->where('jh.status', 'posted')
+                ->whereIn('coa.tipe', ['Revenue', 'Expense'])
+                ->when($sampaiPembanding, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampaiPembanding))
+                ->selectRaw("COALESCE(SUM(CASE WHEN coa.tipe = 'Revenue' THEN jd.kredit - jd.debit ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN coa.tipe = 'Expense' THEN jd.debit - jd.kredit ELSE 0 END), 0) as laba_rugi")
+                ->value('laba_rugi') ?? 0;
+        }
+
         $totalAsetLancar = $asetLancar->sum('saldo');
         $totalAsetTidakLancar = $asetTidakLancar->sum('saldo');
         $totalAset = $totalAsetLancar + $totalAsetTidakLancar;
@@ -166,11 +248,25 @@ class LaporanController extends Controller
         $totalEkuitas = $ekuitas->sum('saldo') + $labaRugi;
         $totalLiabilitasEkuitas = $totalLiabilitas + $totalEkuitas;
 
+        $totalAsetLancarPembanding = $asetLancar->sum('saldo_pembanding');
+        $totalAsetTidakLancarPembanding = $asetTidakLancar->sum('saldo_pembanding');
+        $totalAsetPembanding = $totalAsetLancarPembanding + $totalAsetTidakLancarPembanding;
+
+        $totalLiabilitasJPPembanding = $liabilitasJP->sum('saldo_pembanding');
+        $totalLiabilitasJPjPembanding = $liabilitasJPj->sum('saldo_pembanding');
+        $totalLiabilitasPembanding = $totalLiabilitasJPPembanding + $totalLiabilitasJPjPembanding;
+        $totalEkuitasPembanding = $ekuitas->sum('saldo_pembanding') + $labaRugiPembanding;
+        $totalLiabilitasEkuitasPembanding = $totalLiabilitasPembanding + $totalEkuitasPembanding;
+
         $data = compact(
             'asetLancar', 'asetTidakLancar', 'liabilitasJP', 'liabilitasJPj', 'ekuitas', 'labaRugi',
             'totalAsetLancar', 'totalAsetTidakLancar', 'totalAset',
             'totalLiabilitasJP', 'totalLiabilitasJPj', 'totalLiabilitas',
-            'totalEkuitas', 'totalLiabilitasEkuitas', 'sampai'
+            'totalEkuitas', 'totalLiabilitasEkuitas', 'sampai',
+            'penyajian', 'sampaiPembanding',
+            'labaRugiPembanding', 'totalAsetLancarPembanding', 'totalAsetTidakLancarPembanding', 'totalAsetPembanding',
+            'totalLiabilitasJPPembanding', 'totalLiabilitasJPjPembanding', 'totalLiabilitasPembanding',
+            'totalEkuitasPembanding', 'totalLiabilitasEkuitasPembanding'
         );
 
         if ($request->export === 'pdf') {
