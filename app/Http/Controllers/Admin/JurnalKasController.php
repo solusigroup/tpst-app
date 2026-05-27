@@ -53,7 +53,8 @@ class JurnalKasController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai);
         }
 
-        $paginator = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        $sortDirection = $request->input('sort') === 'asc' ? 'asc' : 'desc';
+        $paginator = $query->orderBy('tanggal', $sortDirection)->paginate(15)->withQueryString();
 
         $paginator->getCollection()->transform(function ($header) use ($kasCoas) {
             if ($header->referensi_type === \App\Models\JurnalKas::class && $header->referensi) {

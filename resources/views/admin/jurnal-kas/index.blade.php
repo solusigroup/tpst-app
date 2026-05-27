@@ -33,8 +33,15 @@
                 <label class="form-label small text-muted mb-1">Jenis</label>
                 <select name="jenis" class="form-select form-select-sm"><option value="">Semua</option><option value="masuk" {{ request('jenis')=='masuk'?'selected':'' }}>Kas Masuk</option><option value="keluar" {{ request('jenis')=='keluar'?'selected':'' }}>Kas Keluar</option></select>
             </div>
+            <div class="col-auto">
+                <label class="form-label small text-muted mb-1">Urutkan</label>
+                <select name="sort" class="form-select form-select-sm">
+                    <option value="desc" {{ request('sort') != 'asc' ? 'selected' : '' }}>Terbaru</option>
+                    <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Terlama</option>
+                </select>
+            </div>
             <div class="col-auto"><button class="btn btn-sm btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
-            @if(request()->hasAny(['search','jenis','dari','sampai']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','jenis','dari','sampai','sort']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
