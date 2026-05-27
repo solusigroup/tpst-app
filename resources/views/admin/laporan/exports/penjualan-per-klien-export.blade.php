@@ -53,18 +53,18 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                     <td>{{ $item->jenis_produk }}</td>
-                    <td class="text-end">{{ number_format($item->berat_kg, 2, ',', '.') }}</td>
-                    <td class="text-end">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
-                    <td class="text-end fw-bold">{{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                    <td class="text-end">{{ (request('export') == 'excel' ? ($item->berat_kg) : number_format($item->berat_kg, 2, ',', '.')) }}</td>
+                    <td class="text-end">{{ (request('export') == 'excel' ? ($item->harga_satuan) : number_format($item->harga_satuan, 0, ',', '.')) }}</td>
+                    <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($item->total_harga) : number_format($item->total_harga, 0, ',', '.')) }}</td>
                 </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr class="fw-bold">
                     <td colspan="3" class="text-end uppercase" style="font-size: 8pt;">Total Per Klien</td>
-                    <td class="text-end">{{ number_format($report->total_berat, 2, ',', '.') }} kg</td>
+                    <td class="text-end">{{ (request('export') == 'excel' ? ($report->total_berat) : number_format($report->total_berat, 2, ',', '.')) }} kg</td>
                     <td></td>
-                    <td class="text-end">Rp {{ number_format($report->total_nominal, 0, ',', '.') }}</td>
+                    <td class="text-end">Rp {{ (request('export') == 'excel' ? ($report->total_nominal) : number_format($report->total_nominal, 0, ',', '.')) }}</td>
                 </tr>
             </tfoot>
         </table>

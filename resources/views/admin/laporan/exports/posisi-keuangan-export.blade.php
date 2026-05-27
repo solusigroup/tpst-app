@@ -16,12 +16,12 @@
                 @foreach($asetLancar as $item)
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($item->saldo, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
                 </tr>
                 @endforeach
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px;">Total Aset Lancar</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ number_format($totalAsetLancar, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($totalAsetLancar) : number_format($totalAsetLancar, 0, ',', '.')) }}</td>
                 </tr>
             </table>
 
@@ -30,19 +30,19 @@
                 @foreach($asetTidakLancar as $item)
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($item->saldo, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
                 </tr>
                 @endforeach
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px;">Total Aset Tidak Lancar</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ number_format($totalAsetTidakLancar, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($totalAsetTidakLancar) : number_format($totalAsetTidakLancar, 0, ',', '.')) }}</td>
                 </tr>
             </table>
 
             <table style="width: 100%; border-collapse: collapse; border-top: 2px solid #333; margin-top: 15px;">
                 <tr>
                     <td style="font-weight: bold; font-size: 13px; padding-top: 5px;">TOTAL ASET</td>
-                    <td style="font-weight: bold; font-size: 13px; text-align: right; padding-top: 5px;">Rp {{ number_format($totalAset, 0, ',', '.') }}</td>
+                    <td style="font-weight: bold; font-size: 13px; text-align: right; padding-top: 5px;">Rp {{ (request('export') == 'excel' ? ($totalAset) : number_format($totalAset, 0, ',', '.')) }}</td>
                 </tr>
             </table>
         </td>
@@ -55,12 +55,12 @@
                 @foreach($liabilitasJP as $item)
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($item->saldo, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
                 </tr>
                 @endforeach
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px;">Total Liabilitas JP</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ number_format($totalLiabilitasJP, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($totalLiabilitasJP) : number_format($totalLiabilitasJP, 0, ',', '.')) }}</td>
                 </tr>
             </table>
 
@@ -69,12 +69,12 @@
                 @foreach($liabilitasJPj as $item)
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($item->saldo, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
                 </tr>
                 @endforeach
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px;">Total Liabilitas JPj</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ number_format($totalLiabilitasJPj, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($totalLiabilitasJPj) : number_format($totalLiabilitasJPj, 0, ',', '.')) }}</td>
                 </tr>
             </table>
 
@@ -83,16 +83,16 @@
                 @foreach($ekuitas as $item)
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($item->saldo, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
                 </tr>
                 @endforeach
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px;">Laba/Rugi Berjalan</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ number_format($labaRugi ?? 0, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($labaRugi ?? 0) : number_format($labaRugi ?? 0, 0, ',', '.')) }}</td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px;">Total Ekuitas</td>
-                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ number_format($totalEkuitas, 0, ',', '.') }}</td>
+                    <td style="border: 1px solid #ddd; padding: 3px; font-weight: bold; font-size: 11px; text-align: right;">{{ (request('export') == 'excel' ? ($totalEkuitas) : number_format($totalEkuitas, 0, ',', '.')) }}</td>
                 </tr>
             </table>
 
@@ -100,7 +100,7 @@
                 <tr>
                     <td style="font-weight: bold; font-size: 13px; padding-top: 5px;">TOTAL LIA + EKUITAS</td>
                     <td style="font-weight: bold; font-size: 13px; text-align: right; padding-top: 5px; {{ abs($totalAset - $totalLiabilitasEkuitas) < 0.01 ? 'color: #198754;' : 'color: #dc3545;' }}">
-                        Rp {{ number_format($totalLiabilitasEkuitas, 0, ',', '.') }}
+                        Rp {{ (request('export') == 'excel' ? ($totalLiabilitasEkuitas) : number_format($totalLiabilitasEkuitas, 0, ',', '.')) }}
                     </td>
                 </tr>
             </table>

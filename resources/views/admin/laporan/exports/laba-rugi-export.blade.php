@@ -12,14 +12,14 @@
         @foreach($pendapatan as $item)
         <tr>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">Rp {{ number_format($item->saldo, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">Rp {{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot>
         <tr>
             <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold;">Total Pendapatan</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right; color: #198754; font-weight: bold;">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right; color: #198754; font-weight: bold;">Rp {{ (request('export') == 'excel' ? ($totalPendapatan) : number_format($totalPendapatan, 0, ',', '.')) }}</td>
         </tr>
     </tfoot>
 </table>
@@ -30,14 +30,14 @@
         @foreach($beban as $item)
         <tr>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $item->kode_akun }} - {{ $item->nama_akun }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">Rp {{ number_format($item->saldo, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">Rp {{ (request('export') == 'excel' ? ($item->saldo) : number_format($item->saldo, 0, ',', '.')) }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot>
         <tr>
             <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold;">Total Beban</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right; color: #dc3545; font-weight: bold;">Rp {{ number_format($totalBeban, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right; color: #dc3545; font-weight: bold;">Rp {{ (request('export') == 'excel' ? ($totalBeban) : number_format($totalBeban, 0, ',', '.')) }}</td>
         </tr>
     </tfoot>
 </table>
@@ -46,7 +46,7 @@
     <tr>
         <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold; font-size: 14px;">LABA/RUGI BERSIH</td>
         <td style="border: 1px solid #ddd; padding: 10px; text-align: right; font-weight: bold; font-size: 14px; {{ $labaRugiBersih >= 0 ? 'color: #198754;' : 'color: #dc3545;' }}">
-            Rp {{ number_format($labaRugiBersih, 0, ',', '.') }}
+            Rp {{ (request('export') == 'excel' ? ($labaRugiBersih) : number_format($labaRugiBersih, 0, ',', '.')) }}
         </td>
     </tr>
 </table>

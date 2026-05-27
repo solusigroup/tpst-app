@@ -26,8 +26,8 @@
         @foreach($rekapPerJenis as $rj)
         <tr>
             <td>{{ $rj->jenis }}</td>
-            <td class="text-center">{{ number_format($rj->total_ritase, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($rj->total_netto, 2, ',', '.') }}</td>
+            <td class="text-center">{{ (request('export') == 'excel' ? ($rj->total_ritase) : number_format($rj->total_ritase, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($rj->total_netto) : number_format($rj->total_netto, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $rj->total_tipping }}</td>
         </tr>
         @endforeach
@@ -35,8 +35,8 @@
     <tfoot class="fw-bold">
         <tr style="background-color: #f0f0f0;">
             <td>TOTAL</td>
-            <td class="text-center">{{ number_format($grandTotals->total_ritase ?? 0, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($grandTotals->total_netto ?? 0, 2, ',', '.') }}</td>
+            <td class="text-center">{{ (request('export') == 'excel' ? ($grandTotals->total_ritase ?? 0) : number_format($grandTotals->total_ritase ?? 0, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($grandTotals->total_netto ?? 0) : number_format($grandTotals->total_netto ?? 0, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $grandTotals->total_tipping ?? 0 }}</td>
         </tr>
     </tfoot>
@@ -70,12 +70,12 @@
             <td class="text-center">{{ \Carbon\Carbon::parse($row['tanggal'])->format('d/m/Y') }}</td>
             @foreach($jenisTypes as $jt)
             @php $cell = $row['jenis'][$jt] ?? null; @endphp
-            <td class="text-center" style="border-left: 1px solid #ccc;">{{ $cell ? number_format($cell['total_ritase'], 0, ',', '.') : '-' }}</td>
-            <td class="text-end">{{ $cell ? number_format($cell['total_netto'], 2, ',', '.') : '-' }}</td>
+            <td class="text-center" style="border-left: 1px solid #ccc;">{{ $cell ? (request('export') == 'excel' ? ($cell['total_ritase']) : number_format($cell['total_ritase'], 0, ',', '.')) : '-' }}</td>
+            <td class="text-end">{{ $cell ? (request('export') == 'excel' ? ($cell['total_netto']) : number_format($cell['total_netto'], 2, ',', '.')) : '-' }}</td>
             <td class="text-end">{{ $cell ? $cell['total_tipping'] : '-' }}</td>
             @endforeach
-            <td class="text-center fw-bold" style="border-left: 2px solid #999;">{{ number_format($row['total_ritase'], 0, ',', '.') }}</td>
-            <td class="text-end fw-bold">{{ number_format($row['total_netto'], 2, ',', '.') }}</td>
+            <td class="text-center fw-bold" style="border-left: 2px solid #999;">{{ (request('export') == 'excel' ? ($row['total_ritase']) : number_format($row['total_ritase'], 0, ',', '.')) }}</td>
+            <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($row['total_netto']) : number_format($row['total_netto'], 2, ',', '.')) }}</td>
             <td class="text-end fw-bold">{{ $row['total_tipping'] }}</td>
         </tr>
         @endforeach
@@ -85,12 +85,12 @@
             <td class="text-center">TOTAL</td>
             @foreach($jenisTypes as $jt)
             @php $jtRekap = $rekapPerJenis->firstWhere('jenis', $jt); @endphp
-            <td class="text-center" style="border-left: 1px solid #ccc;">{{ $jtRekap ? number_format($jtRekap->total_ritase, 0, ',', '.') : '-' }}</td>
-            <td class="text-end">{{ $jtRekap ? number_format($jtRekap->total_netto, 2, ',', '.') : '-' }}</td>
+            <td class="text-center" style="border-left: 1px solid #ccc;">{{ $jtRekap ? (request('export') == 'excel' ? ($jtRekap->total_ritase) : number_format($jtRekap->total_ritase, 0, ',', '.')) : '-' }}</td>
+            <td class="text-end">{{ $jtRekap ? (request('export') == 'excel' ? ($jtRekap->total_netto) : number_format($jtRekap->total_netto, 2, ',', '.')) : '-' }}</td>
             <td class="text-end">{{ $jtRekap ? $jtRekap->total_tipping : '-' }}</td>
             @endforeach
-            <td class="text-center" style="border-left: 2px solid #999;">{{ number_format($grandTotals->total_ritase ?? 0, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($grandTotals->total_netto ?? 0, 2, ',', '.') }}</td>
+            <td class="text-center" style="border-left: 2px solid #999;">{{ (request('export') == 'excel' ? ($grandTotals->total_ritase ?? 0) : number_format($grandTotals->total_ritase ?? 0, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($grandTotals->total_netto ?? 0) : number_format($grandTotals->total_netto ?? 0, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $grandTotals->total_tipping ?? 0 }}</td>
         </tr>
     </tfoot>
@@ -116,20 +116,20 @@
             <td class="text-center">{{ $index + 1 }}</td>
             <td>{{ $rk->nama_klien }}</td>
             <td>{{ $rk->jenis }}</td>
-            <td class="text-center">{{ number_format($rk->total_ritase, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($rk->total_netto, 2, ',', '.') }}</td>
+            <td class="text-center">{{ (request('export') == 'excel' ? ($rk->total_ritase) : number_format($rk->total_ritase, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($rk->total_netto) : number_format($rk->total_netto, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $rk->total_tipping }}</td>
-            <td class="text-end">{{ $rk->total_ritase > 0 ? number_format($rk->total_netto / $rk->total_ritase, 2, ',', '.') : '-' }}</td>
+            <td class="text-end">{{ $rk->total_ritase > 0 ? (request('export') == 'excel' ? ($rk->total_netto / $rk->total_ritase) : number_format($rk->total_netto / $rk->total_ritase, 2, ',', '.')) : '-' }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot class="fw-bold">
         <tr style="background-color: #f0f0f0;">
             <td colspan="3" class="text-end">TOTAL</td>
-            <td class="text-center">{{ number_format($grandTotals->total_ritase ?? 0, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($grandTotals->total_netto ?? 0, 2, ',', '.') }}</td>
+            <td class="text-center">{{ (request('export') == 'excel' ? ($grandTotals->total_ritase ?? 0) : number_format($grandTotals->total_ritase ?? 0, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($grandTotals->total_netto ?? 0) : number_format($grandTotals->total_netto ?? 0, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $grandTotals->total_tipping ?? 0 }}</td>
-            <td class="text-end">{{ ($grandTotals->total_ritase ?? 0) > 0 ? number_format(($grandTotals->total_netto ?? 0) / $grandTotals->total_ritase, 2, ',', '.') : '-' }}</td>
+            <td class="text-end">{{ ($grandTotals->total_ritase ?? 0) > 0 ? (request('export') == 'excel' ? (($grandTotals->total_netto ?? 0) : number_format(($grandTotals->total_netto ?? 0, 0, ',', '.')) / $grandTotals->total_ritase, 2, ',', '.') : '-' }}</td>
         </tr>
     </tfoot>
 </table>

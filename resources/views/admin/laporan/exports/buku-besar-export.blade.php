@@ -29,8 +29,8 @@
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $r->kode_akun }}</td>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $r->nama_akun }}</td>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $r->deskripsi }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ $r->debit > 0 ? number_format($r->debit, 0, ',', '.') : '-' }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ $r->kredit > 0 ? number_format($r->kredit, 0, ',', '.') : '-' }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ $r->debit > 0 ? (request('export') == 'excel' ? ($r->debit) : number_format($r->debit, 0, ',', '.')) : '-' }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ $r->kredit > 0 ? (request('export') == 'excel' ? ($r->kredit) : number_format($r->kredit, 0, ',', '.')) : '-' }}</td>
         </tr>
         @endforeach
     </tbody>

@@ -26,18 +26,18 @@
         <tr>
             <td>{{ $stok->kategori }}</td>
             <td>{{ $stok->jenis }}</td>
-            <td class="text-end">{{ number_format($stok->total_pilahan, 2, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($stok->total_terjual, 2, ',', '.') }}</td>
-            <td class="text-end fw-bold">{{ number_format($stok->sisa_stok, 2, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($stok->total_pilahan) : number_format($stok->total_pilahan, 2, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($stok->total_terjual) : number_format($stok->total_terjual, 2, ',', '.')) }}</td>
+            <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($stok->sisa_stok) : number_format($stok->sisa_stok, 2, ',', '.')) }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot class="fw-bold">
         <tr>
             <td colspan="2" class="text-end">TOTAL KESELURUHAN</td>
-            <td class="text-end">{{ number_format($summaryTotals->total_pilahan, 2, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($summaryTotals->total_terjual, 2, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($summaryTotals->sisa_stok, 2, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->total_pilahan) : number_format($summaryTotals->total_pilahan, 2, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->total_terjual) : number_format($summaryTotals->total_terjual, 2, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->sisa_stok) : number_format($summaryTotals->sisa_stok, 2, ',', '.')) }}</td>
         </tr>
     </tfoot>
 </table>
@@ -70,18 +70,18 @@
             <td>{{ $r->kategori }}</td>
             <td>{{ $r->jenis }}</td>
             <td>{{ $r->officer }}</td>
-            <td class="text-end">{{ number_format($r->tonase, 2, ',', '.') }}</td>
-            <td class="text-end">{{ $rate ? number_format($rate->rate_per_unit, 0, ',', '.') : '-' }}</td>
-            <td class="text-end">{{ $wage ? number_format($wage, 0, ',', '.') : '-' }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($r->tonase) : number_format($r->tonase, 2, ',', '.')) }}</td>
+            <td class="text-end">{{ $rate ? (request('export') == 'excel' ? ($rate->rate_per_unit) : number_format($rate->rate_per_unit, 0, ',', '.')) : '-' }}</td>
+            <td class="text-end">{{ $wage ? (request('export') == 'excel' ? ($wage) : number_format($wage, 0, ',', '.')) : '-' }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot class="fw-bold">
         <tr>
             <td colspan="5" class="text-end">TOTAL LOG</td>
-            <td class="text-end">{{ number_format($totals->total_tonase ?? 0, 2, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($totals->total_tonase ?? 0) : number_format($totals->total_tonase ?? 0, 2, ',', '.')) }}</td>
             <td></td>
-            <td class="text-end">{{ number_format($exportTotalWage, 0, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($exportTotalWage) : number_format($exportTotalWage, 0, ',', '.')) }}</td>
         </tr>
     </tfoot>
 </table>

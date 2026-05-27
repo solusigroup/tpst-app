@@ -26,9 +26,9 @@
             <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}</td>
             <td>{{ $r->klien->nama_klien ?? '-' }}</td>
             <td>{{ $r->jenis_produk }}</td>
-            <td class="text-end">{{ number_format($r->berat_kg, 2, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($r->harga_satuan, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($r->total_harga, 0, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($r->berat_kg) : number_format($r->berat_kg, 2, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($r->harga_satuan) : number_format($r->harga_satuan, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($r->total_harga) : number_format($r->total_harga, 0, ',', '.')) }}</td>
             <td>{{ $r->status_invoice ?? 'Unbilled' }}</td>
         </tr>
         @endforeach
@@ -36,9 +36,9 @@
     <tfoot class="fw-bold">
         <tr>
             <td colspan="4" class="text-end">TOTAL</td>
-            <td class="text-end">{{ number_format($totals->total_berat ?? 0, 2, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($totals->total_berat ?? 0) : number_format($totals->total_berat ?? 0, 2, ',', '.')) }}</td>
             <td></td>
-            <td class="text-end">Rp {{ number_format($totals->total_harga ?? 0, 0, ',', '.') }}</td>
+            <td class="text-end">Rp {{ (request('export') == 'excel' ? ($totals->total_harga ?? 0) : number_format($totals->total_harga ?? 0, 0, ',', '.')) }}</td>
             <td></td>
         </tr>
     </tfoot>

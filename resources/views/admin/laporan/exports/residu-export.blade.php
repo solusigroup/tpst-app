@@ -27,10 +27,10 @@
             <td>{{ $row->nomor_tiket }}</td>
             <td>{{ $row->tanggal->format('d/m/Y') }}</td>
             <td>{{ $row->armada->plat_nomor }}</td>
-            <td class="text-end">{{ number_format($row->berat_bruto, 0, ',', '.') }}</td>
-            <td class="text-end">{{ number_format($row->berat_tarra, 0, ',', '.') }}</td>
-            <td class="text-end fw-bold">{{ number_format($row->berat_netto, 0, ',', '.') }}</td>
-            <td class="text-end">Rp {{ number_format($row->biaya_retribusi, 0, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($row->berat_bruto) : number_format($row->berat_bruto, 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($row->berat_tarra) : number_format($row->berat_tarra, 0, ',', '.')) }}</td>
+            <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($row->berat_netto) : number_format($row->berat_netto, 0, ',', '.')) }}</td>
+            <td class="text-end">Rp {{ (request('export') == 'excel' ? ($row->biaya_retribusi) : number_format($row->biaya_retribusi, 0, ',', '.')) }}</td>
             <td>{{ $row->tujuan }}</td>
         </tr>
         @endforeach
@@ -38,8 +38,8 @@
     <tfoot class="fw-bold" style="background-color: #f8f9fa;">
         <tr>
             <td colspan="6" class="text-end">TOTAL</td>
-            <td class="text-end">{{ number_format($totals->total_netto, 0, ',', '.') }}</td>
-            <td class="text-end">Rp {{ number_format($totals->total_biaya, 0, ',', '.') }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($totals->total_netto) : number_format($totals->total_netto, 0, ',', '.')) }}</td>
+            <td class="text-end">Rp {{ (request('export') == 'excel' ? ($totals->total_biaya) : number_format($totals->total_biaya, 0, ',', '.')) }}</td>
             <td></td>
         </tr>
     </tfoot>

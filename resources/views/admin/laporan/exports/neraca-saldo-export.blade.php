@@ -21,10 +21,10 @@
         <tr>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $row->kode_akun }}</td>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $row->nama_akun }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ number_format($row->total_debit, 0, ',', '.') }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ number_format($row->total_kredit, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ (request('export') == 'excel' ? ($row->total_debit) : number_format($row->total_debit, 0, ',', '.')) }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ (request('export') == 'excel' ? ($row->total_kredit) : number_format($row->total_kredit, 0, ',', '.')) }}</td>
             <td style="border: 1px solid #ddd; padding: 5px; text-align: right; font-weight: bold;">
-                {{ number_format($row->saldo, 0, ',', '.') }}
+                {{ (request('export') == 'excel' ? ($row->saldo) : number_format($row->saldo, 0, ',', '.')) }}
             </td>
         </tr>
         @endforeach
@@ -32,10 +32,10 @@
     <tfoot>
         <tr>
             <td colspan="2" style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">TOTAL</td>
-            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">{{ number_format($totalDebit, 0, ',', '.') }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">{{ number_format($totalKredit, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">{{ (request('export') == 'excel' ? ($totalDebit) : number_format($totalDebit, 0, ',', '.')) }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">{{ (request('export') == 'excel' ? ($totalKredit) : number_format($totalKredit, 0, ',', '.')) }}</td>
             <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">
-                {{ number_format($totalDebit - $totalKredit, 0, ',', '.') }}
+                {{ (request('export') == 'excel' ? ($totalDebit - $totalKredit) : number_format($totalDebit - $totalKredit, 0, ',', '.')) }}
             </td>
         </tr>
     </tfoot>
