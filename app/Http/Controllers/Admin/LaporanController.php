@@ -1303,5 +1303,65 @@ class LaporanController extends Controller
         }
 
         return view('admin.laporan.kartu-stok-item', $data);
+    public function invoicePerKlien(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+
+        $query = \App\Models\Invoice::with('klien')
+            ->whereDate('tanggal_invoice', '>=', $dari)
+            ->whereDate('tanggal_invoice', '<=', $sampai)
+            ->selectRaw('klien_id, COUNT(id) as jumlah_invoice, SUM(total_tagihan) as total_tagihan, SUM(uang_muka) as total_dibayar, SUM(total_tagihan - uang_muka) as sisa_tagihan')
+            ->groupBy('klien_id')
+            ->get();
+
+        $totalTagihan = $query->sum('total_tagihan');
+        $totalDibayar = $query->sum('total_dibayar');
+        $totalSisa = $query->sum('sisa_tagihan');
+        $totalInvoice = $query->sum('jumlah_invoice');
+
+        return view('admin.laporan.invoice.per-klien', compact('query', 'dari', 'sampai', 'totalTagihan', 'totalDibayar', 'totalSisa', 'totalInvoice'));
+    }
+
+    public function invoicePerStatus(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+
+        $query = \App\Models\Invoice::whereDate('tanggal_invoice', '>=', $dari)
+            ->whereDate('tanggal_invoice', '<=', $sampai)
+            ->selectRaw('status, COUNT(id) as jumlah_invoice, SUM(total_tagihan) as total_tagihan, SUM(uang_muka) as total_dibayar, SUM(total_tagihan - uang_muka) as sisa_tagihan')
+            ->groupBy('status')
+            ->get();
+
+        $totalTagihan = $query->sum('total_tagihan');
+        $totalDibayar = $query->sum('total_dibayar');
+        $totalSisa = $query->sum('sisa_tagihan');
+        $totalInvoice = $query->sum('jumlah_invoice');
+
+        return view('admin.laporan.invoice.per-status', compact('query', 'dari', 'sampai', 'totalTagihan', 'totalDibayar', 'totalSisa', 'totalInvoice'));
+    }
+
+    public function invoicePerJenis(Request $request)
+    {
+        Gate::authorize('view_laporan_operasional');
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+
+        $query = \App\Models\Invoice::join('klien', 'invoices.klien_id', '=', 'klien.id')
+            ->whereDate('invoices.tanggal_invoice', '>=', $dari)
+            ->whereDate('invoices.tanggal_invoice', '<=', $sampai)
+            ->selectRaw('klien.jenis_tarif, COUNT(invoices.id) as jumlah_invoice, SUM(invoices.total_tagihan) as total_tagihan, SUM(invoices.uang_muka) as total_dibayar, SUM(invoices.total_tagihan - invoices.uang_muka) as sisa_tagihan')
+            ->groupBy('klien.jenis_tarif')
+            ->get();
+
+        $totalTagihan = $query->sum('total_tagihan');
+        $totalDibayar = $query->sum('total_dibayar');
+        $totalSisa = $query->sum('sisa_tagihan');
+        $totalInvoice = $query->sum('jumlah_invoice');
+
+        return view('admin.laporan.invoice.per-jenis', compact('query', 'dari', 'sampai', 'totalTagihan', 'totalDibayar', 'totalSisa', 'totalInvoice'));
     }
 }

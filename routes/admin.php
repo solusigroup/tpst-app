@@ -112,6 +112,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('upah/borongan', [LaporanController::class, 'laporanUpah'])->name('upah.borongan')->defaults('skema', 'borongan');
         Route::get('upah/bulanan', [LaporanController::class, 'laporanUpah'])->name('upah.bulanan')->defaults('skema', 'bulanan');
         Route::get('upah/harian', [LaporanController::class, 'laporanUpah'])->name('upah.harian')->defaults('skema', 'harian');
+        Route::get('invoice/per-klien', [LaporanController::class, 'invoicePerKlien'])->name('invoice.per-klien');
+        Route::get('invoice/per-status', [LaporanController::class, 'invoicePerStatus'])->name('invoice.per-status');
+        Route::get('invoice/per-jenis', [LaporanController::class, 'invoicePerJenis'])->name('invoice.per-jenis');
     });
 
     // HRD

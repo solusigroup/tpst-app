@@ -676,6 +676,17 @@
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.kehadiran') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.kehadiran') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Kehadiran</a>
                     </li>
                     @endcanany
+                    @can('view_laporan_operasional')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.invoice.per-klien') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.invoice.per-klien') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Invoice Per Klien</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.invoice.per-status') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.invoice.per-status') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Invoice Per Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.invoice.per-jenis') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.invoice.per-jenis') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Invoice Per Jenis</a>
+                    </li>
+                    @endcan
                 </ul>
             </li>
             @endcanany
