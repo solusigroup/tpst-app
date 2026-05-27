@@ -1312,7 +1312,7 @@ class LaporanController extends Controller
         $query = \App\Models\Invoice::with('klien')
             ->whereDate('tanggal_invoice', '>=', $dari)
             ->whereDate('tanggal_invoice', '<=', $sampai)
-            ->selectRaw('klien_id, COUNT(id) as jumlah_invoice, SUM(total_tagihan) as total_tagihan, SUM(uang_muka) as total_dibayar, SUM(total_tagihan - uang_muka) as sisa_tagihan')
+            ->selectRaw('klien_id, COUNT(id) as jumlah_invoice, COALESCE(SUM(total_tagihan), 0) as total_tagihan, COALESCE(SUM(uang_muka), 0) as total_dibayar, COALESCE(SUM(total_tagihan - COALESCE(uang_muka, 0)), 0) as sisa_tagihan')
             ->groupBy('klien_id')
             ->get();
 
@@ -1332,7 +1332,7 @@ class LaporanController extends Controller
 
         $query = \App\Models\Invoice::whereDate('tanggal_invoice', '>=', $dari)
             ->whereDate('tanggal_invoice', '<=', $sampai)
-            ->selectRaw('status, COUNT(id) as jumlah_invoice, SUM(total_tagihan) as total_tagihan, SUM(uang_muka) as total_dibayar, SUM(total_tagihan - uang_muka) as sisa_tagihan')
+            ->selectRaw('status, COUNT(id) as jumlah_invoice, COALESCE(SUM(total_tagihan), 0) as total_tagihan, COALESCE(SUM(uang_muka), 0) as total_dibayar, COALESCE(SUM(total_tagihan - COALESCE(uang_muka, 0)), 0) as sisa_tagihan')
             ->groupBy('status')
             ->get();
 
@@ -1353,7 +1353,7 @@ class LaporanController extends Controller
         $query = \App\Models\Invoice::join('klien', 'invoices.klien_id', '=', 'klien.id')
             ->whereDate('invoices.tanggal_invoice', '>=', $dari)
             ->whereDate('invoices.tanggal_invoice', '<=', $sampai)
-            ->selectRaw('klien.jenis_tarif, COUNT(invoices.id) as jumlah_invoice, SUM(invoices.total_tagihan) as total_tagihan, SUM(invoices.uang_muka) as total_dibayar, SUM(invoices.total_tagihan - invoices.uang_muka) as sisa_tagihan')
+            ->selectRaw('klien.jenis_tarif, COUNT(invoices.id) as jumlah_invoice, COALESCE(SUM(invoices.total_tagihan), 0) as total_tagihan, COALESCE(SUM(invoices.uang_muka), 0) as total_dibayar, COALESCE(SUM(invoices.total_tagihan - COALESCE(invoices.uang_muka, 0)), 0) as sisa_tagihan')
             ->groupBy('klien.jenis_tarif')
             ->get();
 
