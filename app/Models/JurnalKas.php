@@ -117,7 +117,7 @@ class JurnalKas extends Model
     {
         JurnalHeader::where('referensi_type', self::class)
             ->where('referensi_id', $this->id)
-            ->delete();
+            ->get()->each->delete();
     }
 
     public function coaKas(): BelongsTo
