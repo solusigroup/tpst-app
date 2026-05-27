@@ -771,13 +771,29 @@ class LaporanController extends Controller
         $totals = (clone $query)->reorder()->selectRaw('SUM(tonase) as total_tonase, SUM(jml_bal) as total_bal, COUNT(*) as total_rows')->first();
 
         // Stock Summary Logic
+        $masukSebelum = HasilPilahan::selectRaw('kategori, jenis, SUM(tonase) as gross_tonase')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '<', $dari))
+            ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->groupBy('kategori', 'jenis')
+            ->get()
+            ->keyBy('jenis');
+
+        $keluarSebelum = DB::table('penjualan')
+            ->selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '<', $dari))
+            ->groupBy('jenis_produk')
+            ->get()
+            ->keyBy('jenis_produk');
+
         $pilahanAgg = HasilPilahan::selectRaw('kategori, jenis, SUM(tonase) as gross_tonase')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->groupBy('kategori', 'jenis')
-            ->get();
+            ->get()
+            ->keyBy('jenis');
 
         $penjualanAgg = DB::table('penjualan')
             ->selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
@@ -797,32 +813,59 @@ class LaporanController extends Controller
             ->keyBy('jenis');
 
         $stokSummary = [];
+        $totalStokAwalAll = 0;
         $totalPilahanAll = 0;
         $totalTerjualAll = 0;
         $totalPaidAll = 0;
         $totalSisaAll = 0;
 
+        $allJenisData = [];
+        foreach ($masukSebelum as $item) {
+            $allJenisData[$item->jenis] = ['kategori' => $item->kategori, 'jenis' => $item->jenis];
+        }
         foreach ($pilahanAgg as $item) {
-            $jual = isset($penjualanAgg[$item->jenis]) ? $penjualanAgg[$item->jenis]->total_keluar : 0;
-            $paid = isset($upahAgg[$item->jenis]) ? $upahAgg[$item->jenis]->total_paid : 0;
-            $sisa = $item->gross_tonase - $jual;
+            $allJenisData[$item->jenis] = ['kategori' => $item->kategori, 'jenis' => $item->jenis];
+        }
+        $allJenisData = collect($allJenisData)->sortBy('kategori')->values();
+
+        foreach ($allJenisData as $item) {
+            $jenis = $item['jenis'];
             
+            $inSebelum = isset($masukSebelum[$jenis]) ? $masukSebelum[$jenis]->gross_tonase : 0;
+            $outSebelum = isset($keluarSebelum[$jenis]) ? $keluarSebelum[$jenis]->total_keluar : 0;
+            $stokAwal = $inSebelum - $outSebelum;
+            if ($stokAwal < 0) $stokAwal = 0;
+
+            $jual = isset($penjualanAgg[$jenis]) ? $penjualanAgg[$jenis]->total_keluar : 0;
+            $paid = isset($upahAgg[$jenis]) ? $upahAgg[$jenis]->total_paid : 0;
+            $pilahan = isset($pilahanAgg[$jenis]) ? $pilahanAgg[$jenis]->gross_tonase : 0;
+            
+            $sisa = $stokAwal + $pilahan - $jual;
+            if ($sisa < 0) $sisa = 0;
+
+            if ($stokAwal == 0 && $pilahan == 0 && $jual == 0 && $sisa == 0) {
+                continue;
+            }
+
             $stokSummary[] = (object)[
-                'kategori' => $item->kategori,
-                'jenis' => $item->jenis,
-                'total_pilahan' => $item->gross_tonase,
+                'kategori' => $item['kategori'],
+                'jenis' => $jenis,
+                'stok_awal' => $stokAwal,
+                'total_pilahan' => $pilahan,
                 'total_terjual' => $jual,
                 'total_paid_wage' => $paid,
                 'sisa_stok' => $sisa
             ];
 
-            $totalPilahanAll += $item->gross_tonase;
+            $totalStokAwalAll += $stokAwal;
+            $totalPilahanAll += $pilahan;
             $totalTerjualAll += $jual;
             $totalPaidAll += $paid;
             $totalSisaAll += $sisa;
         }
 
         $summaryTotals = (object)[
+            'stok_awal' => $totalStokAwalAll,
             'total_pilahan' => $totalPilahanAll,
             'total_terjual' => $totalTerjualAll,
             'total_paid_wage' => $totalPaidAll,

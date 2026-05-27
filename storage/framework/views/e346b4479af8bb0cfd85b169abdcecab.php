@@ -620,6 +620,12 @@
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.buku-besar') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.buku-besar')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Besar</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.buku-kas') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.buku-kas')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Kas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan.buku-bank') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan.buku-bank')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Buku Bank Jatim</a>
+                    </li>
                 </ul>
             </li>
             <?php endif; ?>
@@ -655,6 +661,9 @@
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_hasil_pilahan'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.hasil-pilahan') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.hasil-pilahan')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Hasil Pilahan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo e(request()->routeIs('admin.laporan-operasional.kartu-stok-item') ? 'active' : ''); ?>" href="<?php echo e(route('admin.laporan-operasional.kartu-stok-item')); ?>"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Kartu Stok Item</a>
                     </li>
                     <?php endif; ?>
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['view_laporan_operasional', 'view_laporan_residu'])): ?>

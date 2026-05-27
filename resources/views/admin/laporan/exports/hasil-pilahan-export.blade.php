@@ -16,6 +16,7 @@
         <tr style="background-color: #f0f0f0;">
             <th>Kategori</th>
             <th>Jenis</th>
+            <th class="text-end">Stok Awal (kg)</th>
             <th class="text-end">Total Pilahan (kg)</th>
             <th class="text-end">Terjual (kg)</th>
             <th class="text-end">Sisa Stok (kg)</th>
@@ -26,6 +27,7 @@
         <tr>
             <td>{{ $stok->kategori }}</td>
             <td>{{ $stok->jenis }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($stok->stok_awal) : number_format($stok->stok_awal, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($stok->total_pilahan) : number_format($stok->total_pilahan, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($stok->total_terjual) : number_format($stok->total_terjual, 2, ',', '.')) }}</td>
             <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($stok->sisa_stok) : number_format($stok->sisa_stok, 2, ',', '.')) }}</td>
@@ -35,6 +37,7 @@
     <tfoot class="fw-bold">
         <tr>
             <td colspan="2" class="text-end">TOTAL KESELURUHAN</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->stok_awal) : number_format($summaryTotals->stok_awal, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->total_pilahan) : number_format($summaryTotals->total_pilahan, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->total_terjual) : number_format($summaryTotals->total_terjual, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->sisa_stok) : number_format($summaryTotals->sisa_stok, 2, ',', '.')) }}</td>
