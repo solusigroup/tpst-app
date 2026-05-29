@@ -45,6 +45,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('ritase/export-rekap', [RitaseController::class, 'exportRekap'])->name('ritase.export-rekap');
     Route::get('ritase/asal-sampah', [RitaseController::class, 'asalSampahByKlien'])->name('ritase.asal-sampah');
     Route::resource('ritase', RitaseController::class);
+    Route::post('ritase/bulk-approve', [RitaseController::class, 'bulkApprove'])->name('ritase.bulk-approve');
     Route::post('ritase/{ritase}/approve', [RitaseController::class, 'approve'])->name('ritase.approve');
     Route::post('ritase/{ritase}/post', [RitaseController::class, 'post'])->name('ritase.post');
     Route::get('klien/export-excel', [KlienController::class, 'exportExcel'])->name('klien.export-excel');

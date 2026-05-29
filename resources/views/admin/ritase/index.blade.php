@@ -9,6 +9,13 @@
     </div>
     </div>
     <div class="d-flex gap-2">
+        <form id="bulk-approve-form" action="{{ route('admin.ritase.bulk-approve') }}" method="POST" class="d-none">
+            @csrf
+            <input type="hidden" name="ritase_ids" id="bulk-ritase-ids">
+        </form>
+        <button type="button" id="btn-bulk-approve" class="btn btn-warning" style="display:none;" onclick="submitBulkApprove()">
+            <i class="cil-check-circle me-1"></i> Approve Kolektif (<span id="bulk-count">0</span>)
+        </button>
         <a href="{{ route('admin.ritase.export-rekap', request()->all()) }}" class="btn btn-danger" target="_blank"><i class="cil-print me-1"></i> Cetak Rekap (PDF)</a>
         <a href="{{ route('admin.ritase.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah Ritase</a>
     </div>
@@ -65,6 +72,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 40px;"><input type="checkbox" id="checkAll" class="form-check-input"></th>
                         <th>No. Tiket</th>
                         <th>Armada</th>
                         <th>Klien</th>
@@ -82,6 +90,11 @@
                 <tbody>
                     @forelse($ritase as $item)
                     <tr>
+                        <td>
+                            @if(!$item->is_approved)
+                                <input type="checkbox" class="form-check-input ritase-checkbox" value="{{ $item->id }}">
+                            @endif
+                        </td>
                         <td><strong>{{ $item->nomor_tiket ?? '-' }}</strong></td>
                         <td>{{ $item->armada->plat_nomor ?? '-' }}</td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
@@ -130,7 +143,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                    <tr><td colspan="13" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -141,3 +154,53 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkAll = document.getElementById('checkAll');
+    const checkboxes = document.querySelectorAll('.ritase-checkbox');
+    const btnBulkApprove = document.getElementById('btn-bulk-approve');
+    const bulkCount = document.getElementById('bulk-count');
+    const bulkRitaseIds = document.getElementById('bulk-ritase-ids');
+    const bulkForm = document.getElementById('bulk-approve-form');
+
+    function updateBulkButton() {
+        const checked = Array.from(checkboxes).filter(cb => cb.checked);
+        bulkCount.innerText = checked.length;
+        if (checked.length > 0) {
+            btnBulkApprove.style.display = 'inline-block';
+        } else {
+            btnBulkApprove.style.display = 'none';
+        }
+    }
+
+    if (checkAll) {
+        checkAll.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = checkAll.checked);
+            updateBulkButton();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+            const someChecked = Array.from(checkboxes).some(c => c.checked);
+            checkAll.checked = allChecked;
+            checkAll.indeterminate = someChecked && !allChecked;
+            updateBulkButton();
+        });
+    });
+
+    window.submitBulkApprove = function() {
+        const checked = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        if (checked.length === 0) return;
+        
+        if (confirm(`Yakin ingin meng-approve ${checked.length} ritase sekaligus?`)) {
+            bulkRitaseIds.value = checked.join(',');
+            bulkForm.submit();
+        }
+    }
+});
+</script>
+@endpush
