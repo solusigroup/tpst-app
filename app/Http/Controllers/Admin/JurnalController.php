@@ -101,6 +101,19 @@ class JurnalController extends Controller
             $buktiPath = $request->file('bukti_transaksi')->store('jurnal-bukti', 'public');
         }
 
+        // Memeriksa apakah jurnal untuk referensi transaksi ini sudah ada (mencegah double jurnal)
+        if (!empty($validated['referensi_type']) && !empty($validated['referensi_id'])) {
+            $existingJurnal = JurnalHeader::where('referensi_type', $validated['referensi_type'])
+                ->where('referensi_id', $validated['referensi_id'])
+                ->first();
+                
+            if ($existingJurnal) {
+                return back()->withInput()->withErrors([
+                    'referensi_id' => 'Jurnal untuk transaksi ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal ganda untuk satu transaksi.'
+                ]);
+            }
+        }
+
         // Validasi ketersediaan saldo untuk akun Kas & Bank (awalan '11') di sisi Kredit
         $kasCredits = collect($validated['details'])
             ->filter(fn($d) => isset($d['kredit']) && $d['kredit'] > 0)
