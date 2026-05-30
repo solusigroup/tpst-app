@@ -168,7 +168,7 @@
             <li><a href="#pendahuluan">Pendahuluan</a></li>
             <li><a href="#master-data">1. Modul Master Data</a></li>
             <li><a href="#operasional">2. Modul Operasional</a></li>
-            <li><a href="#hrd-sdm">3. Modul SDM & Gaji</a></li>
+            <li><a href="#hrd-sdm">3. Modul SDM (HRD) & Upah</a></li>
             <li><a href="#keuangan">4. Modul Keuangan</a></li>
             <li><a href="#laporan">5. Modul Laporan</a></li>
             <li><a href="#pengaturan">6. Pengaturan Sistem</a></li>
@@ -204,10 +204,10 @@
                 <li>Pilih Armada ini milik <strong>Klien</strong> mana, lalu masukkan <strong>Plat Nomor</strong>, nama sopir (bila ada), dan kapasitas bawaannya.</li>
             </ol>
 
-            <h3>How To: Tambah Kategori Penjualan (Kategori Sampah)</h3>
+            <h3>How To: Tambah Kategori Sampah & Satuan (Gudang/Borongan)</h3>
             <ol>
-                <li>Menu <span class="badge bg-primary">Master Data > Kategori Sampah</span>.</li>
-                <li>Masukkan hasil sortiran TPST, misalnya: Botol PET, Plastik Hitam, Kardus Bekas, dsb.</li>
+                <li>Menu <span class="badge bg-primary">HRD > Kategori Sampah</span>.</li>
+                <li>Masukkan jenis hasil sortiran TPST, misalnya: Botol PET, Plastik Hitam, Kardus Bekas, dsb beserta satuannya (misal: kg). Kategori ini digunakan untuk pencatatan stok gudang dan dasar perhitungan upah borongan karyawan.</li>
             </ol>
 
             <h3>How To: Daftarkan Mesin-mesin TPST</h3>
@@ -263,26 +263,50 @@
 
         <!-- SDM & GAJI -->
         <div class="section-card" id="hrd-sdm">
-            <h2 style="border-left-color: var(--warning);">3. Modul SDM & Penggajian</h2>
-            <p>Untuk mengelola pegawai dan slip gaji mereka.</p>
+            <h2 style="border-left-color: var(--warning);">3. Modul SDM (HRD) & Penggajian</h2>
+            <p>Untuk mengelola data karyawan, kehadiran, produksi pemilah, dan perhitungan gaji/upah otomatis.</p>
 
-            <h3>How To: Daftarkan Pegawai & Absen</h3>
+            <h3>How To: Daftarkan Data Karyawan Baru</h3>
             <ol>
-                <li>Masuk ke <span class="badge bg-warning">SDM > Data Pegawai</span>. Input NIK, Nama, dan Foto (tanpa batas ukuran limit). Tentukan apakah ia Tipe: <strong>Bulanan</strong> atau <strong>Borongan</strong>.</li>
-                <li>Apabila perusahaan mendata kehadiran presensi, catat pada <span class="badge bg-warning">SDM > Absensi</span> tiap hari (Hadir, Ijin, Alpa, Sakit).</li>
+                <li>Masuk ke <span class="badge bg-warning">HRD > Data Karyawan</span>. Klik <strong>Tambah Karyawan</strong>.</li>
+                <li>Input NIK, Nama, Email, Jabatan, dan Alamat.</li>
+                <li>Tentukan **Skema Upah** (Bulanan, Harian, atau Borongan) beserta besaran upah pokoknya.</li>
+                <li>Unggah foto profil (`photo`) dan foto KTP (`ktp_photo`). *(Sistem otomatis mengompres ukuran file foto menjadi di bawah 200KB secara instan untuk menghemat disk space!)*</li>
             </ol>
 
-            <h3>How To: Menyetel Tarif Upah Borongan</h3>
+            <h3>How To: Mencatat Kehadiran (Attendance) Karyawan</h3>
             <ol>
-                <li>Buka <span class="badge bg-warning">SDM > Pengaturan Tarif Upah</span>.</li>
-                <li>Masukkan nominal dasar misalnya: <strong>Rp 2.000 / Kg</strong>. Tanpa mengatur tarif ini, sistem tidak bisa mengalkulasi uang slip baginya.</li>
+                <li>Buka <span class="badge bg-warning">HRD > Kehadiran</span>.</li>
+                <li>Anda bisa mencatat absensi harian dengan memilih tombol **Tambah Kehadiran**, mengisi tanggal, jam masuk, jam keluar, dan statusnya (`hadir`, `sakit`, `izin`, `alpa`).</li>
+                <li>**Fitur Cepat:** Gunakan tombol **Quick Check-In** di pagi hari untuk absensi kilat masuk, dan **Quick Check-Out** di sore hari saat karyawan pulang untuk menghitung total jam kerja otomatis.</li>
             </ol>
 
-            <h3>How To: Hitung dan Cairkan Upah Gaji</h3>
+            <h3>How To: Menyetel Tarif Upah Borongan Karyawan</h3>
             <ol>
-                <li>Buka <span class="badge bg-warning">SDM > Perhitungan Upah</span>.</li>
-                <li>Pilih rentang tanggal (Misal 1 Minggu), lalu klik <strong>Generate Slip Gaji</strong>. Sistem menyedot data dari <em>Kiloan Hasil Pilahan</em> si pegawai, mengalikan dengan tarif di atas.</li>
-                <li>Setelah divalidasi, klik <strong>Auto-Jurnal Kas</strong> di baris slip gajinya. Anda tinggal pilih bank uang keluar (misal Bank BCA) dan sistem akuntansi otomatis mem-posting Jurnal Beban Gaji!</li>
+                <li>Buka <span class="badge bg-warning">HRD > Tarif Upah</span>.</li>
+                <li>Klik **Tambah Tarif**, lalu pilih **Kategori Sampah** (misal: Kardus) dan tentukan besaran tarif per unit/kilogramnya (misal: Rp 1.500 / Kg).</li>
+                <li>Tentukan **Tanggal Efektif** berlakunya tarif tersebut agar sistem dapat menghitung perubahan upah secara historis dengan benar.</li>
+            </ol>
+
+            <h3>How To: Mencatat Produksi Harian (Output Pemilah)</h3>
+            <ol>
+                <li>Buka <span class="badge bg-warning">HRD > Output Pemilah</span>.</li>
+                <li>Setiap hari, catat total berat sampah yang berhasil dipilah oleh masing-masing karyawan pemilah dengan mengklik **Tambah Output**.</li>
+                <li>Pilih nama karyawan, jenis kategori sampah, tanggal kerja, dan **Kuantitas** (kg/unit) yang dihasilkan.</li>
+            </ol>
+
+            <h3>How To: Hitung Upah Mingguan & Proses Pembayaran</h3>
+            <ol>
+                <li>Buka <span class="badge bg-warning">HRD > Perhitungan Upah</span>.</li>
+                <li>Klik tombol **Hitung Upah Minggu Ini** untuk mengalkulasi total upah borongan secara otomatis berdasarkan rumus: `Kuantitas Output × Tarif Upah` yang berlaku pada periode tersebut.</li>
+                <li>Logika Persetujuan & Pembayaran:
+                    <ul>
+                        <li>Status Awal: **Pending** (Menunggu ditinjau oleh HRD).</li>
+                        <li>Klik **Setujui (Approve)**: Status berubah menjadi **Approved** (Disetujui oleh Manajemen/Keuangan).</li>
+                        <li>Klik **Bayar (Pay)**: Status berubah menjadi **Paid**, masukkan tanggal bayar, dan sistem akan membuat **Auto-Jurnal Kas** pengeluaran beban gaji secara otomatis ke Buku Besar akuntansi!</li>
+                    </ul>
+                </li>
+                <li>Anda juga dapat mengunduh **Slip Gaji (PDF)** per karyawan serta **Ekspor Rekap Upah (Excel/PDF)** untuk arsip keuangan kantor.</li>
             </ol>
         </div>
 
@@ -330,6 +354,7 @@
                 <li><strong>Laporan Keuangan > Laba Rugi (Profit & Loss):</strong> Menyajikan ringkasan total Pendapatan (Omzet) dikurangi Harga Pokok Penjualan (Bila ada) dan Total Beban/Pengeluaran untuk mencari Net Profit bulan tersebut.</li>
                 <li><strong>Laporan Keuangan > Posisi Keuangan (Neraca):</strong> Menyajikan posisi nilai Aset Lancar, Aktiva Tetap, dibandingkan dengan Kewajiban (Piutang Klien, Hutang Vendor) serta modal ekuitas. Diperbarui real time.</li>
                 <li><strong>Laporan Operasional > Rekap Ritase & Stok:</strong> Pantau performa TPS, drill down volume masuk berdasarkan tipe ritase klien vs tonase yang laku terjual. </li>
+                <li><strong>Laporan Operasional > Kehadiran & Rekap Upah:</strong> Melacak grafik tingkat absensi kehadiran karyawan serta rekap pembayaran upah mingguan berdasarkan tipe upah (Borongan, Harian, Bulanan) untuk mempermudah audit operasional.</li>
             </ul>
 
             <div class="note-box">
