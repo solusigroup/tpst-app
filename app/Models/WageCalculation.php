@@ -51,7 +51,7 @@ class WageCalculation extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function calculateForEmployee(int $userId, \DateTime $weekStart, ?int $tenantId = null): self
+    public static function calculateForEmployee(int $userId, \DateTime $weekStart, ?int $tenantId = null, ?\DateTime $weekEnd = null): self
     {
         $tenantId = $tenantId ?? auth()->user()->tenant_id;
         $user = User::find($userId);
@@ -59,13 +59,17 @@ class WageCalculation extends Model
         // Ensure we have a Carbon instance for easier date manipulation
         $carbonWeekStart = Carbon::instance($weekStart)->startOfDay();
         
-        // Determine pay period based on salary type and frequency
-        if ($user && $user->salary_type === 'bulanan') {
-            $carbonWeekStart = $carbonWeekStart->copy()->startOfMonth();
-            $weekEnd = $carbonWeekStart->copy()->endOfMonth()->endOfDay();
+        if ($weekEnd) {
+            $carbonWeekEnd = Carbon::instance($weekEnd)->endOfDay();
         } else {
-            $daysToAdd = ($user && $user->payment_frequency === 'Dua Mingguan') ? 13 : 6;
-            $weekEnd = $carbonWeekStart->copy()->addDays($daysToAdd)->endOfDay();
+            // Determine pay period based on salary type and frequency
+            if ($user && $user->salary_type === 'bulanan') {
+                $carbonWeekStart = $carbonWeekStart->copy()->startOfMonth();
+                $carbonWeekEnd = $carbonWeekStart->copy()->endOfMonth()->endOfDay();
+            } else {
+                $daysToAdd = ($user && $user->payment_frequency === 'Dua Mingguan') ? 13 : 6;
+                $carbonWeekEnd = $carbonWeekStart->copy()->addDays($daysToAdd)->endOfDay();
+            }
         }
 
         // 1. Revert previous calculation if it exists to avoid double-counting paid_quantity
@@ -95,27 +99,27 @@ class WageCalculation extends Model
                 // For reporting, we can still sum quantity but it doesn't affect wage
                 $totalQuantity = EmployeeOutput::where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
+                    ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $carbonWeekEnd->toDateString()])
                     ->sum('quantity');
             } elseif ($user->salary_type === 'harian') {
                 $attendanceCount = Attendance::where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->whereBetween('attendance_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
+                    ->whereBetween('attendance_date', [$carbonWeekStart->toDateString(), $carbonWeekEnd->toDateString()])
                     ->whereIn('status', ['present'])
                     ->count();
                 
                 $totalWage = $attendanceCount * ($user->daily_wage ?? 0);
                 $totalQuantity = EmployeeOutput::where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
+                    ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $carbonWeekEnd->toDateString()])
                     ->sum('quantity');
             } else {
                 // BORONGAN: Pay only for what has been sold (FIFO)
-                // Look for all unpaid outputs up to week_end
+                // Look for all unpaid outputs within the calculation period [carbonWeekStart, carbonWeekEnd]
                 $unpaidOutputs = EmployeeOutput::where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
                     ->whereColumn('paid_quantity', '<', 'quantity')
-                    ->where('output_date', '<=', $weekEnd->toDateString())
+                    ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $carbonWeekEnd->toDateString()])
                     ->orderBy('output_date')
                     ->get();
 
@@ -123,10 +127,10 @@ class WageCalculation extends Model
                     $remainingToPay = $output->quantity - $output->paid_quantity;
                     if ($remainingToPay <= 0) continue;
 
-                    // Calculate Global Available Sales for this category
+                    // Calculate Global Available Sales for this category up to carbonWeekEnd
                     $totalSold = Penjualan::where('waste_category_id', $output->waste_category_id)
                         ->where('tenant_id', $tenantId)
-                        ->where('tanggal', '<=', $weekEnd->toDateString())
+                        ->where('tanggal', '<=', $carbonWeekEnd->toDateString())
                         ->sum('berat_kg');
 
                     $totalPaidGlobally = EmployeeOutput::where('waste_category_id', $output->waste_category_id)
@@ -163,7 +167,7 @@ class WageCalculation extends Model
 
         $overtimePay = Attendance::where('user_id', $userId)
             ->where('tenant_id', $tenantId)
-            ->whereBetween('attendance_date', [$carbonWeekStart->toDateString(), $weekEnd->toDateString()])
+            ->whereBetween('attendance_date', [$carbonWeekStart->toDateString(), $carbonWeekEnd->toDateString()])
             ->sum('overtime_pay');
 
         $calculation = self::updateOrCreate(
@@ -173,7 +177,7 @@ class WageCalculation extends Model
                 'week_start' => $carbonWeekStart->toDateString(),
             ],
             [
-                'week_end' => $weekEnd->toDateString(),
+                'week_end' => $carbonWeekEnd->toDateString(),
                 'total_quantity' => $totalQuantity,
                 'total_wage' => $totalWage,
                 'overtime_pay' => $overtimePay,

@@ -20,10 +20,15 @@
                 <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Tanggal (Dalam Minggu yang Ingin Dihitung) <span class="text-danger">*</span></label>
-                    <input type="date" name="week_start" class="form-control" required value="{{ date('Y-m-d') }}">
-                    <small class="text-body-secondary">Sistem otomatis mengambil awal minggu dari tanggal ini.</small>
+                <div class="mb-3 row">
+                    <div class="col-md-6">
+                        <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" class="form-control" required value="{{ \Carbon\Carbon::now()->startOfWeek()->format('Y-m-d') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tanggal Selesai <span class="text-danger">*</span></label>
+                        <input type="date" name="end_date" class="form-control" required value="{{ \Carbon\Carbon::now()->endOfWeek()->format('Y-m-d') }}">
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Karyawan (Opsional)</label>

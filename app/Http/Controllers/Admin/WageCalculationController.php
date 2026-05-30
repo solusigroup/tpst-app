@@ -112,11 +112,13 @@ class WageCalculationController extends Controller
     public function calculate(Request $request)
     {
         $validated = $request->validate([
-            'week_start' => 'required|date',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
             'user_id' => 'nullable|exists:users,id',
         ]);
 
-        $weekStart = Carbon::parse($validated['week_start'])->startOfWeek();
+        $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
         $tenantId = auth()->user()->tenant_id;
 
         if ($validated['user_id'] ?? null) {
@@ -131,7 +133,7 @@ class WageCalculationController extends Controller
 
         $count = 0;
         foreach ($users as $user) {
-            WageCalculation::calculateForEmployee($user->id, $weekStart, $user->tenant_id);
+            WageCalculation::calculateForEmployee($user->id, $startDate, $user->tenant_id, $endDate);
             $count++;
         }
 
@@ -232,7 +234,8 @@ class WageCalculationController extends Controller
         WageCalculation::calculateForEmployee(
             $wageCalculation->user_id, 
             Carbon::parse($wageCalculation->week_start), 
-            $wageCalculation->tenant_id
+            $wageCalculation->tenant_id,
+            Carbon::parse($wageCalculation->week_end)
         );
 
         return redirect()->route('admin.hrd.wage-calculation.show', $wageCalculation)
