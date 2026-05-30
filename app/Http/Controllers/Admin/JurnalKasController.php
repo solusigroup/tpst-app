@@ -149,7 +149,7 @@ class JurnalKasController extends Controller
         }
 
         if ($request->hasFile('bukti_transaksi')) {
-            $path = $request->file('bukti_transaksi')->store('uploads/jurnal_kas', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'uploads/jurnal_kas');
             $data['bukti_transaksi'] = $path;
         }
 
@@ -221,7 +221,7 @@ class JurnalKasController extends Controller
             if ($jurnalKas->bukti_transaksi) {
                 Storage::disk('public')->delete($jurnalKas->bukti_transaksi);
             }
-            $path = $request->file('bukti_transaksi')->store('uploads/jurnal_kas', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'uploads/jurnal_kas');
             $data['bukti_transaksi'] = $path;
         }
 

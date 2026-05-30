@@ -98,7 +98,7 @@ class JurnalController extends Controller
 
         $buktiPath = null;
         if ($request->hasFile('bukti_transaksi')) {
-            $buktiPath = $request->file('bukti_transaksi')->store('jurnal-bukti', 'public');
+            $buktiPath = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'jurnal-bukti');
         }
 
         // Memeriksa apakah jurnal untuk referensi transaksi ini sudah ada (mencegah double jurnal)
@@ -194,7 +194,7 @@ class JurnalController extends Controller
         ];
 
         if ($request->hasFile('bukti_transaksi')) {
-            $data['bukti_transaksi'] = $request->file('bukti_transaksi')->store('jurnal-bukti', 'public');
+            $data['bukti_transaksi'] = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'jurnal-bukti');
         }
 
         // Validasi ketersediaan saldo untuk akun Kas & Bank (awalan '11') di sisi Kredit

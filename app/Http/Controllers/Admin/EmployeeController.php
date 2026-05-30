@@ -96,12 +96,12 @@ class EmployeeController extends Controller
         $validated['role'] = 'karyawan';
 
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('employees', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('photo'), 'employees');
             $validated['photo'] = $path;
         }
 
         if ($request->hasFile('ktp_photo')) {
-            $path = $request->file('ktp_photo')->store('ktp_photos', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('ktp_photo'), 'ktp_photos');
             $validated['ktp_photo'] = $path;
         }
 
@@ -176,7 +176,7 @@ class EmployeeController extends Controller
             if ($employee->photo) {
                 Storage::disk('public')->delete($employee->photo);
             }
-            $path = $request->file('photo')->store('employees', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('photo'), 'employees');
             $validated['photo'] = $path;
         }
 
@@ -184,7 +184,7 @@ class EmployeeController extends Controller
             if ($employee->ktp_photo) {
                 Storage::disk('public')->delete($employee->ktp_photo);
             }
-            $path = $request->file('ktp_photo')->store('ktp_photos', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('ktp_photo'), 'ktp_photos');
             $validated['ktp_photo'] = $path;
         }
 

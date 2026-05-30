@@ -150,13 +150,13 @@ class RitaseController extends Controller
         ]);
 
         if ($request->hasFile('foto_tiket')) {
-            $validated['foto_tiket'] = $request->file('foto_tiket')->store('ritase_tiket', 'public');
+            $validated['foto_tiket'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket'), 'ritase_tiket');
         }
         if ($request->hasFile('foto_tiket_bruto')) {
-            $validated['foto_tiket_bruto'] = $request->file('foto_tiket_bruto')->store('ritase_tiket', 'public');
+            $validated['foto_tiket_bruto'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket_bruto'), 'ritase_tiket');
         }
         if ($request->hasFile('foto_tiket_tarra')) {
-            $validated['foto_tiket_tarra'] = $request->file('foto_tiket_tarra')->store('ritase_tiket', 'public');
+            $validated['foto_tiket_tarra'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket_tarra'), 'ritase_tiket');
         }
 
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
@@ -203,21 +203,21 @@ class RitaseController extends Controller
             if ($ritase->foto_tiket && \Illuminate\Support\Facades\Storage::disk('public')->exists($ritase->foto_tiket)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($ritase->foto_tiket);
             }
-            $validated['foto_tiket'] = $request->file('foto_tiket')->store('ritase_tiket', 'public');
+            $validated['foto_tiket'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket'), 'ritase_tiket');
         }
 
         if ($request->hasFile('foto_tiket_bruto')) {
             if ($ritase->foto_tiket_bruto && \Illuminate\Support\Facades\Storage::disk('public')->exists($ritase->foto_tiket_bruto)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($ritase->foto_tiket_bruto);
             }
-            $validated['foto_tiket_bruto'] = $request->file('foto_tiket_bruto')->store('ritase_tiket', 'public');
+            $validated['foto_tiket_bruto'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket_bruto'), 'ritase_tiket');
         }
 
         if ($request->hasFile('foto_tiket_tarra')) {
             if ($ritase->foto_tiket_tarra && \Illuminate\Support\Facades\Storage::disk('public')->exists($ritase->foto_tiket_tarra)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($ritase->foto_tiket_tarra);
             }
-            $validated['foto_tiket_tarra'] = $request->file('foto_tiket_tarra')->store('ritase_tiket', 'public');
+            $validated['foto_tiket_tarra'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket_tarra'), 'ritase_tiket');
         }
 
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
