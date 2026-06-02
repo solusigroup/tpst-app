@@ -1,4 +1,4 @@
-@extends('admin.laporan.exports.layout', ['title' => 'Rekap Ritase per Tanggal &amp; Jenis Klien'])
+@extends('admin.laporan.exports.layout', ['title' => 'Rekap Ritase'])
 
 @section('content')
 <div class="text-center mb-4">
