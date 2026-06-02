@@ -708,6 +708,7 @@ class LaporanController extends Controller
 
         $bulan = $request->get('bulan', date('m'));
         $tahun = $request->get('tahun', date('Y'));
+        $jenisKlien = $request->get('jenis_klien');
         $klienId = $request->get('klien_id');
         $isApproved = $request->get('is_approved', 1);
 
@@ -718,9 +719,14 @@ class LaporanController extends Controller
 
         $sortDate = $request->get('sort_date', 'asc');
         $baseQuery = Ritase::with(['klien'])
-            ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('is_approved', $isApproved))
-            ->whereYear('waktu_masuk', $tahun)
-            ->whereMonth('waktu_masuk', $bulan);
+            ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('ritase.is_approved', $isApproved))
+            ->when($jenisKlien, function ($q) use ($jenisKlien) {
+                $q->whereHas('klien', function ($qk) use ($jenisKlien) {
+                    $qk->where('jenis', $jenisKlien);
+                });
+            })
+            ->whereYear('ritase.waktu_masuk', $tahun)
+            ->whereMonth('ritase.waktu_masuk', $bulan);
 
         if ($klienId) {
             // Support filtering DLH broadly if the selected client is DLH Master
@@ -729,7 +735,7 @@ class LaporanController extends Controller
                     $qk->where('jenis', 'DLH');
                 });
             } else {
-                $baseQuery->where('klien_id', $klienId);
+                $baseQuery->where('ritase.klien_id', $klienId);
             }
         }
 
@@ -741,9 +747,11 @@ class LaporanController extends Controller
         $grandTotalRitase = $rekapHarian->sum('total_ritase');
         $grandTotalNetto = $rekapHarian->sum('total_netto');
 
-        $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
+        $kliens = \App\Models\Klien::when($jenisKlien, fn($q) => $q->where('jenis', $jenisKlien))
+            ->orderBy('nama_klien')
+            ->get();
 
-        $data = compact('bulan', 'tahun', 'klienId', 'isApproved', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto', 'sortDate');
+        $data = compact('bulan', 'tahun', 'klienId', 'jenisKlien', 'isApproved', 'klien', 'kliens', 'rekapHarian', 'grandTotalRitase', 'grandTotalNetto', 'sortDate');
 
         if ($request->export === 'excel') {
             return \Maatwebsite\Excel\Facades\Excel::download(

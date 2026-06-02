@@ -30,7 +30,7 @@
     </tr>
     <tr>
         <td class="font-bold">JENIS KLIEN</td>
-        <td colspan="2">{{ $klien ? $klien->jenis : '-' }}</td>
+        <td colspan="2">{{ $klien ? $klien->jenis : ($jenisKlien ?: 'Semua Jenis') }}</td>
     </tr>
     <tr>
         <td class="font-bold">BULAN</td>

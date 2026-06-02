@@ -23,6 +23,17 @@
     </div>
     <div class="card-body">
         <form action="{{ route('admin.laporan-operasional.rekap-ritase-2') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label for="jenis_klien" class="form-label">Jenis Klien</label>
+                <select name="jenis_klien" id="jenis_klien" class="form-select" onchange="this.form.submit()">
+                    <option value="">Semua Jenis</option>
+                    @foreach(['DLH', 'Swasta', 'Offtaker', 'Internal'] as $jk)
+                        <option value="{{ $jk }}" {{ $jenisKlien == $jk ? 'selected' : '' }}>
+                            {{ $jk }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="col-md-3">
                 <label for="klien_id" class="form-label">Klien</label>
                 <select name="klien_id" id="klien_id" class="form-select ts-select">
@@ -34,7 +45,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="bulan" class="form-label">Bulan</label>
                 <select name="bulan" id="bulan" class="form-select">
                     @for($i=1; $i<=12; $i++)
@@ -44,7 +55,7 @@
                     @endfor
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <label for="tahun" class="form-label">Tahun</label>
                 <select name="tahun" id="tahun" class="form-select">
                     @for($i=date('Y'); $i>=2020; $i--)
@@ -83,7 +94,7 @@
                     </tr>
                     <tr>
                         <th style="font-weight: bold;">JENIS KLIEN</th>
-                        <th colspan="2">{{ $klien ? $klien->jenis : '-' }}</th>
+                        <th colspan="2">{{ $klien ? $klien->jenis : ($jenisKlien ?: 'Semua Jenis') }}</th>
                     </tr>
                     <tr>
                         <th style="font-weight: bold;">BULAN</th>
