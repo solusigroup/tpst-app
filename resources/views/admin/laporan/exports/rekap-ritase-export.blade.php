@@ -1,8 +1,8 @@
-@extends('admin.laporan.exports.layout', ['title' => 'Rekap Ritase per Tanggal & Jenis Klien'])
+@extends('admin.laporan.exports.layout', ['title' => 'Rekap Ritase per Tanggal &amp; Jenis Klien'])
 
 @section('content')
 <div class="text-center mb-4">
-    <h2 style="margin:0">REKAP RITASE PER TANGGAL & JENIS KLIEN</h2>
+    <h2 style="margin:0">REKAP RITASE PER TANGGAL &amp; JENIS KLIEN</h2>
     <p style="margin:5px 0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
     @if($jenisKlien)
         <p style="margin:2px 0; font-size:10px;">Filter Jenis Klien: {{ $jenisKlien }}</p>
