@@ -129,7 +129,7 @@
             <td class="text-center">{{ (request('export') == 'excel' ? ($grandTotals->total_ritase ?? 0) : number_format($grandTotals->total_ritase ?? 0, 0, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($grandTotals->total_netto ?? 0) : number_format($grandTotals->total_netto ?? 0, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $grandTotals->total_tipping ?? 0 }}</td>
-            <td class="text-end">{{ ($grandTotals->total_ritase ?? 0) > 0 ? (request('export') == 'excel' ? (($grandTotals->total_netto ?? 0) : number_format(($grandTotals->total_netto ?? 0, 0, ',', '.')) / $grandTotals->total_ritase, 2, ',', '.') : '-' }}</td>
+            <td class="text-end">{{ ($grandTotals->total_ritase ?? 0) > 0 ? (request('export') == 'excel' ? (($grandTotals->total_netto ?? 0) / $grandTotals->total_ritase) : number_format(($grandTotals->total_netto ?? 0) / $grandTotals->total_ritase, 2, ',', '.')) : '-' }}</td>
         </tr>
     </tfoot>
 </table>

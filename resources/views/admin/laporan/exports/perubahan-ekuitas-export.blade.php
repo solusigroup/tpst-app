@@ -30,7 +30,7 @@
             <td style="border: 1px solid #ddd; padding: 5px;">Laba / (Rugi) Bersih Periode Berjalan</td>
             <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">-</td>
             <td style="border: 1px solid #ddd; padding: 5px; text-align: right; {{ $labaRugi >= 0 ? 'color: #198754;' : '' }}">{{ $labaRugi >= 0 ? (request('export') == 'excel' ? ($labaRugi) : number_format($labaRugi, 0, ',', '.')) : '-' }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; text-align: right; {{ $labaRugi < 0 ? 'color: #dc3545;' : '' }}">{{ $labaRugi < 0 ? (request('export') == 'excel' ? (abs($labaRugi) : number_format(abs($labaRugi, 0, ',', '.')), 0, ',', '.') : '-' }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right; {{ $labaRugi < 0 ? 'color: #dc3545;' : '' }}">{{ $labaRugi < 0 ? (request('export') == 'excel' ? abs($labaRugi) : number_format(abs($labaRugi), 0, ',', '.')) : '-' }}</td>
             <td style="border: 1px solid #ddd; padding: 5px; text-align: right; font-weight: bold; {{ $labaRugi >= 0 ? 'color: #198754;' : 'color: #dc3545;' }}">{{ (request('export') == 'excel' ? ($labaRugi) : number_format($labaRugi, 0, ',', '.')) }}</td>
         </tr>
     </tbody>
@@ -38,8 +38,8 @@
         <tr>
             <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold;">TOTAL EKUITAS</td>
             <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">Rp {{ (request('export') == 'excel' ? ($totalSaldoAwal) : number_format($totalSaldoAwal, 0, ',', '.')) }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right; color: #198754;">Rp {{ (request('export') == 'excel' ? ($totalPenambahan + ($labaRugi >= 0 ? $labaRugi : 0) : number_format($totalPenambahan + ($labaRugi >= 0 ? $labaRugi : 0, 0, ',', '.')), 0, ',', '.') }}</td>
-            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right; color: #dc3545;">Rp {{ (request('export') == 'excel' ? ($totalPengurangan + ($labaRugi < 0 ? abs($labaRugi) : number_format($totalPengurangan + ($labaRugi < 0 ? abs($labaRugi, 0, ',', '.')) : 0), 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right; color: #198754;">Rp {{ (request('export') == 'excel' ? ($totalPenambahan + ($labaRugi >= 0 ? $labaRugi : 0)) : number_format($totalPenambahan + ($labaRugi >= 0 ? $labaRugi : 0), 0, ',', '.')) }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right; color: #dc3545;">Rp {{ (request('export') == 'excel' ? ($totalPengurangan + ($labaRugi < 0 ? abs($labaRugi) : 0)) : number_format($totalPengurangan + ($labaRugi < 0 ? abs($labaRugi) : 0), 0, ',', '.')) }}</td>
             <td style="border: 1px solid #ddd; padding: 5px; font-weight: bold; text-align: right;">Rp {{ (request('export') == 'excel' ? ($totalSaldoAkhir) : number_format($totalSaldoAkhir, 0, ',', '.')) }}</td>
         </tr>
     </tfoot>
