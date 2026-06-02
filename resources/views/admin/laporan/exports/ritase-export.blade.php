@@ -27,8 +27,8 @@
     <tfoot class="fw-bold">
         <tr>
             <td>TOTAL REKAP</td>
-            <td class="text-center">{{ (request('export') == 'excel' ? ($rekapJenis->sum('total_ritase') : number_format($rekapJenis->sum('total_ritase', 0, ',', '.')), 0, ',', '.') }}</td>
-            <td class="text-end">{{ (request('export') == 'excel' ? ($rekapJenis->sum('total_netto') : number_format($rekapJenis->sum('total_netto', 0, ',', '.')), 2, ',', '.') }}</td>
+            <td class="text-center">{{ (request('export') == 'excel' ? $rekapJenis->sum('total_ritase') : number_format($rekapJenis->sum('total_ritase'), 0, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? $rekapJenis->sum('total_netto') : number_format($rekapJenis->sum('total_netto'), 2, ',', '.')) }}</td>
         </tr>
     </tfoot>
 </table>
