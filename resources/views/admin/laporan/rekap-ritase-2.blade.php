@@ -94,9 +94,9 @@
                         <th colspan="3" class="border-0"></th>
                     </tr>
                     <tr>
-                        <th>Row Labels</th>
-                        <th>Count of Berat Netto (kg)</th>
-                        <th>Sum of Berat Netto (kg)2</th>
+                        <th>Tanggal</th>
+                        <th>Jml Bongkar/Ritase</th>
+                        <th>Jml Tonase</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -118,6 +118,11 @@
                         <td>Grand Total</td>
                         <td>{{ $grandTotalRitase }}</td>
                         <td>{{ number_format($grandTotalNetto, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="fw-bold bg-light">
+                        <td>Rata-rata Tonase</td>
+                        <td>-</td>
+                        <td>{{ number_format($grandTotalNetto / $rekapHarian->count(), 2, ',', '.') }}</td>
                     </tr>
                 </tfoot>
                 @endif

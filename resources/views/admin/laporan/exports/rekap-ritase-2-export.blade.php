@@ -47,9 +47,9 @@
         <td colspan="3" style="border: none !important;"></td>
     </tr>
     <tr>
-        <td class="font-bold">Row Labels</td>
-        <td class="font-bold">Count of Berat Netto (kg)</td>
-        <td class="font-bold">Sum of Berat Netto (kg)2</td>
+        <td class="font-bold">Tanggal</td>
+        <td class="font-bold">Jml Bongkar/Ritase</td>
+        <td class="font-bold">Jml Tonase</td>
     </tr>
     @foreach($rekapHarian as $row)
     <tr>
@@ -63,6 +63,13 @@
         <td class="font-bold">{{ $grandTotalRitase }}</td>
         <td class="font-bold">{{ $grandTotalNetto }}</td>
     </tr>
+    @if($rekapHarian->count() > 0)
+    <tr>
+        <td class="font-bold">Rata-rata Tonase</td>
+        <td class="font-bold">-</td>
+        <td class="font-bold">{{ (isset($isExport) && $isExport) ? ($grandTotalNetto / $rekapHarian->count()) : number_format($grandTotalNetto / $rekapHarian->count(), 2, ',', '.') }}</td>
+    </tr>
+    @endif
 </table>
 
 </body>
