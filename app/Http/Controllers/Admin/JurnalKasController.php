@@ -46,6 +46,19 @@ class JurnalKasController extends Controller
         if ($request->filled('search')) {
             $query->where('deskripsi', 'like', '%' . $request->search . '%');
         }
+        if ($request->filled('jumlah')) {
+            $jumlah = $request->jumlah;
+            $query->where(function($q) use ($jumlah) {
+                // Search in JurnalKas nominal
+                $q->whereHasMorph('referensi', [\App\Models\JurnalKas::class], function($jkQuery) use ($jumlah) {
+                    $jkQuery->where('nominal', $jumlah);
+                })
+                // Also search in JurnalDetail debit/kredit for general journal entries
+                ->orWhereHas('jurnalDetails', function($detailQ) use ($jumlah) {
+                    $detailQ->where('debit', $jumlah)->orWhere('kredit', $jumlah);
+                });
+            });
+        }
         if ($request->filled('dari')) {
             $query->whereDate('tanggal', '>=', $request->dari);
         }

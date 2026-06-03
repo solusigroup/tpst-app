@@ -30,6 +30,10 @@
                 <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari deskripsi..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
+                <label class="form-label small text-muted mb-1">Cari Jumlah</label>
+                <input type="number" name="jumlah" class="form-control form-control-sm" placeholder="Nominal..." value="{{ request('jumlah') }}" min="0">
+            </div>
+            <div class="col-auto">
                 <label class="form-label small text-muted mb-1">Jenis</label>
                 <select name="jenis" class="form-select form-select-sm"><option value="">Semua</option><option value="masuk" {{ request('jenis')=='masuk'?'selected':'' }}>Kas Masuk</option><option value="keluar" {{ request('jenis')=='keluar'?'selected':'' }}>Kas Keluar</option></select>
             </div>
@@ -41,7 +45,7 @@
                 </select>
             </div>
             <div class="col-auto"><button class="btn btn-sm btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
-            @if(request()->hasAny(['search','jenis','dari','sampai','sort']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','jumlah','jenis','dari','sampai','sort']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
