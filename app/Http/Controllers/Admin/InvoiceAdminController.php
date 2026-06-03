@@ -225,7 +225,7 @@ class InvoiceAdminController extends Controller
                     $master->recalculateTotals();
 
                     $master->update([
-                        'coa_pembayaran_id' => $master->coa_pembayaran_id ?? \App\Models\Coa::where('kode_akun', '1102')->value('id'),
+                        'coa_pembayaran_id' => $master->coa_pembayaran_id ?? \App\Models\Coa::where('kode_akun', '1130')->value('id'),
                         'keterangan' => empty($master->keterangan) ? 'Merged automatically' : $master->keterangan . ' (Merged)'
                     ]);
                 }
