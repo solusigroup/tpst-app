@@ -252,4 +252,103 @@ class JurnalKasController extends Controller
         $jurnalKas->delete();
         return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil dihapus.');
     }
+
+    public function transfer()
+    {
+        Gate::authorize('create_jurnal_kas');
+
+        // Get all Kas & Bank accounts (COA starting with 11)
+        $kasBankCoas = Coa::where('kode_akun', 'like', '11%')->orderBy('kode_akun')->get();
+
+        // Calculate saldo for each account
+        $kasBank = $kasBankCoas->map(function ($coa) {
+            $debit = \App\Models\JurnalDetail::where('coa_id', $coa->id)->sum('debit');
+            $kredit = \App\Models\JurnalDetail::where('coa_id', $coa->id)->sum('kredit');
+            $coa->saldo = $debit - $kredit;
+            return $coa;
+        });
+
+        // COA Biaya Admin Bank (8102)
+        $coaBiayaAdmin = Coa::where('kode_akun', '8102')->first();
+
+        return view('admin.jurnal-kas.transfer', compact('kasBank', 'coaBiayaAdmin'));
+    }
+
+    public function storeTransfer(Request $request)
+    {
+        Gate::authorize('create_jurnal_kas');
+
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'dari_coa_id' => 'required|exists:coa,id',
+            'ke_coa_id' => 'required|exists:coa,id|different:dari_coa_id',
+            'jumlah' => 'required|numeric|min:1',
+            'biaya_admin' => 'nullable|numeric|min:0',
+            'deskripsi' => 'nullable|string',
+            'bukti_transaksi' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
+        ]);
+
+        $jumlah = $validated['jumlah'];
+        $biayaAdmin = $validated['biaya_admin'] ?? 0;
+        $totalKredit = $jumlah + $biayaAdmin;
+
+        // Check balance of source account
+        $dariCoa = Coa::findOrFail($validated['dari_coa_id']);
+        $keCoa = Coa::findOrFail($validated['ke_coa_id']);
+
+        $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $dariCoa->id)->sum('debit');
+        $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $dariCoa->id)->sum('kredit');
+        $saldoSumber = $saldoDebit - $saldoKredit;
+
+        if ($totalKredit > $saldoSumber) {
+            return back()->withInput()->withErrors([
+                'jumlah' => 'Saldo ' . $dariCoa->nama_akun . ' tidak mencukupi. Saldo saat ini: Rp ' . number_format($saldoSumber, 0, ',', '.') . '. Total yang dibutuhkan (termasuk biaya admin): Rp ' . number_format($totalKredit, 0, ',', '.')
+            ]);
+        }
+
+        // Upload bukti
+        $buktiPath = null;
+        if ($request->hasFile('bukti_transaksi')) {
+            $buktiPath = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'uploads/transfer');
+        }
+
+        // Build deskripsi
+        $deskripsi = $validated['deskripsi'] ?: "Transfer dari {$dariCoa->kode_akun} {$dariCoa->nama_akun} ke {$keCoa->kode_akun} {$keCoa->nama_akun}";
+
+        // Create JurnalHeader
+        $jurnalHeader = \App\Models\JurnalHeader::create([
+            'tanggal' => $validated['tanggal'],
+            'deskripsi' => $deskripsi,
+            'bukti_transaksi' => $buktiPath,
+            'status' => 'unposted',
+        ]);
+
+        // Detail 1: Debit target account
+        $jurnalHeader->jurnalDetails()->create([
+            'coa_id' => $keCoa->id,
+            'debit' => $jumlah,
+            'kredit' => 0,
+        ]);
+
+        // Detail 2: Debit biaya admin (if any)
+        if ($biayaAdmin > 0) {
+            $coaBiayaAdmin = Coa::where('kode_akun', '8102')->first();
+            if ($coaBiayaAdmin) {
+                $jurnalHeader->jurnalDetails()->create([
+                    'coa_id' => $coaBiayaAdmin->id,
+                    'debit' => $biayaAdmin,
+                    'kredit' => 0,
+                ]);
+            }
+        }
+
+        // Detail 3: Kredit source account
+        $jurnalHeader->jurnalDetails()->create([
+            'coa_id' => $dariCoa->id,
+            'debit' => 0,
+            'kredit' => $totalKredit,
+        ]);
+
+        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Transfer berhasil! Jurnal ' . $jurnalHeader->nomor_referensi . ' telah dibuat.');
+    }
 }

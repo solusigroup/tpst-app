@@ -12,7 +12,10 @@
         </div>
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Jurnal Kas</li></ol></nav>
     </div>
-    <a href="{{ route('admin.jurnal-kas.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.transfer-kas.create') }}" class="btn btn-outline-primary"><i class="cil-transfer me-1"></i> Transfer Kas/Bank</a>
+        <a href="{{ route('admin.jurnal-kas.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah</a>
+    </div>
 </div>
 <div class="card">
     <div class="card-header bg-white py-3">
