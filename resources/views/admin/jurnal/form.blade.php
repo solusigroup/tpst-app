@@ -38,7 +38,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Bukti Transaksi</label>
-                            <input type="file" name="bukti_transaksi" class="form-control" accept="image/*">
+                            <input type="file" name="bukti_transaksi" class="form-control" accept="image/*" data-compress>
                             @if(isset($jurnal) && $jurnal->bukti_transaksi)
                                 <img src="{{ asset('storage/' . $jurnal->bukti_transaksi) }}" class="mt-2 rounded" style="max-height:100px;" alt="bukti">
                             @endif

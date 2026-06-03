@@ -146,14 +146,14 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Foto Profil (Opsional)</label>
-                            <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*">
-                            <small class="text-muted">Gunakan Kamera / Galeri</small>
+                            <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" data-compress>
+                            <small class="text-muted">Foto otomatis dikompresi sebelum upload.</small>
                             @error('photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Foto KTP <span class="text-danger">*Wajib</span></label>
-                            <input type="file" name="ktp_photo" class="form-control @error('ktp_photo') is-invalid @enderror" accept="image/*" required>
-                            <small class="text-muted">Lampirkan foto KTP asli karyawan.</small>
+                            <input type="file" name="ktp_photo" class="form-control @error('ktp_photo') is-invalid @enderror" accept="image/*" data-compress required>
+                            <small class="text-muted">Lampirkan foto KTP. Otomatis dikompresi.</small>
                             @error('ktp_photo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>

@@ -114,7 +114,7 @@
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
                             </button>
                         </div>
-                        <input type="file" name="foto_tiket_bruto" id="foto_tiket_bruto" class="form-control d-none @error('foto_tiket_bruto') is-invalid @enderror" accept="image/*" capture="environment" onchange="previewImageBruto(this)">
+                        <input type="file" name="foto_tiket_bruto" id="foto_tiket_bruto" class="form-control d-none @error('foto_tiket_bruto') is-invalid @enderror" accept="image/*" capture="environment" data-compress data-compress-max-width="1200" data-compress-quality="0.7" onchange="previewImageBruto(this)">
                         <div id="file-name-display-bruto" class="small text-muted mb-2"></div>
                         @error('foto_tiket_bruto') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         
@@ -139,7 +139,7 @@
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
                             </button>
                         </div>
-                        <input type="file" name="foto_tiket_tarra" id="foto_tiket_tarra" class="form-control d-none @error('foto_tiket_tarra') is-invalid @enderror" accept="image/*" capture="environment" onchange="previewImageTarra(this)">
+                        <input type="file" name="foto_tiket_tarra" id="foto_tiket_tarra" class="form-control d-none @error('foto_tiket_tarra') is-invalid @enderror" accept="image/*" capture="environment" data-compress data-compress-max-width="1200" data-compress-quality="0.7" onchange="previewImageTarra(this)">
                         <div id="file-name-display-tarra" class="small text-muted mb-2"></div>
                         @error('foto_tiket_tarra') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         
@@ -164,7 +164,7 @@
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
                             </button>
                         </div>
-                        <input type="file" name="foto_tiket" id="foto_tiket" class="form-control d-none @error('foto_tiket') is-invalid @enderror" accept="image/*" capture="environment" onchange="previewImage(this)">
+                        <input type="file" name="foto_tiket" id="foto_tiket" class="form-control d-none @error('foto_tiket') is-invalid @enderror" accept="image/*" capture="environment" data-compress data-compress-max-width="1200" data-compress-quality="0.7" onchange="previewImage(this)">
                         <div id="file-name-display" class="small text-muted mb-2"></div>
                         @error('foto_tiket') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         

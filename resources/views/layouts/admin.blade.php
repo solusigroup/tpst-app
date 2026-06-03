@@ -1103,6 +1103,8 @@
             observer.observe(document.body, { childList: true, subtree: true });
         });
     </script>
+    {{-- Client-side image compressor: prevents server OOM on mobile camera uploads --}}
+    <script src="{{ asset('js/image-compressor.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

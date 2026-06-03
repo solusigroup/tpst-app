@@ -66,8 +66,8 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Bukti Transaksi <span class="text-danger">*</span></label>
-                            <input type="file" name="bukti_transaksi" class="form-control @error('bukti_transaksi') is-invalid @enderror" accept=".jpg,.jpeg,.png,.pdf" {{ isset($jurnalKas) && $jurnalKas->bukti_transaksi ? '' : 'required' }}>
-                            <div class="form-text">Format: JPG, PNG, PDF. Maks: 5MB. Bisa ambil dari Kamera Pustaka/Galeri.</div>
+                            <input type="file" name="bukti_transaksi" class="form-control @error('bukti_transaksi') is-invalid @enderror" accept=".jpg,.jpeg,.png,.pdf" capture="environment" data-compress data-compress-max-width="1200" data-compress-quality="0.7" {{ isset($jurnalKas) && $jurnalKas->bukti_transaksi ? '' : 'required' }}>
+                            <div class="form-text">Format: JPG, PNG, PDF. Maks: 5MB. Foto dari kamera akan otomatis dikompresi.</div>
                             @error('bukti_transaksi') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             
                             @if(isset($jurnalKas) && $jurnalKas->bukti_transaksi)
