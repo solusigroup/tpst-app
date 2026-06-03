@@ -76,7 +76,7 @@ class JurnalKas extends Model
         $jurnalHeader->deskripsi = $this->deskripsi ?: "Jurnal Kas: {$this->tipe}";
         $jurnalHeader->referensi_type = self::class;
         $jurnalHeader->referensi_id = $this->id;
-        $jurnalHeader->status = $this->status ?? 'draft';
+        $jurnalHeader->status = $this->status ?? 'unposted';
         $jurnalHeader->bukti_transaksi = $this->bukti_transaksi;
         $jurnalHeader->save();
 

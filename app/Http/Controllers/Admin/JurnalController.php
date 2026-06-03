@@ -26,7 +26,13 @@ class JurnalController extends Controller
             });
         }
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'unposted') {
+                $query->where(function($q) {
+                    $q->where('status', 'unposted')->orWhere('status', 'draft');
+                });
+            } else {
+                $query->where('status', $request->status);
+            }
         }
         if ($request->filled('start_date')) {
             $query->where('tanggal', '>=', $request->start_date);
