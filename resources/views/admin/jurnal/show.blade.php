@@ -14,6 +14,21 @@
         </nav>
     </div>
     <div class="d-flex gap-2">
+        @if($jurnal->status !== 'posted')
+            <form method="POST" action="{{ route('admin.jurnal.post', $jurnal) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-success">
+                    <i class="cil-check-circle me-1"></i> Post Jurnal
+                </button>
+            </form>
+        @else
+            <form method="POST" action="{{ route('admin.jurnal.unpost', $jurnal) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Yakin ingin meng-unpost jurnal ini?')">
+                    <i class="cil-x-circle me-1"></i> Unpost
+                </button>
+            </form>
+        @endif
         <a href="{{ route('admin.jurnal.edit', $jurnal) }}" class="btn btn-outline-primary">
             <i class="cil-pencil me-1"></i> Edit
         </a>
