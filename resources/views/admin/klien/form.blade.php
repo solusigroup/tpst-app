@@ -75,6 +75,12 @@
                                 <textarea name="alamat" class="form-control"
                                     rows="3">{{ old('alamat', $klien->alamat ?? '') }}</textarea>
                             </div>
+                            <div class="col-12">
+                                <label class="form-label">Keterangan</label>
+                                <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror"
+                                    rows="3" placeholder="Catatan tambahan tentang klien (opsional)">{{ old('keterangan', $klien->keterangan ?? '') }}</textarea>
+                                @error('keterangan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label">Armada Digunakan</label>
                                 <select name="armada_digunakan" class="form-select @error('armada_digunakan') is-invalid @enderror">
