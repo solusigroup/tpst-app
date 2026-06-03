@@ -7,6 +7,7 @@ use App\Models\JurnalHeader;
 use App\Models\JurnalKas;
 use App\Models\Coa;
 use App\Models\Invoice;
+use App\Models\JurnalTemplate;
 use App\Models\WageCalculation;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
@@ -81,8 +82,9 @@ class JurnalController extends Controller
 
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
+        $templates = JurnalTemplate::orderBy('nama')->get();
 
-        return view('admin.jurnal.form', compact('coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId', 'kliens', 'vendors'));
+        return view('admin.jurnal.form', compact('coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId', 'kliens', 'vendors', 'templates'));
     }
 
     public function store(Request $request)
@@ -283,5 +285,34 @@ class JurnalController extends Controller
             $jurnal->referensi?->update(['status' => 'unposted']);
         }
         return back()->with('warning', 'Jurnal di-unpost.');
+    }
+
+    public function storeTemplate(Request $request)
+    {
+        Gate::authorize('create_jurnal');
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string|max:500',
+            'template_details' => 'required|array|min:2',
+            'template_details.*.coa_id' => 'required|exists:coa,id',
+            'template_details.*.posisi' => 'required|in:debit,kredit',
+        ]);
+
+        JurnalTemplate::create([
+            'tenant_id' => auth()->user()->getEffectiveTenantId(),
+            'nama' => $validated['nama'],
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'details' => $validated['template_details'],
+        ]);
+
+        return back()->with('success', 'Template jurnal berhasil disimpan.');
+    }
+
+    public function destroyTemplate(JurnalTemplate $jurnalTemplate)
+    {
+        Gate::authorize('create_jurnal');
+        $jurnalTemplate->delete();
+        return back()->with('success', 'Template jurnal berhasil dihapus.');
     }
 }

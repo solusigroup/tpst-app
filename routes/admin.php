@@ -64,6 +64,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('jurnal', JurnalController::class);
     Route::post('jurnal/{jurnal}/post', [JurnalController::class, 'post'])->name('jurnal.post');
     Route::post('jurnal/{jurnal}/unpost', [JurnalController::class, 'unpost'])->name('jurnal.unpost');
+    Route::post('jurnal-template', [JurnalController::class, 'storeTemplate'])->name('jurnal-template.store');
+    Route::delete('jurnal-template/{jurnalTemplate}', [JurnalController::class, 'destroyTemplate'])->name('jurnal-template.destroy');
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
     Route::post('invoice/merge-drafts', [InvoiceAdminController::class, 'mergeDrafts'])->name('invoice.merge-drafts');
