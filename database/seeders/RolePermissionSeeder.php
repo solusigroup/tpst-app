@@ -40,6 +40,7 @@ class RolePermissionSeeder extends Seeder
             // Laporan
             'view_laporan_keuangan',
             'view_laporan_operasional',
+            'view_statistik_komparatif',
             
             // Laporan Operasional (Granular)
             'view_laporan_ritase',
@@ -95,7 +96,7 @@ class RolePermissionSeeder extends Seeder
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
-            'view_laporan_keuangan', 'view_laporan_operasional',
+            'view_laporan_keuangan', 'view_laporan_operasional', 'view_statistik_komparatif',
             'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
             'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
             'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah',
@@ -119,7 +120,7 @@ class RolePermissionSeeder extends Seeder
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
-            'view_laporan_keuangan', 'view_laporan_operasional',
+            'view_laporan_keuangan', 'view_laporan_operasional', 'view_statistik_komparatif',
             'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
             'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
             'view_laporan_residu', 'view_laporan_kehadiran', 'view_laporan_upah',

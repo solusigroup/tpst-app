@@ -145,4 +145,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('wage-calculation/{wageCalculation}/recalculate', [WageCalculationController::class, 'recalculate'])->name('wage-calculation.recalculate');
         Route::get('wage-calculation/{wageCalculation}/export-slip', [WageCalculationController::class, 'exportSlip'])->name('wage-calculation.export-slip');
     });
+
+    // Statistik Komparatif
+    Route::prefix('statistik-komparatif')->name('statistik-komparatif.')->group(function () {
+        Route::get('ritase-residu', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'ritaseResidu'])->name('ritase-residu');
+        Route::get('klien', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'klien'])->name('klien');
+        Route::get('keuangan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'keuangan'])->name('keuangan');
+        Route::get('produksi-penjualan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'produksiPenjualan'])->name('produksi-penjualan');
+    });
 });

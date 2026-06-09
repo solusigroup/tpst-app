@@ -691,6 +691,38 @@
             </li>
             @endcanany
 
+            {{-- Statistik Komparatif --}}
+            @canany(['view_laporan_keuangan', 'view_laporan_operasional'])
+            <li class="nav-title">Analitik</li>
+            <li class="nav-group {{ request()->is('admin/statistik-komparatif*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-chart-line"></i> Statistik Komparatif
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.ritase-residu') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.ritase-residu') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Ritase vs Residu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.klien') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.klien') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Kontribusi Klien
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.keuangan') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.keuangan') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Pendapatan vs Beban
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.produksi-penjualan') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.produksi-penjualan') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Produksi vs Penjualan
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            @endcanany
+
             {{-- Keuangan --}}
             <li class="nav-title">Keuangan</li>
             @can('view_coa')
