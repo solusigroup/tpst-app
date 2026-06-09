@@ -263,8 +263,17 @@ class StatistikKomparatifController extends Controller
         $selectedMonth = $request->get('month', date('m'));
         $selectedYear = $request->get('year', date('Y'));
 
-        $monthStart = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
-        $monthEnd = $monthStart->copy()->endOfMonth();
+        if ($selectedMonth === 'YTD') {
+            $monthStart = Carbon::createFromDate($selectedYear, 1, 1)->startOfDay();
+            if ($selectedYear == date('Y')) {
+                $monthEnd = Carbon::now()->endOfDay();
+            } else {
+                $monthEnd = Carbon::createFromDate($selectedYear, 12, 31)->endOfDay();
+            }
+        } else {
+            $monthStart = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
+            $monthEnd = $monthStart->copy()->endOfMonth();
+        }
 
         // Hasil Pilahan (tonase is in kg) grouped by category
         $produksiData = HasilPilahan::whereBetween('tanggal', [$monthStart, $monthEnd])

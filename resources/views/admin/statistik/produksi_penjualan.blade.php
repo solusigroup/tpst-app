@@ -22,6 +22,7 @@
                         @foreach($months as $m => $name)
                             <option value="{{ sprintf('%02d', $m) }}" {{ $selectedMonth == $m ? 'selected' : '' }}>{{ $name }}</option>
                         @endforeach
+                        <option value="YTD" {{ $selectedMonth === 'YTD' ? 'selected' : '' }}>All Year to Date</option>
                     </select>
                     <div class="divider"></div>
                     <select name="year" onchange="this.form.submit()">
