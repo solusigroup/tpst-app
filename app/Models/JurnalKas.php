@@ -53,14 +53,12 @@ class JurnalKas extends Model
         static::addGlobalScope(new TenantScope());
 
         static::created(function (JurnalKas $jurnalKas) {
-            $jurnalKas->createJurnalAkuntansi();
+            $jurnalKas->createOrUpdateJurnalAkuntansi();
         });
 
         static::updated(function (JurnalKas $jurnalKas) {
-            // Re-create or update JurnalAkuntansi
-            // Since it's polymorphic, we'll delete and re-create for simplicity
-            $jurnalKas->deleteJurnalAkuntansi();
-            $jurnalKas->createJurnalAkuntansi();
+            // Re-create or update JurnalAkuntansi safely without deleting the JurnalHeader ID
+            $jurnalKas->createOrUpdateJurnalAkuntansi();
         });
 
         static::deleted(function (JurnalKas $jurnalKas) {
@@ -68,19 +66,28 @@ class JurnalKas extends Model
         });
     }
 
-    public function createJurnalAkuntansi()
+    public function createOrUpdateJurnalAkuntansi()
     {
-        $jurnalHeader = new JurnalHeader();
-        $jurnalHeader->tenant_id = $this->tenant_id;
+        $jurnalHeader = JurnalHeader::where('referensi_type', self::class)
+            ->where('referensi_id', $this->id)
+            ->first();
+
+        if (!$jurnalHeader) {
+            $jurnalHeader = new JurnalHeader();
+            $jurnalHeader->tenant_id = $this->tenant_id;
+            $jurnalHeader->referensi_type = self::class;
+            $jurnalHeader->referensi_id = $this->id;
+        }
+
         $jurnalHeader->tanggal = $this->tanggal;
         $jurnalHeader->deskripsi = $this->deskripsi ?: "Jurnal Kas: {$this->tipe}";
-        $jurnalHeader->referensi_type = self::class;
-        $jurnalHeader->referensi_id = $this->id;
         $jurnalHeader->status = $this->status ?? 'unposted';
         $jurnalHeader->bukti_transaksi = $this->bukti_transaksi;
         $jurnalHeader->save();
 
         // Details
+        $jurnalHeader->jurnalDetails()->get()->each->delete();
+
         if ($this->tipe === 'Penerimaan') {
             // Kas bertambah (Debit), Lawan bertambah (Kredit - usually Pendapatan)
             $jurnalHeader->jurnalDetails()->create([
