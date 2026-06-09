@@ -139,7 +139,7 @@ class StatistikKomparatifController extends Controller
         $maxContributorWeight = 0;
 
         foreach ($contributions as $item) {
-            $clientName = $item->klien ? $item->klien->name : 'Klien Tidak Dikenal';
+            $clientName = $item->klien ? $item->klien->nama_klien : 'Klien Tidak Dikenal';
             $weight = (float) $item->total_berat;
             $ritaseCount = (int) $item->total_ritase;
             $tipping = (float) $item->total_tipping;
