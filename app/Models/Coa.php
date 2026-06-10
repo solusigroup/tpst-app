@@ -21,6 +21,7 @@ class Coa extends Model
         'nama_akun',
         'tipe',
         'klasifikasi',
+        'kategori_buku_pembantu',
     ];
 
     protected $casts = [

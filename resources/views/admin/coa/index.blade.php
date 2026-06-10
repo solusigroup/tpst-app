@@ -34,7 +34,22 @@
                         <td><strong>{{ $item->kode_akun }}</strong></td>
                         <td>{{ $item->nama_akun }}</td>
                         <td><span class="badge bg-primary">{{ $item->tipe }}</span></td>
-                        <td><span class="badge bg-secondary">{{ $item->klasifikasi }}</span></td>
+                        <td>
+                            <span class="badge bg-secondary">{{ $item->klasifikasi }}</span>
+                            @if($item->kategori_buku_pembantu)
+                                @php
+                                    $labels = [
+                                        'piutang_dlh' => 'Piutang DLH',
+                                        'piutang_swasta' => 'Piutang Swasta',
+                                        'piutang_offtaker' => 'Piutang Offtaker',
+                                        'utang_usaha' => 'Utang Usaha',
+                                    ];
+                                @endphp
+                                <span class="badge bg-info text-dark ms-1">
+                                    {{ $labels[$item->kategori_buku_pembantu] ?? $item->kategori_buku_pembantu }}
+                                </span>
+                            @endif
+                        </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.coa.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>

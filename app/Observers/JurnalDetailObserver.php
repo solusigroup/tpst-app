@@ -22,11 +22,10 @@ class JurnalDetailObserver
         $coa = $detail->coa;
         $tipe = null;
 
-        // Check if accounts are AR or AP
-        // Based on previous research: 1103-1105 are Piutang, 2101-2105 are Utang
-        if (str_starts_with($coa->kode_akun, '1103') || str_starts_with($coa->kode_akun, '1104') || str_starts_with($coa->kode_akun, '1105')) {
+        // Check if accounts are AR or AP dynamically
+        if ($coa->tipe === 'Asset' && (in_array($coa->kategori_buku_pembantu, ['piutang_dlh', 'piutang_swasta', 'piutang_offtaker']) || (str_contains(strtolower($coa->nama_akun), 'piutang') && !str_contains(strtolower($coa->nama_akun), 'uang muka')))) {
             $tipe = 'piutang';
-        } elseif (str_starts_with($coa->kode_akun, '21')) { // 21 is usually Payables
+        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu === 'utang_usaha' || str_contains(strtolower($coa->nama_akun), 'utang usaha') || str_contains(strtolower($coa->nama_akun), 'hutang usaha') || str_starts_with($coa->kode_akun, '2101'))) {
             $tipe = 'utang';
         }
 
@@ -142,9 +141,9 @@ class JurnalDetailObserver
         $coa = $detail->coa;
         $tipe = null;
 
-        if (str_starts_with($coa->kode_akun, '1103') || str_starts_with($coa->kode_akun, '1104') || str_starts_with($coa->kode_akun, '1105')) {
+        if ($coa->tipe === 'Asset' && (in_array($coa->kategori_buku_pembantu, ['piutang_dlh', 'piutang_swasta', 'piutang_offtaker']) || (str_contains(strtolower($coa->nama_akun), 'piutang') && !str_contains(strtolower($coa->nama_akun), 'uang muka')))) {
             $tipe = 'piutang';
-        } elseif (str_starts_with($coa->kode_akun, '21')) {
+        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu === 'utang_usaha' || str_contains(strtolower($coa->nama_akun), 'utang usaha') || str_contains(strtolower($coa->nama_akun), 'hutang usaha') || str_starts_with($coa->kode_akun, '2101'))) {
             $tipe = 'utang';
         }
 

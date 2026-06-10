@@ -47,19 +47,34 @@ class InvoiceObserver
 
                 // --- Account lookup ---
                 
-                // 1. Dynamic Piutang Selection
-                $piutangCode = '1103'; // Default to DLH
-                if ($invoice->klien->jenis === 'Swasta' || $invoice->klien->jenis === 'Offtaker') {
-                    $piutangCode = '1104';
+                // 1. Dynamic Piutang Selection based on kategori_buku_pembantu mapping
+                $targetCategory = 'piutang_dlh';
+                if ($invoice->klien->jenis === 'Swasta') {
+                    $targetCategory = 'piutang_swasta';
+                } elseif ($invoice->klien->jenis === 'Offtaker') {
+                    $targetCategory = 'piutang_offtaker';
                 }
 
                 $piutangCoa = Coa::where('tenant_id', $invoice->tenant_id)
                     ->where('tipe', 'Asset')
-                    ->where('kode_akun', 'like', $piutangCode . '%')
-                    ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
-                    ->where('tipe', 'Asset')
-                    ->where('nama_akun', 'like', '%Piutang%')
+                    ->where('kategori_buku_pembantu', $targetCategory)
                     ->first();
+
+                // Fallback to legacy naming/code pattern mapping if not explicitly mapped
+                if (!$piutangCoa) {
+                    $piutangCode = '1103'; // Default to DLH
+                    if ($invoice->klien->jenis === 'Swasta' || $invoice->klien->jenis === 'Offtaker') {
+                        $piutangCode = '1104';
+                    }
+
+                    $piutangCoa = Coa::where('tenant_id', $invoice->tenant_id)
+                        ->where('tipe', 'Asset')
+                        ->where('kode_akun', 'like', $piutangCode . '%')
+                        ->first() ?: Coa::where('tenant_id', $invoice->tenant_id)
+                        ->where('tipe', 'Asset')
+                        ->where('nama_akun', 'like', '%Piutang%')
+                        ->first();
+                }
 
                 // 2. Revenue lookup
                 // 2a. Tipping/Service Revenue Coa

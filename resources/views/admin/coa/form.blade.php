@@ -39,6 +39,17 @@
                 </select>
                 @error('klasifikasi') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
+            <div class="col-md-6 d-none" id="kategori_buku_pembantu_container">
+                <label class="form-label">Kategori Buku Pembantu</label>
+                <select name="kategori_buku_pembantu" id="kategori_buku_pembantu" class="form-select no-search @error('kategori_buku_pembantu') is-invalid @enderror">
+                    <option value="">-- Bukan Akun Pembantu Khusus --</option>
+                    <option value="piutang_dlh" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'piutang_dlh' ? 'selected' : '' }}>Piutang Dinas Lingkungan Hidup (DLH)</option>
+                    <option value="piutang_swasta" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'piutang_swasta' ? 'selected' : '' }}>Piutang Swasta / Komersial</option>
+                    <option value="piutang_offtaker" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'piutang_offtaker' ? 'selected' : '' }}>Piutang Offtaker</option>
+                    <option value="utang_usaha" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'utang_usaha' ? 'selected' : '' }}>Utang Usaha (AP)</option>
+                </select>
+                @error('kategori_buku_pembantu') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
             <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> {{ isset($coa) ? 'Perbarui' : 'Simpan' }}</button>
                 <a href="{{ route('admin.coa.index') }}" class="btn btn-outline-secondary">Kembali</a>
@@ -71,6 +82,16 @@ function updateKlasifikasi() {
     // Restore old value
     const oldVal = '{{ old("klasifikasi", $coa->klasifikasi ?? "") }}';
     if (oldVal) sel.value = oldVal;
+
+    // Show/hide kategori_buku_pembantu container
+    const container = document.getElementById('kategori_buku_pembantu_container');
+    const select = document.getElementById('kategori_buku_pembantu');
+    if (tipe === 'Asset' || tipe === 'Liability') {
+        container.classList.remove('d-none');
+    } else {
+        container.classList.add('d-none');
+        select.value = '';
+    }
 }
 document.addEventListener('DOMContentLoaded', updateKlasifikasi);
 </script>

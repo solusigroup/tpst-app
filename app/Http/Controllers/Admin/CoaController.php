@@ -44,7 +44,13 @@ class CoaController extends Controller
             'nama_akun' => 'required|string',
             'tipe' => 'required|in:Asset,Liability,Equity,Revenue,Expense',
             'klasifikasi' => 'required|string',
+            'kategori_buku_pembantu' => 'nullable|in:piutang_dlh,piutang_swasta,piutang_offtaker,utang_usaha',
         ]);
+
+        // Nullify if not Asset or Liability
+        if (!in_array($validated['tipe'], ['Asset', 'Liability'])) {
+            $validated['kategori_buku_pembantu'] = null;
+        }
 
         Coa::create($validated);
 
@@ -66,7 +72,13 @@ class CoaController extends Controller
             'nama_akun' => 'required|string',
             'tipe' => 'required|in:Asset,Liability,Equity,Revenue,Expense',
             'klasifikasi' => 'required|string',
+            'kategori_buku_pembantu' => 'nullable|in:piutang_dlh,piutang_swasta,piutang_offtaker,utang_usaha',
         ]);
+
+        // Nullify if not Asset or Liability
+        if (!in_array($validated['tipe'], ['Asset', 'Liability'])) {
+            $validated['kategori_buku_pembantu'] = null;
+        }
 
         $coa->update($validated);
 
