@@ -43,10 +43,6 @@
                 <label class="form-label">Kategori Buku Pembantu</label>
                 <select name="kategori_buku_pembantu" id="kategori_buku_pembantu" class="form-select no-search @error('kategori_buku_pembantu') is-invalid @enderror">
                     <option value="">-- Bukan Akun Pembantu Khusus --</option>
-                    <option value="piutang_dlh" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'piutang_dlh' ? 'selected' : '' }}>Piutang Dinas Lingkungan Hidup (DLH)</option>
-                    <option value="piutang_swasta" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'piutang_swasta' ? 'selected' : '' }}>Piutang Swasta / Komersial</option>
-                    <option value="piutang_offtaker" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'piutang_offtaker' ? 'selected' : '' }}>Piutang Offtaker</option>
-                    <option value="utang_usaha" {{ old('kategori_buku_pembantu', $coa->kategori_buku_pembantu ?? '') == 'utang_usaha' ? 'selected' : '' }}>Utang Usaha (AP)</option>
                 </select>
                 @error('kategori_buku_pembantu') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
@@ -68,6 +64,16 @@ const klasifikasiMap = {
     'Revenue': {'Pendapatan':'Pendapatan'},
     'Expense': {'Beban':'Beban'},
 };
+const kategoriMap = {
+    'Asset': {
+        'piutang_dlh': 'Piutang Dinas Lingkungan Hidup (DLH)',
+        'piutang_swasta': 'Piutang Swasta / Komersial',
+        'piutang_offtaker': 'Piutang Offtaker'
+    },
+    'Liability': {
+        'utang_usaha': 'Utang Usaha (AP)'
+    }
+};
 function updateKlasifikasi() {
     const tipe = document.getElementById('tipe').value;
     const sel = document.getElementById('klasifikasi');
@@ -83,14 +89,25 @@ function updateKlasifikasi() {
     const oldVal = '{{ old("klasifikasi", $coa->klasifikasi ?? "") }}';
     if (oldVal) sel.value = oldVal;
 
-    // Show/hide kategori_buku_pembantu container
+    // Show/hide and populate kategori_buku_pembantu container based on selected tipe
     const container = document.getElementById('kategori_buku_pembantu_container');
     const select = document.getElementById('kategori_buku_pembantu');
-    if (tipe === 'Asset' || tipe === 'Liability') {
+    select.innerHTML = '<option value="">-- Bukan Akun Pembantu Khusus --</option>';
+    
+    if (kategoriMap[tipe]) {
         container.classList.remove('d-none');
+        Object.entries(kategoriMap[tipe]).forEach(([k,v]) => {
+            const opt = document.createElement('option');
+            opt.value = k; opt.textContent = v;
+            select.appendChild(opt);
+        });
+        // Restore old value
+        const oldKategori = '{{ old("kategori_buku_pembantu", $coa->kategori_buku_pembantu ?? "") }}';
+        if (oldKategori && kategoriMap[tipe][oldKategori]) {
+            select.value = oldKategori;
+        }
     } else {
         container.classList.add('d-none');
-        select.value = '';
     }
 }
 document.addEventListener('DOMContentLoaded', updateKlasifikasi);
