@@ -38,7 +38,7 @@ class BukuPembantuController extends Controller
                 $query->where('status', $request->status);
             }
 
-            $totalJumlah = (clone $query)->selectRaw('SUM(jumlah - terbayar) as total')->value('total') ?? 0;
+            $totalJumlah = (clone $query)->where('status', 'pending')->selectRaw('SUM(jumlah - terbayar) as total')->value('total') ?? 0;
             $entries = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
             return view('admin.buku_pembantu.piutang', compact('entries', 'totalJumlah'));
@@ -76,7 +76,7 @@ class BukuPembantuController extends Controller
                 $query->where('status', $request->status);
             }
 
-            $totalJumlah = (clone $query)->selectRaw('SUM(jumlah - terbayar) as total')->value('total') ?? 0;
+            $totalJumlah = (clone $query)->where('status', 'pending')->selectRaw('SUM(jumlah - terbayar) as total')->value('total') ?? 0;
             $entries = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
             return view('admin.buku_pembantu.utang', compact('entries', 'totalJumlah'));

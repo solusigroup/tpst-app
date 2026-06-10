@@ -53,10 +53,18 @@ class BukuPembantu extends Model
         static::addGlobalScope(new TenantScope());
 
         static::saving(function ($model) {
-            if ($model->terbayar >= $model->jumlah) {
-                $model->status = 'lunas';
+            if ($model->jumlah < 0) {
+                if ($model->terbayar <= $model->jumlah) {
+                    $model->status = 'lunas';
+                } else {
+                    $model->status = 'pending';
+                }
             } else {
-                $model->status = 'pending';
+                if ($model->terbayar >= $model->jumlah) {
+                    $model->status = 'lunas';
+                } else {
+                    $model->status = 'pending';
+                }
             }
         });
     }
