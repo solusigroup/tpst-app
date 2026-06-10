@@ -36,6 +36,13 @@
                 <input type="text" name="search" class="form-control" placeholder="Teks pencarian..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
+                <select name="approval_status" class="form-select" title="Status Approval">
+                    <option value="">-- Semua Approval --</option>
+                    <option value="approved" {{ request('approval_status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="pending" {{ request('approval_status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                </select>
+            </div>
+            <div class="col-auto">
                 <input type="date" name="start_date" class="form-control" title="Tanggal Mulai" value="{{ request('start_date') }}">
             </div>
             <div class="col-auto">
@@ -44,7 +51,7 @@
             <div class="col-auto">
                 <button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Cari</button>
             </div>
-            @if(request()->hasAny(['search', 'start_date', 'end_date']))
+            @if(request()->hasAny(['search', 'start_date', 'end_date', 'approval_status']))
                 <div class="col-auto"><a href="{{ route('admin.ritase.index') }}" class="btn btn-outline-secondary">Reset</a></div>
             @endif
         </form>

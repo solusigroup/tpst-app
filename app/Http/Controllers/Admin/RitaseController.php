@@ -48,6 +48,14 @@ class RitaseController extends Controller
             $query->whereDate('waktu_masuk', '<=', $request->end_date);
         }
 
+        if ($request->filled('approval_status')) {
+            if ($request->approval_status === 'approved') {
+                $query->where('is_approved', true);
+            } elseif ($request->approval_status === 'pending') {
+                $query->where('is_approved', false);
+            }
+        }
+
         $totalBeratNetto = (clone $query)->sum('berat_netto');
         $ritase = $query->orderByDesc('waktu_masuk')->paginate(15)->withQueryString();
 
@@ -88,6 +96,14 @@ class RitaseController extends Controller
 
         if ($request->filled('end_date')) {
             $query->whereDate('waktu_masuk', '<=', $request->end_date);
+        }
+
+        if ($request->filled('approval_status')) {
+            if ($request->approval_status === 'approved') {
+                $query->where('is_approved', true);
+            } elseif ($request->approval_status === 'pending') {
+                $query->where('is_approved', false);
+            }
         }
 
         $ritase = $query->orderByDesc('waktu_masuk')->get();
