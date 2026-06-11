@@ -18,7 +18,7 @@
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto">
-                <input type="text" name="search" class="form-control" placeholder="Cari nama vendor..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control" placeholder="Cari nama vendor / keterangan..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
                 <select name="status" class="form-select">

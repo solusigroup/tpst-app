@@ -25,7 +25,7 @@ class JurnalDetailObserver
         // Check if accounts are AR or AP dynamically
         if ($coa->tipe === 'Asset' && (in_array($coa->kategori_buku_pembantu, ['piutang_dlh', 'piutang_swasta', 'piutang_offtaker']) || (str_contains(strtolower($coa->nama_akun), 'piutang') && !str_contains(strtolower($coa->nama_akun), 'uang muka')))) {
             $tipe = 'piutang';
-        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu === 'utang_usaha' || str_contains(strtolower($coa->nama_akun), 'utang usaha') || str_contains(strtolower($coa->nama_akun), 'hutang usaha') || str_starts_with($coa->kode_akun, '2101'))) {
+        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu && str_starts_with($coa->kategori_buku_pembantu, 'utang_') || str_contains(strtolower($coa->nama_akun), 'utang') || str_contains(strtolower($coa->nama_akun), 'hutang') || str_contains(strtolower($coa->nama_akun), 'kewajiban') || str_contains(strtolower($coa->nama_akun), 'pencadangan') || str_contains(strtolower($coa->nama_akun), 'tabungan'))) {
             $tipe = 'utang';
         }
 
@@ -143,7 +143,7 @@ class JurnalDetailObserver
 
         if ($coa->tipe === 'Asset' && (in_array($coa->kategori_buku_pembantu, ['piutang_dlh', 'piutang_swasta', 'piutang_offtaker']) || (str_contains(strtolower($coa->nama_akun), 'piutang') && !str_contains(strtolower($coa->nama_akun), 'uang muka')))) {
             $tipe = 'piutang';
-        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu === 'utang_usaha' || str_contains(strtolower($coa->nama_akun), 'utang usaha') || str_contains(strtolower($coa->nama_akun), 'hutang usaha') || str_starts_with($coa->kode_akun, '2101'))) {
+        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu && str_starts_with($coa->kategori_buku_pembantu, 'utang_') || str_contains(strtolower($coa->nama_akun), 'utang') || str_contains(strtolower($coa->nama_akun), 'hutang') || str_contains(strtolower($coa->nama_akun), 'kewajiban') || str_contains(strtolower($coa->nama_akun), 'pencadangan') || str_contains(strtolower($coa->nama_akun), 'tabungan'))) {
             $tipe = 'utang';
         }
 
