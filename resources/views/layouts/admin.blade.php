@@ -686,7 +686,14 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.invoice.per-jenis') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.invoice.per-jenis') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Invoice Per Jenis</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.validasi-tipping-fee') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.validasi-tipping-fee') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span>
+                            <span class="text-warning fw-semibold">⚠ Validasi Tipping Fee</span>
+                        </a>
+                    </li>
                     @endcan
+
                 </ul>
             </li>
             @endcanany

@@ -1374,4 +1374,118 @@ class LaporanController extends Controller
 
         return view('admin.laporan.invoice.per-jenis', compact('query', 'dari', 'sampai', 'totalTagihan', 'totalDibayar', 'totalSisa', 'totalInvoice'));
     }
+
+    // ─── Validasi Tipping Fee ───
+
+    public function validasiTippingFee(Request $request)
+    {
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $dari      = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai    = $request->get('sampai', now()->format('Y-m-d'));
+        $klienId   = $request->get('klien_id');
+        $onlyError = $request->boolean('only_error', false);
+
+        // Ambil semua ritase dengan klien per-ton atau per-ritase dalam rentang tanggal
+        $query = Ritase::with(['klien', 'armada'])
+            ->when($dari,   fn ($q) => $q->whereDate('ritase.waktu_masuk', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('ritase.waktu_masuk', '<=', $sampai))
+            ->when($klienId, fn ($q) => $q->where('ritase.klien_id', $klienId))
+            ->whereHas('klien', fn ($q) => $q->whereIn('jenis_tarif', ['Per Ton', 'Per Ritase']))
+            ->orderByDesc('ritase.waktu_masuk');
+
+        $ritases = $query->get();
+
+        // Hitung anomali per ritase
+        $results = $ritases->map(function ($r) {
+            $klien        = $r->klien;
+            $besaranTarif = (float) ($klien->besaran_tarif ?? 0);
+            $beratNetto   = (float) ($r->berat_netto ?? 0);
+            $aktual       = (float) ($r->biaya_tipping ?? 0);
+
+            if ($klien->jenis_tarif === 'Per Ton') {
+                $expected = ($beratNetto / 1000) * $besaranTarif;
+            } elseif ($klien->jenis_tarif === 'Per Ritase') {
+                $expected = $besaranTarif;
+            } else {
+                $expected = 0;
+            }
+
+            $selisih  = $aktual - $expected;
+            $isAnomali = abs($selisih) > 0.5; // toleransi Rp 0.5 (pembulatan)
+
+            return (object)[
+                'id'            => $r->id,
+                'nomor_tiket'   => $r->nomor_tiket,
+                'waktu_masuk'   => $r->waktu_masuk,
+                'klien'         => $klien,
+                'armada'        => $r->armada,
+                'berat_netto'   => $beratNetto,
+                'jenis_tarif'   => $klien->jenis_tarif,
+                'besaran_tarif' => $besaranTarif,
+                'aktual'        => $aktual,
+                'expected'      => $expected,
+                'selisih'       => $selisih,
+                'is_anomali'    => $isAnomali,
+                'is_approved'   => $r->is_approved,
+                'invoice_id'    => $r->invoice_id,
+                'status_invoice'=> $r->status_invoice,
+            ];
+        });
+
+        if ($onlyError) {
+            $results = $results->filter(fn ($r) => $r->is_anomali)->values();
+        }
+
+        $totalAktual   = $results->sum('aktual');
+        $totalExpected = $results->sum('expected');
+        $totalSelisih  = $totalAktual - $totalExpected;
+        $totalAnomalic = $results->filter(fn ($r) => $r->is_anomali)->count();
+
+        // Validasi per invoice DLH
+        $invoiceValidation = \App\Models\Invoice::with(['klien', 'ritase'])
+            ->whereHas('klien', fn ($q) => $q->where('jenis', 'DLH'))
+            ->when($dari, fn ($q) => $q->where(fn ($q2) =>
+                $q2->where('periode_tahun', '>=', now()->parse($dari)->year)
+            ))
+            ->orderByDesc('periode_tahun')
+            ->orderByDesc('periode_bulan')
+            ->limit(20)
+            ->get()
+            ->map(function ($inv) {
+                $sumTipping    = $inv->ritase->sum('biaya_tipping');
+                $totalTagihan  = (float) $inv->total_tagihan;
+                $selisihInv    = $totalTagihan - $sumTipping;
+                $ritaseCount   = $inv->ritase->count();
+                $totalNetto    = $inv->ritase->sum('berat_netto');
+                $expectedFromNetto = $inv->klien ? ($totalNetto / 1000) * (float)($inv->klien->besaran_tarif ?? 0) : 0;
+
+                return (object)[
+                    'id'               => $inv->id,
+                    'nomor_invoice'    => $inv->nomor_invoice,
+                    'klien'            => $inv->klien,
+                    'periode'          => sprintf('%02d/%d', $inv->periode_bulan, $inv->periode_tahun),
+                    'status'           => $inv->status,
+                    'total_tagihan'    => $totalTagihan,
+                    'sum_tipping'      => $sumTipping,
+                    'selisih'          => $selisihInv,
+                    'ritase_count'     => $ritaseCount,
+                    'total_netto'      => $totalNetto,
+                    'expected_netto'   => $expectedFromNetto,
+                    'is_anomali'       => abs($selisihInv) > 1,
+                ];
+            });
+
+        $kliens = Klien::whereIn('jenis_tarif', ['Per Ton', 'Per Ritase'])
+            ->orderBy('nama_klien')
+            ->get();
+
+        return view('admin.laporan.validasi-tipping-fee', compact(
+            'results', 'dari', 'sampai', 'klienId', 'onlyError', 'kliens',
+            'totalAktual', 'totalExpected', 'totalSelisih', 'totalAnomalic',
+            'invoiceValidation'
+        ));
+    }
 }
