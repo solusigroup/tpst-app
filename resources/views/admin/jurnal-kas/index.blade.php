@@ -6,7 +6,8 @@
     <div>
         <div class="d-flex align-items-center gap-3">
             <h1>Jurnal Kas</h1>
-            <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 fs-6 rounded-pill shadow-sm">
+            @php $isNegatif = ($saldoKas ?? 0) < 0; @endphp
+            <div class="badge {{ $isNegatif ? 'bg-danger bg-opacity-10 text-danger border border-danger' : 'bg-success bg-opacity-10 text-success border border-success' }} border-opacity-25 px-3 py-2 fs-6 rounded-pill shadow-sm">
                 <i class="cil-wallet me-1"></i> Saldo Kas: Rp {{ number_format($saldoKas ?? 0, 0, ',', '.') }}
             </div>
         </div>
@@ -14,9 +15,24 @@
     </div>
     <div class="d-flex gap-2">
         <a href="{{ route('admin.transfer-kas.create') }}" class="btn btn-outline-primary"><i class="cil-transfer me-1"></i> Transfer Kas/Bank</a>
-        <a href="{{ route('admin.jurnal-kas.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah</a>
+        @if($isNegatif)
+            <button class="btn btn-secondary" disabled title="Saldo Kas negatif — transaksi dinonaktifkan"><i class="cil-plus me-1"></i> Tambah</button>
+        @else
+            <a href="{{ route('admin.jurnal-kas.create') }}" class="btn btn-primary"><i class="cil-plus me-1"></i> Tambah</a>
+        @endif
     </div>
 </div>
+
+@if($isNegatif || session('error_saldo_negatif'))
+<div class="alert alert-danger border-danger d-flex align-items-start gap-3 mb-0 rounded-3 shadow-sm" role="alert">
+    <i class="cil-warning fs-4 mt-1 flex-shrink-0"></i>
+    <div>
+        <strong class="d-block mb-1">Saldo Kas Bernilai Negatif!</strong>
+        Transaksi Kas Kecil (tambah, edit, hapus) dinonaktifkan sementara.<br>
+        Silakan lakukan <a href="{{ route('admin.transfer-kas.create') }}" class="alert-link fw-bold">pengisian kas via Transfer Kas/Bank</a> terlebih dahulu untuk memulihkan saldo.
+    </div>
+</div>
+@endif
 <div class="card">
     <div class="card-header bg-white py-3">
         <form method="GET" class="row g-2 align-items-end">
@@ -83,8 +99,13 @@
                                     <a href="{{ route('admin.jurnal.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit Jurnal Umum"><i class="cil-pencil"></i></a>
                                     <form method="POST" action="{{ route('admin.jurnal.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus Jurnal Umum ini?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                                 @else
-                                    <a href="{{ route('admin.jurnal-kas.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit Jurnal Kas"><i class="cil-pencil"></i></a>
-                                    <form method="POST" action="{{ route('admin.jurnal-kas.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                    @if($isNegatif)
+                                        <button class="btn btn-outline-secondary" disabled title="Saldo Kas negatif — transaksi dinonaktifkan"><i class="cil-pencil"></i></button>
+                                        <button class="btn btn-outline-secondary" disabled title="Saldo Kas negatif — transaksi dinonaktifkan"><i class="cil-trash"></i></button>
+                                    @else
+                                        <a href="{{ route('admin.jurnal-kas.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit Jurnal Kas"><i class="cil-pencil"></i></a>
+                                        <form method="POST" action="{{ route('admin.jurnal-kas.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
+                                    @endif
                                 @endif
                             </div>
                         </td>

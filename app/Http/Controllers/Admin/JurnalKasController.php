@@ -115,6 +115,12 @@ class JurnalKasController extends Controller
     public function create()
     {
         Gate::authorize('create_jurnal_kas');
+
+        if ($this->getSaldoKas() < 0) {
+            return redirect()->route('admin.jurnal-kas.index')
+                ->with('error_saldo_negatif', true);
+        }
+
         $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
@@ -124,6 +130,11 @@ class JurnalKasController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create_jurnal_kas');
+
+        if ($this->getSaldoKas() < 0) {
+            return redirect()->route('admin.jurnal-kas.index')
+                ->with('error_saldo_negatif', true);
+        }
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
@@ -174,6 +185,12 @@ class JurnalKasController extends Controller
     public function edit(JurnalKas $jurnalKas)
     {
         Gate::authorize('update_jurnal_kas');
+
+        if ($this->getSaldoKas() < 0) {
+            return redirect()->route('admin.jurnal-kas.index')
+                ->with('error_saldo_negatif', true);
+        }
+
         $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
@@ -183,6 +200,11 @@ class JurnalKasController extends Controller
     public function update(Request $request, JurnalKas $jurnalKas)
     {
         Gate::authorize('update_jurnal_kas');
+
+        if ($this->getSaldoKas() < 0) {
+            return redirect()->route('admin.jurnal-kas.index')
+                ->with('error_saldo_negatif', true);
+        }
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
@@ -246,6 +268,12 @@ class JurnalKasController extends Controller
     public function destroy(JurnalKas $jurnalKas)
     {
         Gate::authorize('delete_jurnal_kas');
+
+        if ($this->getSaldoKas() < 0) {
+            return redirect()->route('admin.jurnal-kas.index')
+                ->with('error_saldo_negatif', true);
+        }
+
         if ($jurnalKas->bukti_transaksi) {
             Storage::disk('public')->delete($jurnalKas->bukti_transaksi);
         }
@@ -350,5 +378,25 @@ class JurnalKasController extends Controller
         ]);
 
         return redirect()->route('admin.jurnal-kas.index')->with('success', 'Transfer berhasil! Jurnal ' . $jurnalHeader->nomor_referensi . ' telah dibuat.');
+    }
+
+    /**
+     * Get the current posted petty cash (Kas Kecil) balance.
+     */
+    private function getSaldoKas(): float
+    {
+        $kas = Coa::where('kode_akun', 'like', '11%')
+            ->where('nama_akun', 'like', '%Kas%')
+            ->first();
+
+        if (!$kas) {
+            return 0;
+        }
+
+        return (float) (\App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+            ->where('jurnal_header.status', 'posted')
+            ->where('jurnal_detail.coa_id', $kas->id)
+            ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+            ->value('saldo') ?? 0);
     }
 }
