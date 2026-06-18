@@ -9,28 +9,29 @@ class WasteCategoryPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('view_waste_category');
     }
 
     public function view(User $user, WasteCategory $category): bool
     {
-        return $user->tenant_id === $category->tenant_id;
+        return $user->tenant_id === $category->tenant_id &&
+               $user->can('view_waste_category');
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('create_waste_category');
     }
 
     public function update(User $user, WasteCategory $category): bool
     {
         return $user->tenant_id === $category->tenant_id &&
-               $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+               $user->can('update_waste_category');
     }
 
     public function delete(User $user, WasteCategory $category): bool
     {
         return $user->tenant_id === $category->tenant_id &&
-               $user->hasRole(['manajemen', 'super_admin']);
+               $user->can('delete_waste_category');
     }
 }

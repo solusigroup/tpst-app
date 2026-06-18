@@ -9,29 +9,29 @@ class EmployeeOutputPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('view_employee_output');
     }
 
     public function view(User $user, EmployeeOutput $output): bool
     {
         return $user->tenant_id === $output->tenant_id &&
-               $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+               $user->can('view_employee_output');
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('create_employee_output');
     }
 
     public function update(User $user, EmployeeOutput $output): bool
     {
         return $user->tenant_id === $output->tenant_id &&
-               $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+               $user->can('update_employee_output');
     }
 
     public function delete(User $user, EmployeeOutput $output): bool
     {
         return $user->tenant_id === $output->tenant_id &&
-               $user->hasRole(['manajemen', 'super_admin']);
+               $user->can('delete_employee_output');
     }
 }

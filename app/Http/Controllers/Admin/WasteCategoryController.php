@@ -11,6 +11,8 @@ class WasteCategoryController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', WasteCategory::class);
+
         $tenantId = auth()->user()->tenant_id;
         $categories = WasteCategory::where('tenant_id', $tenantId)
             ->with('wageRates')
@@ -22,11 +24,15 @@ class WasteCategoryController extends Controller
 
     public function create()
     {
+        $this->authorize('create', WasteCategory::class);
+
         return view('admin.hrd.waste-category.create');
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', WasteCategory::class);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',

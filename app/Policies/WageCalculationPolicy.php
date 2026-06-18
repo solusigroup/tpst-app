@@ -9,35 +9,35 @@ class WageCalculationPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'keuangan', 'super_admin']);
+        return $user->can('view_wage_calculation');
     }
 
     public function view(User $user, WageCalculation $calculation): bool
     {
         return $user->tenant_id === $calculation->tenant_id &&
-               $user->hasRole(['manajemen', 'hrd', 'keuangan', 'super_admin']);
+               $user->can('view_wage_calculation');
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('create_wage_calculation');
     }
 
     public function update(User $user, WageCalculation $calculation): bool
     {
         return $user->tenant_id === $calculation->tenant_id &&
-               $user->hasRole(['manajemen', 'super_admin']);
+               $user->can('update_wage_calculation');
     }
 
     public function approve(User $user, WageCalculation $calculation): bool
     {
         return $user->tenant_id === $calculation->tenant_id &&
-               $user->hasRole(['manajemen', 'super_admin']);
+               $user->can('update_wage_calculation');
     }
 
     public function delete(User $user, WageCalculation $calculation): bool
     {
         return $user->tenant_id === $calculation->tenant_id &&
-               $user->hasRole(['manajemen', 'super_admin']);
+               $user->can('delete_wage_calculation');
     }
 }

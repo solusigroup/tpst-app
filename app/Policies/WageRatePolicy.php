@@ -9,28 +9,29 @@ class WageRatePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['admin', 'hrd', 'keuangan', 'super_admin']);
+        return $user->can('view_wage_rate');
     }
 
     public function view(User $user, WageRate $rate): bool
     {
-        return $user->tenant_id === $rate->tenant_id;
+        return $user->tenant_id === $rate->tenant_id &&
+               $user->can('view_wage_rate');
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['admin', 'hrd', 'super_admin']);
+        return $user->can('create_wage_rate');
     }
 
     public function update(User $user, WageRate $rate): bool
     {
         return $user->tenant_id === $rate->tenant_id &&
-            $user->hasRole(['admin', 'hrd', 'super_admin']);
+               $user->can('update_wage_rate');
     }
 
     public function delete(User $user, WageRate $rate): bool
     {
         return $user->tenant_id === $rate->tenant_id &&
-            $user->hasRole(['admin', 'super_admin']);
+               $user->can('delete_wage_rate');
     }
 }

@@ -11,6 +11,8 @@ class WageRateController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', WageRate::class);
+
         $tenantId = auth()->user()->tenant_id;
         $rates = WageRate::where('tenant_id', $tenantId)
             ->with('wasteCategory')
@@ -22,6 +24,8 @@ class WageRateController extends Controller
 
     public function create()
     {
+        $this->authorize('create', WageRate::class);
+
         $tenantId = auth()->user()->tenant_id;
         $categories = WasteCategory::where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -33,6 +37,8 @@ class WageRateController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', WageRate::class);
+
         $validated = $request->validate([
             'waste_category_id' => 'required|exists:waste_categories,id',
             'rate_per_unit' => 'required|numeric|min:0.01',

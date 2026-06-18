@@ -14,6 +14,8 @@ class WageCalculationController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', WageCalculation::class);
+
         $query = WageCalculation::query();
         if (!auth()->user()->isSuperAdmin()) {
             $query->where('tenant_id', auth()->user()->tenant_id);
@@ -111,6 +113,8 @@ class WageCalculationController extends Controller
 
     public function calculate(Request $request)
     {
+        $this->authorize('create', WageCalculation::class);
+
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -170,6 +174,8 @@ class WageCalculationController extends Controller
 
     public function exportRekap(Request $request)
     {
+        $this->authorize('viewAny', WageCalculation::class);
+
         $query = WageCalculation::query();
         if (!auth()->user()->isSuperAdmin()) {
             $query->where('tenant_id', auth()->user()->tenant_id);

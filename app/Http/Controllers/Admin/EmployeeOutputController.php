@@ -12,6 +12,8 @@ class EmployeeOutputController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', EmployeeOutput::class);
+
         $query = EmployeeOutput::query();
         if (!auth()->user()->isSuperAdmin()) {
             $query->where('tenant_id', auth()->user()->tenant_id);
@@ -53,6 +55,8 @@ class EmployeeOutputController extends Controller
 
     public function create()
     {
+        $this->authorize('create', EmployeeOutput::class);
+
         $tenantId = auth()->user()->tenant_id;
         $usersQuery = User::role('karyawan');
         if (!auth()->user()->isSuperAdmin()) {
@@ -70,6 +74,8 @@ class EmployeeOutputController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', EmployeeOutput::class);
+
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'waste_category_id' => 'required|exists:waste_categories,id',

@@ -11,6 +11,8 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Attendance::class);
+
         $query = Attendance::query();
 
         // If the logged-in user is a monthly-salary employee, restrict the listing
@@ -53,6 +55,8 @@ class AttendanceController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Attendance::class);
+
         $tenantId = auth()->user()->tenant_id;
         $usersQuery = User::role('karyawan');
         if (!auth()->user()->isSuperAdmin()) {
@@ -64,6 +68,8 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Attendance::class);
+
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'attendance_date' => 'required|date',
@@ -84,7 +90,7 @@ class AttendanceController extends Controller
 
     public function edit(Attendance $attendance)
     {
-        $this->authorize('edit', $attendance);
+        $this->authorize('update', $attendance);
         $tenantId = auth()->user()->tenant_id;
         $usersQuery = User::role('karyawan');
         if (!auth()->user()->isSuperAdmin()) {

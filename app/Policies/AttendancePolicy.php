@@ -9,39 +9,39 @@ class AttendancePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('view_attendance');
     }
 
     public function view(User $user, Attendance $attendance): bool
     {
         return $user->tenant_id === $attendance->tenant_id &&
-               $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+               $user->can('view_attendance');
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('create_attendance');
     }
 
     public function update(User $user, Attendance $attendance): bool
     {
         return $user->tenant_id === $attendance->tenant_id &&
-               $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+               $user->can('update_attendance');
     }
 
     public function delete(User $user, Attendance $attendance): bool
     {
         return $user->tenant_id === $attendance->tenant_id &&
-               $user->hasRole(['manajemen', 'super_admin']);
+               $user->can('delete_attendance');
     }
 
     public function quickCheckIn(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('create_attendance');
     }
 
     public function quickCheckOut(User $user): bool
     {
-        return $user->hasRole(['manajemen', 'hrd', 'super_admin']);
+        return $user->can('create_attendance');
     }
 }
