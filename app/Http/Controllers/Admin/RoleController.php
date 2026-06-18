@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Support\Facades\Gate;
 
 class RoleController extends Controller
@@ -60,6 +61,9 @@ class RoleController extends Controller
         if (isset($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
         }
+
+        // Flush Spatie's permission cache so changes take effect immediately
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         return redirect()->route('admin.roles.index')->with('success', 'Role berhasil dibuat.');
     }
@@ -118,6 +122,9 @@ class RoleController extends Controller
             $role->syncPermissions([]);
         }
 
+        // Flush Spatie's permission cache so changes take effect immediately
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
         return redirect()->route('admin.roles.index')->with('success', 'Role berhasil diperbarui.');
     }
 
@@ -136,6 +143,9 @@ class RoleController extends Controller
         }
 
         $role->delete();
+
+        // Flush Spatie's permission cache so changes take effect immediately
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         return redirect()->route('admin.roles.index')->with('success', 'Role berhasil dihapus.');
     }
