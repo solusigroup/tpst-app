@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\HasilPilahanController;
 use App\Http\Controllers\Admin\PenjualanController;
 use App\Http\Controllers\Admin\CoaController;
 use App\Http\Controllers\Admin\JurnalController;
+use App\Http\Controllers\Admin\BankReconciliationController;
 use App\Http\Controllers\Admin\JurnalKasController;
 use App\Http\Controllers\Admin\InvoiceAdminController;
 use App\Http\Controllers\Admin\InvoiceItemController;
@@ -67,6 +68,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('jurnal-template', [JurnalController::class, 'storeTemplate'])->name('jurnal-template.store');
     Route::delete('jurnal-template/{jurnalTemplate}', [JurnalController::class, 'destroyTemplate'])->name('jurnal-template.destroy');
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
+    Route::get('rekonsiliasi-bank', [BankReconciliationController::class, 'index'])->name('rekonsiliasi-bank.index');
+    Route::post('rekonsiliasi-bank/proses', [BankReconciliationController::class, 'proses'])->name('rekonsiliasi-bank.proses');
     Route::get('transfer-kas', [JurnalKasController::class, 'transfer'])->name('transfer-kas.create');
     Route::post('transfer-kas', [JurnalKasController::class, 'storeTransfer'])->name('transfer-kas.store');
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
@@ -74,6 +77,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('invoice/{invoice}/sync-dlh', [InvoiceAdminController::class, 'syncDlhItems'])->name('invoice.sync-dlh');
     Route::post('invoice/{invoice}/recalculate', [InvoiceAdminController::class, 'recalculate'])->name('invoice.recalculate');
     Route::post('invoice/{invoice}/send-wa', [InvoiceAdminController::class, 'sendWhatsappReminder'])->name('invoice.send-wa');
+    Route::get('invoice/swasta-lunas', [InvoiceAdminController::class, 'swastaLunas'])->name('invoice.swasta-lunas');
     Route::resource('invoice', InvoiceAdminController::class);
 
     // Buku Pembantu

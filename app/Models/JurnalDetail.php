@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use App\Scopes\TenantScope;
+use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class JurnalDetail extends Model
 {
+    use TenantTrait;
+
     protected $table = 'jurnal_detail';
 
     protected $fillable = [
+        'tenant_id',
         'jurnal_header_id',
         'coa_id',
         'debit',

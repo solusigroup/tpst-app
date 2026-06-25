@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JurnalKas;
 use App\Models\Coa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
 
@@ -98,7 +99,7 @@ class JurnalKasController extends Controller
 
         $jurnalKas = $paginator;
 
-        // Menghitung Saldo Kas saat ini
+        // Menghitung Saldo Kas saat ini (hanya posted)
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
         $saldoKas = 0;
         if ($kas) {
@@ -121,7 +122,13 @@ class JurnalKasController extends Controller
                 ->with('error_saldo_negatif', true);
         }
 
-        $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
+        $targetCoaId = request('rekonsiliasi_target_coa');
+        if (!$targetCoaId) {
+            $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+            $targetCoaId = $kas ? $kas->id : null;
+        }
+
+        $coas = Coa::where('id', '!=', $targetCoaId)->orderBy('kode_akun')->get();
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
         return view('admin.jurnal-kas.form', compact('coas', 'kliens', 'vendors'));
@@ -140,27 +147,38 @@ class JurnalKasController extends Controller
             'tanggal' => 'required|date',
             'jenis' => 'required|in:masuk,keluar',
             'coa_id' => 'required|exists:coa,id',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|numeric|gt:0',
             'deskripsi' => 'nullable|string',
             'bukti_transaksi' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'contactable_type_id' => 'nullable|string',
+            'rekonsiliasi_target_coa' => 'nullable|exists:coa,id',
         ]);
 
         $data = $validated;
         unset($data['coa_id']);
         unset($data['contactable_type_id']);
+        unset($data['rekonsiliasi_target_coa']);
 
-        if (!empty($validated['contactable_type_id'])) {
+        if (!empty($validated['contactable_type_id']) && str_contains($validated['contactable_type_id'], ':')) {
             [$data['contactable_type'], $data['contactable_id']] = explode(':', $validated['contactable_type_id']);
         }
         $data['coa_lawan_id'] = $validated['coa_id'];
         
-        $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
-        $data['coa_kas_id'] = $kas ? $kas->id : 1;
+        $kas = null;
+        if ($request->filled('rekonsiliasi_target_coa')) {
+            $kas = Coa::find($request->rekonsiliasi_target_coa);
+        }
+        if (!$kas) {
+            $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+        }
+        if (!$kas) {
+            return back()->withInput()->withErrors(['coa_id' => 'Akun Kas tidak ditemukan. Pastikan COA dengan kode awalan 11 dan nama mengandung "Kas" sudah dibuat.']);
+        }
+        $data['coa_kas_id'] = $kas->id;
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
-        if ($data['tipe'] === 'Pengeluaran' && $kas) {
+        if ($data['tipe'] === 'Pengeluaran') {
             $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
                 ->where('jurnal_header.status', 'posted')
                 ->where('jurnal_detail.coa_id', $kas->id)
@@ -191,10 +209,17 @@ class JurnalKasController extends Controller
                 ->with('error_saldo_negatif', true);
         }
 
-        $coas = Coa::where('kode_akun', '!=', '1101')->orderBy('kode_akun')->get();
+        $coas = Coa::where('id', '!=', $jurnalKas->coa_kas_id)->orderBy('kode_akun')->get();
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
-        return view('admin.jurnal-kas.form', compact('jurnalKas', 'coas', 'kliens', 'vendors'));
+
+        // Soft warning jika jurnal kas sudah posted
+        $warning = null;
+        if ($jurnalKas->status === 'posted') {
+            $warning = 'Perhatian: Jurnal Kas ini sudah di-post. Perubahan akan mempengaruhi laporan keuangan yang sudah final.';
+        }
+
+        return view('admin.jurnal-kas.form', compact('jurnalKas', 'coas', 'kliens', 'vendors', 'warning'));
     }
 
     public function update(Request $request, JurnalKas $jurnalKas)
@@ -210,17 +235,19 @@ class JurnalKasController extends Controller
             'tanggal' => 'required|date',
             'jenis' => 'required|in:masuk,keluar',
             'coa_id' => 'required|exists:coa,id',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|numeric|gt:0',
             'deskripsi' => 'nullable|string',
             'bukti_transaksi' => ($jurnalKas->bukti_transaksi ? 'nullable' : 'required') . '|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'contactable_type_id' => 'nullable|string',
+            'rekonsiliasi_target_coa' => 'nullable|exists:coa,id',
         ]);
 
         $data = $validated;
         unset($data['coa_id']);
         unset($data['contactable_type_id']);
+        unset($data['rekonsiliasi_target_coa']);
 
-        if (!empty($validated['contactable_type_id'])) {
+        if (!empty($validated['contactable_type_id']) && str_contains($validated['contactable_type_id'], ':')) {
             [$data['contactable_type'], $data['contactable_id']] = explode(':', $validated['contactable_type_id']);
         } else {
             $data['contactable_type'] = null;
@@ -228,23 +255,37 @@ class JurnalKasController extends Controller
         }
         $data['coa_lawan_id'] = $validated['coa_id'];
         
-        $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
-        $data['coa_kas_id'] = $kas ? $kas->id : 1;
+        $kas = null;
+        if ($request->filled('rekonsiliasi_target_coa')) {
+            $kas = Coa::find($request->rekonsiliasi_target_coa);
+        }
+        if (!$kas) {
+            $kas = Coa::find($jurnalKas->coa_kas_id);
+        }
+        if (!$kas) {
+            $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+        }
+        if (!$kas) {
+            return back()->withInput()->withErrors(['coa_id' => 'Akun Kas tidak ditemukan. Pastikan COA dengan kode awalan 11 dan nama mengandung "Kas" sudah dibuat.']);
+        }
+        $data['coa_kas_id'] = $kas->id;
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
-        if ($data['tipe'] === 'Pengeluaran' && $kas) {
+        if ($data['tipe'] === 'Pengeluaran') {
             $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
                 ->where('jurnal_header.status', 'posted')
                 ->where('jurnal_detail.coa_id', $kas->id)
                 ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
                 ->value('saldo') ?? 0;
             
-            // Mengembalikan efek dari mutasi sebelumnya ke saldo awal
-            if ($jurnalKas->tipe === 'Pengeluaran') {
-                $saldoKas += $jurnalKas->nominal;
-            } else {
-                $saldoKas -= $jurnalKas->nominal;
+            // Mengembalikan efek dari mutasi sebelumnya ke saldo — HANYA jika jurnal lama posted
+            if ($jurnalKas->status === 'posted') {
+                if ($jurnalKas->tipe === 'Pengeluaran') {
+                    $saldoKas += $jurnalKas->nominal;
+                } else {
+                    $saldoKas -= $jurnalKas->nominal;
+                }
             }
 
             if ($data['nominal'] > $saldoKas) {
@@ -274,11 +315,17 @@ class JurnalKasController extends Controller
                 ->with('error_saldo_negatif', true);
         }
 
+        // Soft warning jika posted
+        $warningMsg = '';
+        if ($jurnalKas->status === 'posted') {
+            $warningMsg = ' (Perhatian: Jurnal Kas yang sudah di-post telah dihapus. Laporan keuangan mungkin terpengaruh.)';
+        }
+
         if ($jurnalKas->bukti_transaksi) {
             Storage::disk('public')->delete($jurnalKas->bukti_transaksi);
         }
         $jurnalKas->delete();
-        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil dihapus.');
+        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil dihapus.' . $warningMsg);
     }
 
     public function transfer()
@@ -288,11 +335,14 @@ class JurnalKasController extends Controller
         // Get all Kas & Bank accounts (COA starting with 11)
         $kasBankCoas = Coa::where('kode_akun', 'like', '11%')->orderBy('kode_akun')->get();
 
-        // Calculate saldo for each account
+        // Calculate saldo for each account (hanya posted)
         $kasBank = $kasBankCoas->map(function ($coa) {
-            $debit = \App\Models\JurnalDetail::where('coa_id', $coa->id)->sum('debit');
-            $kredit = \App\Models\JurnalDetail::where('coa_id', $coa->id)->sum('kredit');
-            $coa->saldo = $debit - $kredit;
+            $saldo = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $coa->id)
+                ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                ->value('saldo') ?? 0;
+            $coa->saldo = $saldo;
             return $coa;
         });
 
@@ -320,13 +370,24 @@ class JurnalKasController extends Controller
         $biayaAdmin = $validated['biaya_admin'] ?? 0;
         $totalKredit = $jumlah + $biayaAdmin;
 
-        // Check balance of source account
+        if ($biayaAdmin > 0) {
+            $coaBiayaAdmin = Coa::where('kode_akun', '8102')->first();
+            if (!$coaBiayaAdmin) {
+                return back()->withInput()->withErrors([
+                    'biaya_admin' => 'Akun Biaya Admin Bank (8102) belum terdaftar di COA. Harap daftarkan terlebih dahulu.'
+                ]);
+            }
+        }
+
+        // Check balance of source account (hanya posted)
         $dariCoa = Coa::findOrFail($validated['dari_coa_id']);
         $keCoa = Coa::findOrFail($validated['ke_coa_id']);
 
-        $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $dariCoa->id)->sum('debit');
-        $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $dariCoa->id)->sum('kredit');
-        $saldoSumber = $saldoDebit - $saldoKredit;
+        $saldoSumber = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+            ->where('jurnal_header.status', 'posted')
+            ->where('jurnal_detail.coa_id', $dariCoa->id)
+            ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+            ->value('saldo') ?? 0;
 
         if ($totalKredit > $saldoSumber) {
             return back()->withInput()->withErrors([
@@ -343,39 +404,43 @@ class JurnalKasController extends Controller
         // Build deskripsi
         $deskripsi = $validated['deskripsi'] ?: "Transfer dari {$dariCoa->kode_akun} {$dariCoa->nama_akun} ke {$keCoa->kode_akun} {$keCoa->nama_akun}";
 
-        // Create JurnalHeader
-        $jurnalHeader = \App\Models\JurnalHeader::create([
-            'tanggal' => $validated['tanggal'],
-            'deskripsi' => $deskripsi,
-            'bukti_transaksi' => $buktiPath,
-            'status' => 'unposted',
-        ]);
+        $jurnalHeader = DB::transaction(function () use ($validated, $deskripsi, $buktiPath, $jumlah, $biayaAdmin, $totalKredit, $keCoa, $dariCoa) {
+            // Create JurnalHeader
+            $jurnalHeader = \App\Models\JurnalHeader::create([
+                'tanggal' => $validated['tanggal'],
+                'deskripsi' => $deskripsi,
+                'bukti_transaksi' => $buktiPath,
+                'status' => 'unposted',
+            ]);
 
-        // Detail 1: Debit target account
-        $jurnalHeader->jurnalDetails()->create([
-            'coa_id' => $keCoa->id,
-            'debit' => $jumlah,
-            'kredit' => 0,
-        ]);
+            // Detail 1: Debit target account
+            $jurnalHeader->jurnalDetails()->create([
+                'coa_id' => $keCoa->id,
+                'debit' => $jumlah,
+                'kredit' => 0,
+            ]);
 
-        // Detail 2: Debit biaya admin (if any)
-        if ($biayaAdmin > 0) {
-            $coaBiayaAdmin = Coa::where('kode_akun', '8102')->first();
-            if ($coaBiayaAdmin) {
-                $jurnalHeader->jurnalDetails()->create([
-                    'coa_id' => $coaBiayaAdmin->id,
-                    'debit' => $biayaAdmin,
-                    'kredit' => 0,
-                ]);
+            // Detail 2: Debit biaya admin (if any)
+            if ($biayaAdmin > 0) {
+                $coaBiayaAdmin = Coa::where('kode_akun', '8102')->first();
+                if ($coaBiayaAdmin) {
+                    $jurnalHeader->jurnalDetails()->create([
+                        'coa_id' => $coaBiayaAdmin->id,
+                        'debit' => $biayaAdmin,
+                        'kredit' => 0,
+                    ]);
+                }
             }
-        }
 
-        // Detail 3: Kredit source account
-        $jurnalHeader->jurnalDetails()->create([
-            'coa_id' => $dariCoa->id,
-            'debit' => 0,
-            'kredit' => $totalKredit,
-        ]);
+            // Detail 3: Kredit source account
+            $jurnalHeader->jurnalDetails()->create([
+                'coa_id' => $dariCoa->id,
+                'debit' => 0,
+                'kredit' => $totalKredit,
+            ]);
+
+            return $jurnalHeader;
+        });
 
         return redirect()->route('admin.jurnal-kas.index')->with('success', 'Transfer berhasil! Jurnal ' . $jurnalHeader->nomor_referensi . ' telah dibuat.');
     }

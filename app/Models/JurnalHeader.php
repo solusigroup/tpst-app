@@ -7,6 +7,7 @@ use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class JurnalHeader extends Model
 {
@@ -67,6 +68,11 @@ class JurnalHeader extends Model
 
         static::deleting(function (JurnalHeader $header) {
             $header->jurnalDetails()->get()->each->delete();
+            
+            // Hapus file bukti transaksi dari storage
+            if ($header->bukti_transaksi) {
+                Storage::disk('public')->delete($header->bukti_transaksi);
+            }
             
             // Aggressive cleanup: delete any BukuPembantu entries linked to this header
             // This ensures no orphaned data remains if source is deleted

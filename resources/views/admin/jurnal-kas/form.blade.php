@@ -15,18 +15,19 @@
             <div class="card-body">
                 <form method="POST" action="{{ isset($jurnalKas) ? route('admin.jurnal-kas.update', $jurnalKas) : route('admin.jurnal-kas.store') }}" enctype="multipart/form-data">
                     @csrf @if(isset($jurnalKas)) @method('PUT') @endif
+                    <input type="hidden" name="rekonsiliasi_target_coa" value="{{ request('rekonsiliasi_target_coa', old('rekonsiliasi_target_coa', $jurnalKas->coa_kas_id ?? '')) }}">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Tanggal <span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', isset($jurnalKas) ? \Carbon\Carbon::parse($jurnalKas->tanggal)->format('Y-m-d') : '') }}" required>
+                            <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', isset($jurnalKas) ? \Carbon\Carbon::parse($jurnalKas->tanggal)->format('Y-m-d') : request('tanggal')) }}" required>
                             @error('tanggal') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Jenis <span class="text-danger">*</span></label>
                             <select name="jenis" id="jenisSelect" class="form-select @error('jenis') is-invalid @enderror" required>
                                 <option value="">-- Pilih --</option>
-                                <option value="masuk" {{ old('jenis', ($jurnalKas->tipe ?? '') == 'Penerimaan' ? 'masuk' : '') == 'masuk' ? 'selected' : '' }}>Kas Masuk</option>
-                                <option value="keluar" {{ old('jenis', ($jurnalKas->tipe ?? '') == 'Pengeluaran' ? 'keluar' : '') == 'keluar' ? 'selected' : '' }}>Kas Keluar</option>
+                                <option value="masuk" {{ old('jenis', isset($jurnalKas) ? (($jurnalKas->tipe ?? '') == 'Penerimaan' ? 'masuk' : 'keluar') : request('jenis')) == 'masuk' ? 'selected' : '' }}>Kas Masuk</option>
+                                <option value="keluar" {{ old('jenis', isset($jurnalKas) ? (($jurnalKas->tipe ?? '') == 'Penerimaan' ? 'masuk' : 'keluar') : request('jenis')) == 'keluar' ? 'selected' : '' }}>Kas Keluar</option>
                             </select>
                             @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -34,7 +35,7 @@
                             <label class="form-label">Akun (COA) <span class="text-danger">*</span></label>
                             <select name="coa_id" class="form-select @error('coa_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih --</option>
-                                @foreach($coas as $c)<option value="{{ $c->id }}" {{ old('coa_id', $jurnalKas->coa_id ?? ($jurnalKas->coa_lawan_id ?? '')) == $c->id ? 'selected' : '' }}>{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach
+                                @foreach($coas as $c)<option value="{{ $c->id }}" {{ old('coa_id', isset($jurnalKas) ? ($jurnalKas->coa_id ?? $jurnalKas->coa_lawan_id) : request('coa_id')) == $c->id ? 'selected' : '' }}>{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach
                             </select>
                             @error('coa_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -57,12 +58,12 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Jumlah (Rp) <span class="text-danger">*</span></label>
-                            <input type="number" name="jumlah" class="form-control @error('jumlah') is-invalid @enderror" value="{{ old('jumlah', isset($jurnalKas) ? $jurnalKas->nominal : '') }}" required>
+                            <input type="number" name="jumlah" class="form-control @error('jumlah') is-invalid @enderror" value="{{ old('jumlah', isset($jurnalKas) ? $jurnalKas->nominal : request('nominal')) }}" required>
                             @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12">
                             <label class="form-label">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $jurnalKas->deskripsi ?? '') }}</textarea>
+                            <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', isset($jurnalKas) ? $jurnalKas->deskripsi : request('deskripsi')) }}</textarea>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Bukti Transaksi <span class="text-danger">*</span></label>
@@ -152,8 +153,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isEdit = {{ isset($jurnalKas) ? 'true' : 'false' }};
-    const hasOldJenis = '{{ old('jenis') }}' !== '';
-    const oldJenisVal = '{{ old('jenis') }}';
+    const hasRequestJenis = '{{ request('jenis') }}' !== '';
+    const hasOldJenis = '{{ old('jenis') }}' !== '' || hasRequestJenis;
+    const oldJenisVal = '{{ old('jenis') }}' !== '' ? '{{ old('jenis') }}' : '{{ request('jenis') }}';
     const formContainer = document.getElementById('formContainer');
     const modalEl = document.getElementById('typeSelectionModal');
     const typeSelect = document.getElementById('jenisSelect');

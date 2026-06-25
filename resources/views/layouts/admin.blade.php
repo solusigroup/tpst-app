@@ -760,11 +760,21 @@
                     <i class="nav-icon cil-money"></i> Jurnal Kas
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.rekonsiliasi-bank.*') ? 'active' : '' }}" href="{{ route('admin.rekonsiliasi-bank.index') }}">
+                    <i class="nav-icon cil-swap-horizontal"></i> Rekonsiliasi Bank
+                </a>
+            </li>
             @endcan
             @can('view_invoice')
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.invoice.*') ? 'active' : '' }}" href="{{ route('admin.invoice.index') }}">
+                <a class="nav-link {{ request()->routeIs('admin.invoice.*') && !request()->routeIs('admin.invoice.swasta-lunas') ? 'active' : '' }}" href="{{ route('admin.invoice.index') }}">
                     <i class="nav-icon cil-description"></i> Invoice
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.invoice.swasta-lunas') ? 'active' : '' }}" href="{{ route('admin.invoice.swasta-lunas') }}">
+                    <i class="nav-icon cil-check-circle"></i> Klien Swasta Lunas
                 </a>
             </li>
             @endcan

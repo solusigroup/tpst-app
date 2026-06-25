@@ -6,6 +6,8 @@ use App\Scopes\TenantScope;
 use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class JurnalKas extends Model
 {
@@ -68,63 +70,73 @@ class JurnalKas extends Model
 
     public function createOrUpdateJurnalAkuntansi()
     {
-        $jurnalHeader = JurnalHeader::where('referensi_type', self::class)
-            ->where('referensi_id', $this->id)
-            ->first();
+        DB::transaction(function () {
+            $jurnalHeader = JurnalHeader::where('referensi_type', self::class)
+                ->where('referensi_id', $this->id)
+                ->first();
 
-        if (!$jurnalHeader) {
-            $jurnalHeader = new JurnalHeader();
-            $jurnalHeader->tenant_id = $this->tenant_id;
-            $jurnalHeader->referensi_type = self::class;
-            $jurnalHeader->referensi_id = $this->id;
-        }
+            if (!$jurnalHeader) {
+                $jurnalHeader = new JurnalHeader();
+                $jurnalHeader->tenant_id = $this->tenant_id;
+                $jurnalHeader->referensi_type = self::class;
+                $jurnalHeader->referensi_id = $this->id;
+            }
 
-        $jurnalHeader->tanggal = $this->tanggal;
-        $jurnalHeader->deskripsi = $this->deskripsi ?: "Jurnal Kas: {$this->tipe}";
-        $jurnalHeader->status = $this->status ?? 'unposted';
-        $jurnalHeader->bukti_transaksi = $this->bukti_transaksi;
-        $jurnalHeader->save();
+            $jurnalHeader->tanggal = $this->tanggal;
+            $jurnalHeader->deskripsi = $this->deskripsi ?: "Jurnal Kas: {$this->tipe}";
+            $jurnalHeader->status = $this->status ?? 'unposted';
+            $jurnalHeader->bukti_transaksi = $this->bukti_transaksi;
+            $jurnalHeader->save();
 
-        // Details
-        $jurnalHeader->jurnalDetails()->get()->each->delete();
+            // Details — hapus dan buat ulang dalam transaction
+            $jurnalHeader->jurnalDetails()->get()->each->delete();
 
-        if ($this->tipe === 'Penerimaan') {
-            // Kas bertambah (Debit), Lawan bertambah (Kredit - usually Pendapatan)
-            $jurnalHeader->jurnalDetails()->create([
-                'coa_id' => $this->coa_kas_id,
-                'debit' => $this->nominal,
-                'kredit' => 0,
-            ]);
-            $jurnalHeader->jurnalDetails()->create([
-                'coa_id' => $this->coa_lawan_id,
-                'debit' => 0,
-                'kredit' => $this->nominal,
-                'contactable_type' => $this->contactable_type,
-                'contactable_id' => $this->contactable_id,
-            ]);
-        } else {
-            // Pengeluaran
-            // Lawan bertambah (Debit - usually Biaya), Kas berkurang (Kredit)
-            $jurnalHeader->jurnalDetails()->create([
-                'coa_id' => $this->coa_lawan_id,
-                'debit' => $this->nominal,
-                'kredit' => 0,
-                'contactable_type' => $this->contactable_type,
-                'contactable_id' => $this->contactable_id,
-            ]);
-            $jurnalHeader->jurnalDetails()->create([
-                'coa_id' => $this->coa_kas_id,
-                'debit' => 0,
-                'kredit' => $this->nominal,
-            ]);
-        }
+            if ($this->tipe === 'Penerimaan') {
+                // Kas bertambah (Debit), Lawan bertambah (Kredit - usually Pendapatan)
+                $jurnalHeader->jurnalDetails()->create([
+                    'coa_id' => $this->coa_kas_id,
+                    'debit' => $this->nominal,
+                    'kredit' => 0,
+                ]);
+                $jurnalHeader->jurnalDetails()->create([
+                    'coa_id' => $this->coa_lawan_id,
+                    'debit' => 0,
+                    'kredit' => $this->nominal,
+                    'contactable_type' => $this->contactable_type,
+                    'contactable_id' => $this->contactable_id,
+                ]);
+            } else {
+                // Pengeluaran
+                // Lawan bertambah (Debit - usually Biaya), Kas berkurang (Kredit)
+                $jurnalHeader->jurnalDetails()->create([
+                    'coa_id' => $this->coa_lawan_id,
+                    'debit' => $this->nominal,
+                    'kredit' => 0,
+                    'contactable_type' => $this->contactable_type,
+                    'contactable_id' => $this->contactable_id,
+                ]);
+                $jurnalHeader->jurnalDetails()->create([
+                    'coa_id' => $this->coa_kas_id,
+                    'debit' => 0,
+                    'kredit' => $this->nominal,
+                ]);
+            }
+        });
     }
 
     public function deleteJurnalAkuntansi()
     {
-        JurnalHeader::where('referensi_type', self::class)
+        $headers = JurnalHeader::where('referensi_type', self::class)
             ->where('referensi_id', $this->id)
-            ->get()->each->delete();
+            ->get();
+
+        foreach ($headers as $header) {
+            // Hapus file bukti transaksi dari storage
+            if ($header->bukti_transaksi) {
+                Storage::disk('public')->delete($header->bukti_transaksi);
+            }
+            $header->delete();
+        }
     }
 
     public function coaKas(): BelongsTo

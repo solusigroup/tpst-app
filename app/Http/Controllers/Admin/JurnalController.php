@@ -11,7 +11,9 @@ use App\Models\JurnalTemplate;
 use App\Models\WageCalculation;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class JurnalController extends Controller
 {
@@ -104,6 +106,26 @@ class JurnalController extends Controller
             'referensi_id' => 'nullable|integer',
         ]);
 
+        // Validasi total debit == total kredit (prinsip double-entry)
+        $totalDebit = collect($validated['details'])->sum(fn($d) => (float) ($d['debit'] ?? 0));
+        $totalKredit = collect($validated['details'])->sum(fn($d) => (float) ($d['kredit'] ?? 0));
+        if (abs($totalDebit - $totalKredit) > 0.01) {
+            return back()->withInput()->withErrors([
+                'details' => 'Total Debit (Rp ' . number_format($totalDebit, 0, ',', '.') . ') dan Kredit (Rp ' . number_format($totalKredit, 0, ',', '.') . ') harus seimbang.'
+            ]);
+        }
+
+        // Validasi: setiap baris harus punya debit atau kredit > 0
+        foreach ($validated['details'] as $i => $detail) {
+            $d = (float) ($detail['debit'] ?? 0);
+            $k = (float) ($detail['kredit'] ?? 0);
+            if ($d <= 0 && $k <= 0) {
+                return back()->withInput()->withErrors([
+                    'details' => "Baris jurnal ke-" . ($i + 1) . " harus memiliki nilai Debit atau Kredit lebih dari 0."
+                ]);
+            }
+        }
+
         $buktiPath = null;
         if ($request->hasFile('bukti_transaksi')) {
             $buktiPath = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'jurnal-bukti');
@@ -131,9 +153,11 @@ class JurnalController extends Controller
         foreach ($kasCredits as $coaId => $kreditInput) {
             $coa = Coa::find($coaId);
             if ($coa && str_starts_with($coa->kode_akun, '11')) { // 11 adalah Kas & Bank
-                $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('debit');
-                $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('kredit');
-                $saldoAwal = $saldoDebit - $saldoKredit;
+                $saldoAwal = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                    ->where('jurnal_header.status', 'posted')
+                    ->where('jurnal_detail.coa_id', $coaId)
+                    ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                    ->value('saldo') ?? 0;
 
                 if ($kreditInput > $saldoAwal) {
                     return back()->withInput()->withErrors([
@@ -143,30 +167,34 @@ class JurnalController extends Controller
             }
         }
 
-        $jurnal = JurnalHeader::create([
-            'tanggal' => $validated['tanggal'],
-            'deskripsi' => $validated['deskripsi'] ?? null,
-            'bukti_transaksi' => $buktiPath,
-            'status' => 'unposted',
-            'referensi_type' => $validated['referensi_type'] ?? null,
-            'referensi_id' => $validated['referensi_id'] ?? null,
-        ]);
+        $jurnal = DB::transaction(function () use ($validated, $buktiPath) {
+            $jurnal = JurnalHeader::create([
+                'tanggal' => $validated['tanggal'],
+                'deskripsi' => $validated['deskripsi'] ?? null,
+                'bukti_transaksi' => $buktiPath,
+                'status' => 'unposted',
+                'referensi_type' => $validated['referensi_type'] ?? null,
+                'referensi_id' => $validated['referensi_id'] ?? null,
+            ]);
 
-        foreach ($validated['details'] as $detail) {
-            $contactType = null;
-            $contactId = null;
-            if (!empty($detail['contactable_type_id'])) {
-                [$contactType, $contactId] = explode(':', $detail['contactable_type_id']);
+            foreach ($validated['details'] as $detail) {
+                $contactType = null;
+                $contactId = null;
+                if (!empty($detail['contactable_type_id']) && str_contains($detail['contactable_type_id'], ':')) {
+                    [$contactType, $contactId] = explode(':', $detail['contactable_type_id']);
+                }
+
+                $jurnal->jurnalDetails()->create([
+                    'coa_id' => $detail['coa_id'],
+                    'debit' => $detail['debit'] ?? 0,
+                    'kredit' => $detail['kredit'] ?? 0,
+                    'contactable_type' => $contactType,
+                    'contactable_id' => $contactId,
+                ]);
             }
 
-            $jurnal->jurnalDetails()->create([
-                'coa_id' => $detail['coa_id'],
-                'debit' => $detail['debit'] ?? 0,
-                'kredit' => $detail['kredit'] ?? 0,
-                'contactable_type' => $contactType,
-                'contactable_id' => $contactId,
-            ]);
-        }
+            return $jurnal;
+        });
 
         return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil dibuat.');
     }
@@ -178,7 +206,14 @@ class JurnalController extends Controller
         $coas = \App\Models\Coa::orderBy('kode_akun')->get();
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
-        return view('admin.jurnal.form', compact('jurnal', 'coas', 'kliens', 'vendors'));
+
+        // Soft warning jika jurnal sudah posted
+        $warning = null;
+        if ($jurnal->status === 'posted') {
+            $warning = 'Perhatian: Jurnal ini sudah di-post. Perubahan akan mempengaruhi laporan keuangan yang sudah final.';
+        }
+
+        return view('admin.jurnal.form', compact('jurnal', 'coas', 'kliens', 'vendors', 'warning'));
     }
 
     public function update(Request $request, JurnalHeader $jurnal)
@@ -195,6 +230,26 @@ class JurnalController extends Controller
             'details.*.kredit' => 'nullable|numeric|min:0',
             'details.*.contactable_type_id' => 'nullable|string',
         ]);
+
+        // Validasi total debit == total kredit (prinsip double-entry)
+        $totalDebit = collect($validated['details'])->sum(fn($d) => (float) ($d['debit'] ?? 0));
+        $totalKredit = collect($validated['details'])->sum(fn($d) => (float) ($d['kredit'] ?? 0));
+        if (abs($totalDebit - $totalKredit) > 0.01) {
+            return back()->withInput()->withErrors([
+                'details' => 'Total Debit (Rp ' . number_format($totalDebit, 0, ',', '.') . ') dan Kredit (Rp ' . number_format($totalKredit, 0, ',', '.') . ') harus seimbang.'
+            ]);
+        }
+
+        // Validasi: setiap baris harus punya debit atau kredit > 0
+        foreach ($validated['details'] as $i => $detail) {
+            $d = (float) ($detail['debit'] ?? 0);
+            $k = (float) ($detail['kredit'] ?? 0);
+            if ($d <= 0 && $k <= 0) {
+                return back()->withInput()->withErrors([
+                    'details' => "Baris jurnal ke-" . ($i + 1) . " harus memiliki nilai Debit atau Kredit lebih dari 0."
+                ]);
+            }
+        }
 
         $data = [
             'tanggal' => $validated['tanggal'],
@@ -214,19 +269,23 @@ class JurnalController extends Controller
         foreach ($kasCredits as $coaId => $kreditInput) {
             $coa = Coa::find($coaId);
             if ($coa && str_starts_with($coa->kode_akun, '11')) { // 11 adalah Kas & Bank
-                $saldoDebit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('debit');
-                $saldoKredit = \App\Models\JurnalDetail::where('coa_id', $coaId)->sum('kredit');
-                $saldoAwal = $saldoDebit - $saldoKredit;
+                $saldoAwal = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                    ->where('jurnal_header.status', 'posted')
+                    ->where('jurnal_detail.coa_id', $coaId)
+                    ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                    ->value('saldo') ?? 0;
 
-                // Kembalikan saldo sebelum direvisi eksisting
-                $jurnalExistingCredit = \App\Models\JurnalDetail::where('jurnal_header_id', $jurnal->id)
-                    ->where('coa_id', $coaId)
-                    ->sum('kredit');
-                $jurnalExistingDebit = \App\Models\JurnalDetail::where('jurnal_header_id', $jurnal->id)
-                    ->where('coa_id', $coaId)
-                    ->sum('debit');
-                
-                $saldoRestore = $saldoAwal + $jurnalExistingCredit - $jurnalExistingDebit;
+                // Kembalikan saldo sebelum direvisi eksisting (hitung efek jurnal lama) — HANYA jika status posted
+                $saldoRestore = $saldoAwal;
+                if ($jurnal->status === 'posted') {
+                    $jurnalExistingCredit = \App\Models\JurnalDetail::where('jurnal_header_id', $jurnal->id)
+                        ->where('coa_id', $coaId)
+                        ->sum('kredit');
+                    $jurnalExistingDebit = \App\Models\JurnalDetail::where('jurnal_header_id', $jurnal->id)
+                        ->where('coa_id', $coaId)
+                        ->sum('debit');
+                    $saldoRestore = $saldoAwal + $jurnalExistingCredit - $jurnalExistingDebit;
+                }
 
                 if ($kreditInput > $saldoRestore) {
                     return back()->withInput()->withErrors([
@@ -236,25 +295,27 @@ class JurnalController extends Controller
             }
         }
 
-        $jurnal->update($data);
+        DB::transaction(function () use ($jurnal, $data, $validated) {
+            $jurnal->update($data);
 
-        // Sync details
-        $jurnal->jurnalDetails()->delete();
-        foreach ($validated['details'] as $detail) {
-            $contactType = null;
-            $contactId = null;
-            if (!empty($detail['contactable_type_id'])) {
-                [$contactType, $contactId] = explode(':', $detail['contactable_type_id']);
+            // Sync details — hapus dan buat ulang dalam transaction
+            $jurnal->jurnalDetails()->get()->each->delete();
+            foreach ($validated['details'] as $detail) {
+                $contactType = null;
+                $contactId = null;
+                if (!empty($detail['contactable_type_id']) && str_contains($detail['contactable_type_id'], ':')) {
+                    [$contactType, $contactId] = explode(':', $detail['contactable_type_id']);
+                }
+
+                $jurnal->jurnalDetails()->create([
+                    'coa_id' => $detail['coa_id'],
+                    'debit' => $detail['debit'] ?? 0,
+                    'kredit' => $detail['kredit'] ?? 0,
+                    'contactable_type' => $contactType,
+                    'contactable_id' => $contactId,
+                ]);
             }
-
-            $jurnal->jurnalDetails()->create([
-                'coa_id' => $detail['coa_id'],
-                'debit' => $detail['debit'] ?? 0,
-                'kredit' => $detail['kredit'] ?? 0,
-                'contactable_type' => $contactType,
-                'contactable_id' => $contactId,
-            ]);
-        }
+        });
 
         return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil diperbarui.');
     }
@@ -262,9 +323,18 @@ class JurnalController extends Controller
     public function destroy(JurnalHeader $jurnal)
     {
         Gate::authorize('delete_jurnal');
-        $jurnal->jurnalDetails()->delete();
+
+        // Soft warning: jika posted, tetap boleh hapus tapi beri warning
+        $warningMsg = '';
+        if ($jurnal->status === 'posted') {
+            $warningMsg = ' (Perhatian: Jurnal yang sudah di-post telah dihapus. Laporan keuangan mungkin terpengaruh.)';
+        }
+
+        // Cukup panggil $jurnal->delete() — model event deleting di JurnalHeader
+        // sudah menangani: hapus jurnalDetails, hapus bukti_transaksi, hapus BukuPembantu
         $jurnal->delete();
-        return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil dihapus.');
+
+        return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil dihapus.' . $warningMsg);
     }
 
     public function post(JurnalHeader $jurnal)

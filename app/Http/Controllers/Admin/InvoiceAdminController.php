@@ -349,4 +349,97 @@ class InvoiceAdminController extends Controller
 
         return redirect()->away($url);
     }
+
+    public function swastaLunas(Request $request)
+    {
+        Gate::authorize('view_invoice');
+        
+        $tab = $request->input('tab', 'clients');
+        $search = $request->input('search');
+        
+        // Calculate summary metrics for the header cards
+        // 1. Total Swasta clients with paid invoices
+        $totalPaidClients = Klien::where('jenis', 'Swasta')
+            ->whereHas('invoices', function ($q) {
+                $q->where('status', 'Paid');
+            })->count();
+            
+        // 2. Total Paid Invoices from Swasta clients
+        $totalPaidInvoices = Invoice::where('status', 'Paid')
+            ->whereHas('klien', function ($q) {
+                $q->where('jenis', 'Swasta');
+            })->count();
+            
+        // 3. Total amount collected from Swasta clients
+        $totalCollected = Invoice::where('status', 'Paid')
+            ->whereHas('klien', function ($q) {
+                $q->where('jenis', 'Swasta');
+            })->sum('total_tagihan');
+
+        // 4. Total active receivables (piutang) from Sent invoices of Swasta clients
+        $totalOutstanding = Invoice::where('status', 'Sent')
+            ->whereHas('klien', function ($q) {
+                $q->where('jenis', 'Swasta');
+            })->sum(DB::raw('total_tagihan - uang_muka'));
+
+        $clients = null;
+        $invoices = null;
+
+        if ($tab === 'invoices') {
+            $query = Invoice::with('klien')
+                ->whereHas('klien', function ($q) {
+                    $q->where('jenis', 'Swasta');
+                })
+                ->where('status', 'Paid');
+
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_invoice', 'like', '%' . $search . '%')
+                      ->orWhereHas('klien', function($qk) use ($search) {
+                          $qk->where('nama_klien', 'like', '%' . $search . '%');
+                      });
+                });
+            }
+
+            $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
+        } else {
+            // Default to 'clients' tab
+            $query = Klien::where('jenis', 'Swasta')
+                ->whereHas('invoices', function ($q) {
+                    $q->where('status', 'Paid');
+                });
+
+            if ($request->filled('search')) {
+                $query->where('nama_klien', 'like', '%' . $search . '%');
+            }
+
+            $clients = $query
+                ->withCount(['invoices' => function ($q) {
+                    $q->where('status', 'Paid');
+                }])
+                ->withSum(['invoices' => function ($q) {
+                    $q->where('status', 'Paid');
+                }], 'total_tagihan')
+                ->orderByDesc('invoices_sum_total_tagihan')
+                ->paginate(15)->withQueryString();
+
+            // Load active outstanding receivables for each client in the page (preventing N+1)
+            $clientIds = $clients->pluck('id');
+            $outstandings = Invoice::whereIn('klien_id', $clientIds)
+                ->where('status', 'Sent')
+                ->groupBy('klien_id')
+                ->select('klien_id', DB::raw('SUM(total_tagihan - uang_muka) as total_outstanding'))
+                ->get()
+                ->pluck('total_outstanding', 'klien_id');
+
+            foreach ($clients as $client) {
+                $client->outstanding_piutang = $outstandings->get($client->id, 0);
+            }
+        }
+
+        return view('admin.invoice.swasta-lunas', compact(
+            'tab', 'clients', 'invoices', 
+            'totalPaidClients', 'totalPaidInvoices', 'totalCollected', 'totalOutstanding'
+        ));
+    }
 }
