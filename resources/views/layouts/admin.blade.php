@@ -568,7 +568,18 @@
                     <i class="nav-icon cil-truck"></i> Ritase
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.ritase-dlh.approved') ? 'active' : '' }}" href="{{ route('admin.ritase-dlh.approved') }}">
+                    <i class="nav-icon cil-check-circle"></i> Ritase DLH (Disetujui)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.ritase-dlh.paid') ? 'active' : '' }}" href="{{ route('admin.ritase-dlh.paid') }}">
+                    <i class="nav-icon cil-dollar"></i> Ritase DLH (Dibayar)
+                </a>
+            </li>
             @endcan
+
 
             @can('view_pengangkutan_residu')
             <li class="nav-item">

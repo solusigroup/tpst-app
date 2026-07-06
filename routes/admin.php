@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\WasteCategoryController;
 use App\Http\Controllers\Admin\WageRateController;
 use App\Http\Controllers\Admin\WageCalculationController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\RitaseDlhController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -49,6 +50,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('ritase/bulk-approve', [RitaseController::class, 'bulkApprove'])->name('ritase.bulk-approve');
     Route::post('ritase/{ritase}/approve', [RitaseController::class, 'approve'])->name('ritase.approve');
     Route::post('ritase/{ritase}/post', [RitaseController::class, 'post'])->name('ritase.post');
+
+    // Ritase DLH (Disetujui & Dibayar)
+    Route::get('ritase-dlh/approved', [RitaseDlhController::class, 'approved'])->name('ritase-dlh.approved');
+    Route::get('ritase-dlh/paid', [RitaseDlhController::class, 'paid'])->name('ritase-dlh.paid');
+    Route::get('ritase-dlh/export-excel', [RitaseDlhController::class, 'exportExcel'])->name('ritase-dlh.export-excel');
+    Route::get('ritase-dlh/export-pdf', [RitaseDlhController::class, 'exportPdf'])->name('ritase-dlh.export-pdf');
+
     Route::get('klien/export-excel', [KlienController::class, 'exportExcel'])->name('klien.export-excel');
     Route::get('klien/print', [KlienController::class, 'print'])->name('klien.print');
     Route::resource('klien', KlienController::class);
