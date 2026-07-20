@@ -133,6 +133,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('invoice/per-status', [LaporanController::class, 'invoicePerStatus'])->name('invoice.per-status');
         Route::get('invoice/per-jenis', [LaporanController::class, 'invoicePerJenis'])->name('invoice.per-jenis');
         Route::get('validasi-tipping-fee', [LaporanController::class, 'validasiTippingFee'])->name('validasi-tipping-fee');
+        Route::get('ritase-rerata-bulanan', [LaporanController::class, 'ritaseRerataBulanan'])->name('ritase-rerata-bulanan');
+        Route::get('residu-rerata-bulanan', [LaporanController::class, 'residuRerataBulanan'])->name('residu-rerata-bulanan');
     });
 
     // HRD

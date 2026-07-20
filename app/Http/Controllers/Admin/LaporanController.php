@@ -1488,4 +1488,213 @@ class LaporanController extends Controller
             'invoiceValidation'
         ));
     }
+
+    public function ritaseRerataBulanan(Request $request)
+    {
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $tahun = $request->get('tahun', date('Y'));
+        $jenisKlien = $request->get('jenis_klien');
+        $klienId = $request->get('klien_id');
+        $isApproved = $request->get('is_approved', 1);
+
+        $klien = null;
+        if ($klienId) {
+            $klien = \App\Models\Klien::find($klienId);
+        }
+
+        $baseQuery = Ritase::query()
+            ->whereYear('ritase.waktu_masuk', $tahun)
+            ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('ritase.is_approved', $isApproved))
+            ->when($jenisKlien, function ($q) use ($jenisKlien) {
+                $q->whereHas('klien', fn ($qk) => $qk->where('jenis', $jenisKlien));
+            })
+            ->when($klienId, function ($q) use ($klienId, $klien) {
+                if ($klien && ($klien->nama_klien === 'Dinas Lingkungan Hidup' || $klien->jenis === 'DLH')) {
+                    $q->whereHas('klien', fn ($qk) => $qk->where('jenis', 'DLH'));
+                } else {
+                    $q->where('ritase.klien_id', $klienId);
+                }
+            });
+
+        $rekapBulanan = (clone $baseQuery)->reorder()
+            ->selectRaw('
+                MONTH(waktu_masuk) as bulan,
+                COUNT(*) as total_ritase,
+                SUM(berat_netto) as total_netto,
+                COUNT(DISTINCT DATE(waktu_masuk)) as active_days
+            ')
+            ->groupBy(DB::raw('MONTH(waktu_masuk)'))
+            ->orderBy('bulan', 'asc')
+            ->get()
+            ->keyBy('bulan');
+
+        $reportData = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $calendarDays = Carbon::create($tahun, $m, 1)->daysInMonth;
+            
+            // If it is the current year and current month, calendar days can be the elapsed days
+            if ($tahun == date('Y') && $m == date('m')) {
+                $calendarDays = (int)date('d');
+            } elseif ($tahun == date('Y') && $m > date('m')) {
+                $calendarDays = 0; // Future month in current year
+            }
+            
+            $dataRow = $rekapBulanan->get($m);
+            $totalRitase = $dataRow ? $dataRow->total_ritase : 0;
+            $totalNetto = $dataRow ? $dataRow->total_netto : 0;
+            $activeDays = $dataRow ? $dataRow->active_days : 0;
+            
+            $reportData[] = (object) [
+                'bulan' => $m,
+                'nama_bulan' => Carbon::create()->month($m)->translatedFormat('F'),
+                'total_ritase' => $totalRitase,
+                'total_netto' => $totalNetto,
+                'active_days' => $activeDays,
+                'calendar_days' => $calendarDays,
+                'rerata_ritase_kalender' => $calendarDays > 0 ? $totalRitase / $calendarDays : 0,
+                'rerata_ritase_aktif' => $activeDays > 0 ? $totalRitase / $activeDays : 0,
+                'rerata_netto_kalender' => $calendarDays > 0 ? $totalNetto / $calendarDays : 0,
+                'rerata_netto_aktif' => $activeDays > 0 ? $totalNetto / $activeDays : 0,
+            ];
+        }
+
+        $grandTotalRitase = collect($reportData)->sum('total_ritase');
+        $grandTotalNetto = collect($reportData)->sum('total_netto');
+        $totalActiveDays = collect($reportData)->sum('active_days');
+        $totalCalendarDays = collect($reportData)->sum('calendar_days');
+
+        $overallRerataRitaseKalender = $totalCalendarDays > 0 ? $grandTotalRitase / $totalCalendarDays : 0;
+        $overallRerataRitaseAktif = $totalActiveDays > 0 ? $grandTotalRitase / $totalActiveDays : 0;
+        $overallRerataNettoKalender = $totalCalendarDays > 0 ? $grandTotalNetto / $totalCalendarDays : 0;
+        $overallRerataNettoAktif = $totalActiveDays > 0 ? $grandTotalNetto / $totalActiveDays : 0;
+
+        $kliens = \App\Models\Klien::when($jenisKlien, fn($q) => $q->where('jenis', $jenisKlien))
+            ->orderBy('nama_klien')
+            ->get();
+
+        $data = compact(
+            'tahun', 'jenisKlien', 'klienId', 'isApproved', 'klien', 'kliens',
+            'reportData', 'grandTotalRitase', 'grandTotalNetto', 'totalActiveDays', 'totalCalendarDays',
+            'overallRerataRitaseKalender', 'overallRerataRitaseAktif', 'overallRerataNettoKalender', 'overallRerataNettoAktif'
+        );
+
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.ritase-rerata-bulanan-export', $data);
+                return $pdf->download('Laporan_Ritase_Rerata_Bulanan_' . $tahun . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.ritase-rerata-bulanan-export', $data),
+                    'Laporan_Ritase_Rerata_Bulanan_' . $tahun . '.xlsx'
+                );
+            }
+        }
+
+        return view('admin.laporan.ritase-rerata-bulanan', $data);
+    }
+
+    public function residuRerataBulanan(Request $request)
+    {
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_residu')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $tahun = $request->get('tahun', date('Y'));
+        $armadaId = $request->get('armada_id');
+
+        $armada = null;
+        if ($armadaId) {
+            $armada = \App\Models\Armada::find($armadaId);
+        }
+
+        $baseQuery = PengangkutanResidu::query()
+            ->whereYear('pengangkutan_residus.tanggal', $tahun)
+            ->when($armadaId, fn ($q) => $q->where('pengangkutan_residus.armada_id', $armadaId));
+
+        $rekapBulanan = (clone $baseQuery)->reorder()
+            ->selectRaw('
+                MONTH(tanggal) as bulan,
+                COUNT(*) as total_trip,
+                SUM(berat_netto) as total_netto,
+                SUM(biaya_retribusi) as total_retribusi,
+                COUNT(DISTINCT tanggal) as active_days
+            ')
+            ->groupBy(DB::raw('MONTH(tanggal)'))
+            ->orderBy('bulan', 'asc')
+            ->get()
+            ->keyBy('bulan');
+
+        $reportData = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $calendarDays = Carbon::create($tahun, $m, 1)->daysInMonth;
+            
+            // If it is the current year and current month, calendar days can be the elapsed days
+            if ($tahun == date('Y') && $m == date('m')) {
+                $calendarDays = (int)date('d');
+            } elseif ($tahun == date('Y') && $m > date('m')) {
+                $calendarDays = 0; // Future month in current year
+            }
+            
+            $dataRow = $rekapBulanan->get($m);
+            $totalTrip = $dataRow ? $dataRow->total_trip : 0;
+            $totalNetto = $dataRow ? $dataRow->total_netto : 0;
+            $totalRetribusi = $dataRow ? $dataRow->total_retribusi : 0;
+            $activeDays = $dataRow ? $dataRow->active_days : 0;
+            
+            $reportData[] = (object) [
+                'bulan' => $m,
+                'nama_bulan' => Carbon::create()->month($m)->translatedFormat('F'),
+                'total_trip' => $totalTrip,
+                'total_netto' => $totalNetto,
+                'total_retribusi' => $totalRetribusi,
+                'active_days' => $activeDays,
+                'calendar_days' => $calendarDays,
+                'rerata_trip_kalender' => $calendarDays > 0 ? $totalTrip / $calendarDays : 0,
+                'rerata_trip_aktif' => $activeDays > 0 ? $totalTrip / $activeDays : 0,
+                'rerata_netto_kalender' => $calendarDays > 0 ? $totalNetto / $calendarDays : 0,
+                'rerata_netto_aktif' => $activeDays > 0 ? $totalNetto / $activeDays : 0,
+                'rerata_retribusi_kalender' => $calendarDays > 0 ? $totalRetribusi / $calendarDays : 0,
+                'rerata_retribusi_aktif' => $activeDays > 0 ? $totalRetribusi / $activeDays : 0,
+            ];
+        }
+
+        $grandTotalTrip = collect($reportData)->sum('total_trip');
+        $grandTotalNetto = collect($reportData)->sum('total_netto');
+        $grandTotalRetribusi = collect($reportData)->sum('total_retribusi');
+        $totalActiveDays = collect($reportData)->sum('active_days');
+        $totalCalendarDays = collect($reportData)->sum('calendar_days');
+
+        $overallRerataTripKalender = $totalCalendarDays > 0 ? $grandTotalTrip / $totalCalendarDays : 0;
+        $overallRerataTripAktif = $totalActiveDays > 0 ? $grandTotalTrip / $totalActiveDays : 0;
+        $overallRerataNettoKalender = $totalCalendarDays > 0 ? $grandTotalNetto / $totalCalendarDays : 0;
+        $overallRerataNettoAktif = $totalActiveDays > 0 ? $grandTotalNetto / $totalActiveDays : 0;
+        $overallRerataRetribusiKalender = $totalCalendarDays > 0 ? $grandTotalRetribusi / $totalCalendarDays : 0;
+        $overallRerataRetribusiAktif = $totalActiveDays > 0 ? $grandTotalRetribusi / $totalActiveDays : 0;
+
+        $armadas = \App\Models\Armada::orderBy('plat_nomor')->get();
+
+        $data = compact(
+            'tahun', 'armadaId', 'armada', 'armadas',
+            'reportData', 'grandTotalTrip', 'grandTotalNetto', 'grandTotalRetribusi', 'totalActiveDays', 'totalCalendarDays',
+            'overallRerataTripKalender', 'overallRerataTripAktif', 'overallRerataNettoKalender', 'overallRerataNettoAktif',
+            'overallRerataRetribusiKalender', 'overallRerataRetribusiAktif'
+        );
+
+        if ($request->export === 'pdf' || $request->export === 'excel') {
+            if ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.residu-rerata-bulanan-export', $data);
+                return $pdf->download('Laporan_Residu_Rerata_Bulanan_' . $tahun . '.pdf');
+            } elseif ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.residu-rerata-bulanan-export', $data),
+                    'Laporan_Residu_Rerata_Bulanan_' . $tahun . '.xlsx'
+                );
+            }
+        }
+
+        return view('admin.laporan.residu-rerata-bulanan', $data);
+    }
 }

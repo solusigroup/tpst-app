@@ -661,6 +661,11 @@
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.rekap-ritase-2') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.rekap-ritase-2') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Ritase II</a>
                     </li>
                     @endcanany
+                    @canany(['view_laporan_operasional', 'view_laporan_ritase'])
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.ritase-rerata-bulanan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.ritase-rerata-bulanan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Ritase Rerata Bulanan</a>
+                    </li>
+                    @endcanany
                     @canany(['view_laporan_operasional', 'view_laporan_penjualan_op'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Penjualan</a>
@@ -680,6 +685,9 @@
                     @canany(['view_laporan_operasional', 'view_laporan_residu'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Laporan Residu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.residu-rerata-bulanan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.residu-rerata-bulanan') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Residu Rerata Bulanan</a>
                     </li>
                     @endcanany
                     @canany(['view_laporan_operasional', 'view_laporan_kehadiran'])
