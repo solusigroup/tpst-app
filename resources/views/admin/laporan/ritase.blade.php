@@ -327,33 +327,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php 
-                                $allRowsForPrint = \App\Models\Ritase::with(['armada', 'klien'])
-                                    ->when($dari, fn($q)=>$q->whereDate('waktu_masuk','>=',$dari))
-                                    ->when($sampai, fn($q)=>$q->whereDate('waktu_masuk','<=',$sampai))
-                                    ->when($jenisKlien, function ($q) use ($jenisKlien) {
-                                        $q->whereHas('klien', function ($qk) use ($jenisKlien) {
-                                            $qk->where('jenis', $jenisKlien);
-                                        });
-                                    })
-                                    ->when($klienId, function ($q) use ($klienId) {
-                                        $selectedKlien = \App\Models\Klien::find($klienId);
-                                        if ($selectedKlien && ($selectedKlien->nama_klien === 'Dinas Lingkungan Hidup' || $selectedKlien->jenis === 'DLH')) {
-                                            $q->whereHas('klien', function ($qk) { $qk->where('jenis', 'DLH'); });
-                                        } else {
-                                            $q->where('ritase.klien_id', $klienId);
-                                        }
-                                    })
-                                    ->when($status, fn($q)=>$q->where('status',$status))
-                                    ->when($isApproved !== null && $isApproved !== '', fn($q)=>$q->where('ritase.is_approved', $isApproved))
-                                    ->when($jenisArmada, function ($q) use ($jenisArmada) {
-                                        $q->whereHas('armada', function ($qa) use ($jenisArmada) {
-                                            $qa->where('jenis_armada', $jenisArmada);
-                                        });
-                                    })
-                                    ->orderBy('waktu_masuk', $sortDate ?? 'desc')
-                                    ->get(); 
-                            @endphp
                             @foreach($allRowsForPrint as $index => $r)
                             <tr>
                                 <td class="text-center">{{ $index + 1 }}</td>

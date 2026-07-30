@@ -594,8 +594,9 @@ class LaporanController extends Controller
             }
         }
 
+        $allRowsForPrint = (clone $query)->get();
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'jenisArmada', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate'));
+        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'jenisArmada', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate', 'allRowsForPrint'));
     }
 
     public function rekapRitase(Request $request)
