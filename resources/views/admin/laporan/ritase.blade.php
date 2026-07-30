@@ -111,68 +111,155 @@
     </div>
 </div>
 
-<div class="card" id="printable">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Approve</th><th>Status Invoice</th></tr></thead>
-                <tbody>
-                    @forelse($rows as $r)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->format('d M Y') }}</td>
-                        <td><strong>{{ $r->nomor_tiket }}</strong></td>
-                        <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
-                        <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
-                        <td>{{ $r->klien->nama_klien ?? '-' }}</td>
-                        <td>
-                            @php
-                                $jenisColors = [
-                                    'DLH' => 'info',
-                                    'Swasta' => 'primary',
-                                    'Offtaker' => 'success',
-                                    'Internal' => 'secondary'
-                                ];
-                                $color = $jenisColors[$r->klien->jenis] ?? 'light';
-                            @endphp
-                            <span class="badge bg-{{ $color }}">{{ $r->klien->jenis ?? '-' }}</span>
-                        </td>
-                        <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }} kg</td>
-                        <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }} kg</td>
-                        <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
-                        <td class="text-end">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
-                        <td>
-                            @php $statusColors = ['masuk'=>'warning','timbang'=>'info','keluar'=>'primary','selesai'=>'success']; @endphp
-                            <span class="badge bg-{{ $statusColors[$r->status] ?? 'secondary' }}">{{ ucfirst($r->status) }}</span>
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ $r->is_approved ? 'success' : 'danger' }}">
-                                {{ $r->is_approved ? 'Yes' : 'No' }}
-                            </span>
-                        </td>
-                        <td>
-                            @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
-                            <span class="badge bg-{{ $invoiceColors[$r->status_invoice] ?? 'secondary' }}">{{ $r->status_invoice ?? 'Unbilled' }}</span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="11" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
-                    @endforelse
-                </tbody>
-                <tfoot class="border-top border-2 fw-bold">
-                    <tr>
-                        <td colspan="6" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td>
-                        <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }} kg</td>
-                        <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }} kg</td>
-                        <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td>
-                        <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
-                        <td colspan="3"></td>
-                    </tr>
-                </tfoot>
-            </table>
+<ul class="nav nav-tabs mb-3 d-print-none" id="reportTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="table-tab" data-coreui-toggle="tab" data-coreui-target="#table-tab-pane" type="button" role="tab" aria-controls="table-tab-pane" aria-selected="true">
+            <i class="cil-list me-1"></i> Daftar Transaksi
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pivot-tab" data-coreui-toggle="tab" data-coreui-target="#pivot-tab-pane" type="button" role="tab" aria-controls="pivot-tab-pane" aria-selected="false">
+            <i class="cil-grid me-1"></i> Analisis Pivot
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="reportTabsContent">
+    <!-- Tab 1: Standard Table -->
+    <div class="tab-pane fade show active" id="table-tab-pane" role="tabpanel" aria-labelledby="table-tab" tabindex="0">
+        <div class="card" id="printable">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Approve</th><th>Status Invoice</th></tr></thead>
+                        <tbody>
+                            @forelse($rows as $r)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->format('d M Y') }}</td>
+                                <td><strong>{{ $r->nomor_tiket }}</strong></td>
+                                <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
+                                <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
+                                <td>{{ $r->klien->nama_klien ?? '-' }}</td>
+                                <td>
+                                    @php
+                                        $jenisColors = [
+                                            'DLH' => 'info',
+                                            'Swasta' => 'primary',
+                                            'Offtaker' => 'success',
+                                            'Internal' => 'secondary'
+                                        ];
+                                        $color = $jenisColors[$r->klien->jenis] ?? 'light';
+                                    @endphp
+                                    <span class="badge bg-{{ $color }}">{{ $r->klien->jenis ?? '-' }}</span>
+                                </td>
+                                <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
+                                <td class="text-end">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
+                                <td>
+                                    @php $statusColors = ['masuk'=>'warning','timbang'=>'info','keluar'=>'primary','selesai'=>'success']; @endphp
+                                    <span class="badge bg-{{ $statusColors[$r->status] ?? 'secondary' }}">{{ ucfirst($r->status) }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ $r->is_approved ? 'success' : 'danger' }}">
+                                        {{ $r->is_approved ? 'Yes' : 'No' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
+                                    <span class="badge bg-{{ $invoiceColors[$r->status_invoice] ?? 'secondary' }}">{{ $r->status_invoice ?? 'Unbilled' }}</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="13" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="border-top border-2 fw-bold">
+                            <tr>
+                                <td colspan="6" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td>
+                                <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }} kg</td>
+                                <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td>
+                                <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            @if($rows->hasPages()) <div class="card-footer bg-white">{{ $rows->links() }}</div> @endif
         </div>
     </div>
-@if($rows->hasPages()) <div class="card-footer bg-white">{{ $rows->links() }}</div> @endif
+    
+    <!-- Tab 2: Pivot Table Analysis -->
+    <div class="tab-pane fade" id="pivot-tab-pane" role="tabpanel" aria-labelledby="pivot-tab" tabindex="0">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label small text-body-secondary fw-semibold">Baris (Rows)</label>
+                        <select id="pivot-row" class="form-select">
+                            <option value="nama_klien" selected>Klien</option>
+                            <option value="jenis_klien">Jenis Klien</option>
+                            <option value="jenis_armada">Jenis Armada</option>
+                            <option value="plat_nomor">Plat Nomor</option>
+                            <option value="status">Status Tiket</option>
+                            <option value="tanggal">Tanggal (Hari)</option>
+                            <option value="bulan">Tanggal (Bulan)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-body-secondary fw-semibold">Kolom (Columns)</label>
+                        <select id="pivot-col" class="form-select">
+                            <option value="" selected>-- Tidak Ada (1 Dimensi) --</option>
+                            <option value="jenis_klien">Jenis Klien</option>
+                            <option value="jenis_armada">Jenis Armada</option>
+                            <option value="status">Status Tiket</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-body-secondary fw-semibold">Nilai (Values)</label>
+                        <select id="pivot-value" class="form-select">
+                            <option value="count" selected>Total Ritase (Jumlah)</option>
+                            <option value="berat_netto">Total Netto (Tonase kg)</option>
+                            <option value="berat_netto_avg">Rata-rata Netto (kg)</option>
+                            <option value="biaya_tipping">Total Biaya Tipping (Rp)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 text-md-end text-start">
+                        <button type="button" class="btn btn-success text-white shadow-sm w-100 w-md-auto" id="btn-export-pivot">
+                            <i class="cil-spreadsheet me-1"></i> Export Pivot ke Excel
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered table-hover align-middle mb-0" id="pivot-table">
+                        <!-- Will be dynamically populated by JS -->
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script id="ritase-pivot-data" type="application/json">
+    @json($allRowsForPrint->map(function($r) {
+        return [
+            'tanggal' => \Carbon\Carbon::parse($r->waktu_masuk)->format('d/m/Y'),
+            'bulan' => \Carbon\Carbon::parse($r->waktu_masuk)->format('F Y'),
+            'plat_nomor' => $r->armada->plat_nomor ?? '-',
+            'jenis_armada' => $r->armada->jenis_armada ?? 'Lainnya',
+            'nama_klien' => $r->klien->nama_klien ?? '-',
+            'jenis_klien' => $r->klien->jenis ?? '-',
+            'berat_bruto' => (float)$r->berat_bruto,
+            'berat_tarra' => (float)$r->berat_tarra,
+            'berat_netto' => (float)$r->berat_netto,
+            'biaya_tipping' => (float)$r->biaya_tipping,
+            'status' => ucfirst($r->status),
+        ];
+    }))
+</script>
 
 <!-- Modal Preview -->
 <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
@@ -381,4 +468,221 @@
         }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rawData = JSON.parse(document.getElementById('ritase-pivot-data').textContent);
+    
+    const rowSelect = document.getElementById('pivot-row');
+    const colSelect = document.getElementById('pivot-col');
+    const valSelect = document.getElementById('pivot-value');
+    const pivotTable = document.getElementById('pivot-table');
+    const btnExport = document.getElementById('btn-export-pivot');
+    
+    const labels = {
+        'nama_klien': 'Klien',
+        'jenis_klien': 'Jenis Klien',
+        'jenis_armada': 'Jenis Armada',
+        'plat_nomor': 'Plat Nomor',
+        'status': 'Status Tiket',
+        'tanggal': 'Tanggal',
+        'bulan': 'Bulan'
+    };
+
+    function formatValue(val, type) {
+        if (type === 'count') {
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(val);
+        } else if (type === 'biaya_tipping') {
+            return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(val);
+        } else {
+            return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' kg';
+        }
+    }
+
+    function renderPivot() {
+        const rowField = rowSelect.value;
+        const colField = colSelect.value;
+        const metric = valSelect.value;
+        
+        const rowKeys = [...new Set(rawData.map(r => r[rowField] || '-'))].sort();
+        const colKeys = colField ? [...new Set(rawData.map(r => r[colField] || '-'))].sort() : [];
+        
+        const pivotData = {};
+        rowKeys.forEach(r => {
+            pivotData[r] = {};
+            if (colField) {
+                colKeys.forEach(c => {
+                    pivotData[r][c] = { sum: 0, count: 0 };
+                });
+            } else {
+                pivotData[r]['_total'] = { sum: 0, count: 0 };
+            }
+        });
+        
+        const colTotals = {};
+        if (colField) {
+            colKeys.forEach(c => {
+                colTotals[c] = { sum: 0, count: 0 };
+            });
+        }
+        const grandTotal = { sum: 0, count: 0 };
+        
+        rawData.forEach(r => {
+            const rowVal = r[rowField] || '-';
+            const colVal = colField ? (r[colField] || '-') : '_total';
+            const value = metric === 'count' ? 1 : (r[metric] || 0);
+            
+            if (!pivotData[rowVal][colVal]) {
+                pivotData[rowVal][colVal] = { sum: 0, count: 0 };
+            }
+            pivotData[rowVal][colVal].sum += value;
+            pivotData[rowVal][colVal].count += 1;
+            
+            if (colField) {
+                if (!colTotals[colVal]) {
+                    colTotals[colVal] = { sum: 0, count: 0 };
+                }
+                colTotals[colVal].sum += value;
+                colTotals[colVal].count += 1;
+            }
+            
+            grandTotal.sum += value;
+            grandTotal.count += 1;
+        });
+
+        function getAggregatedVal(cellData) {
+            if (!cellData) return 0;
+            if (metric === 'count') {
+                return cellData.sum;
+            } else if (metric === 'berat_netto_avg') {
+                return cellData.count > 0 ? (cellData.sum / cellData.count) : 0;
+            } else {
+                return cellData.sum;
+            }
+        }
+
+        let html = '';
+        
+        html += '<thead class="table-light">';
+        html += '<tr>';
+        html += `<th>${labels[rowField]}</th>`;
+        if (colField) {
+            colKeys.forEach(c => {
+                html += `<th class="text-end">${c}</th>`;
+            });
+            html += '<th class="text-end fw-bold">Total</th>';
+        } else {
+            const valHeader = valSelect.options[valSelect.selectedIndex].text;
+            html += `<th class="text-end">${valHeader}</th>`;
+        }
+        html += '</tr>';
+        html += '</thead>';
+        
+        html += '<tbody>';
+        rowKeys.forEach(r => {
+            html += '<tr>';
+            html += `<td><strong>${r}</strong></td>`;
+            
+            if (colField) {
+                let rowSum = 0;
+                let rowCount = 0;
+                
+                colKeys.forEach(c => {
+                    const cellVal = getAggregatedVal(pivotData[r][c]);
+                    rowSum += pivotData[r][c].sum;
+                    rowCount += pivotData[r][c].count;
+                    
+                    html += `<td class="text-end">${formatValue(cellVal, metric)}</td>`;
+                });
+                
+                let rowTotalVal = 0;
+                if (metric === 'count') {
+                    rowTotalVal = rowSum;
+                } else if (metric === 'berat_netto_avg') {
+                    rowTotalVal = rowCount > 0 ? (rowSum / rowCount) : 0;
+                } else {
+                    rowTotalVal = rowSum;
+                }
+                html += `<td class="text-end fw-bold table-light">${formatValue(rowTotalVal, metric)}</td>`;
+            } else {
+                const cellVal = getAggregatedVal(pivotData[r]['_total']);
+                html += `<td class="text-end">${formatValue(cellVal, metric)}</td>`;
+            }
+            html += '</tr>';
+        });
+        html += '</tbody>';
+        
+        html += '<tfoot class="table-light fw-bold border-top border-2">';
+        html += '<tr>';
+        html += '<td>TOTAL KESELURUHAN</td>';
+        
+        if (colField) {
+            colKeys.forEach(c => {
+                const colTotalVal = getAggregatedVal(colTotals[c]);
+                html += `<td class="text-end">${formatValue(colTotalVal, metric)}</td>`;
+            });
+            
+            const grandTotalVal = getAggregatedVal(grandTotal);
+            html += `<td class="text-end fw-bold">${formatValue(grandTotalVal, metric)}</td>`;
+        } else {
+            const grandTotalVal = getAggregatedVal(grandTotal);
+            html += `<td class="text-end">${formatValue(grandTotalVal, metric)}</td>`;
+        }
+        
+        html += '</tr>';
+        html += '</tfoot>';
+        
+        pivotTable.innerHTML = html;
+    }
+    
+    rowSelect.addEventListener('change', renderPivot);
+    colSelect.addEventListener('change', renderPivot);
+    valSelect.addEventListener('change', renderPivot);
+    
+    renderPivot();
+
+    btnExport.addEventListener('click', function() {
+        const fromDate = document.querySelector('input[name="dari"]').value;
+        const toDate = document.querySelector('input[name="sampai"]').value;
+        const rowField = rowSelect.value;
+        const colField = colSelect.value;
+        const metricLabel = valSelect.options[valSelect.selectedIndex].text;
+        
+        let htmlExcel = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+            <style>
+                table { border-collapse: collapse; }
+                th, td { border: 0.5pt solid #ccc; padding: 5px; font-family: Arial, sans-serif; }
+                .text-end { text-align: right; }
+                .fw-bold { font-weight: bold; }
+                .bg-light { background-color: #f2f2f2; }
+            </style>
+        </head>
+        <body>
+            <h3>Analisis Pivot Laporan Ritase</h3>
+            <p>Periode: ${fromDate} s.d. ${toDate}</p>
+            <p><strong>Baris:</strong> ${labels[rowField]} | <strong>Kolom:</strong> ${colField ? labels[colField] : '-'} | <strong>Metrik:</strong> ${metricLabel}</p>
+            <table>
+                ${pivotTable.innerHTML}
+            </table>
+        </body>
+        </html>
+        `;
+        
+        const blob = new Blob([htmlExcel], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Pivot_Laporan_Ritase_${new Date().toISOString().slice(0,10)}.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+});
+</script>
 @endpush
