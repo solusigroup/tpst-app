@@ -243,22 +243,25 @@
     </div>
 </div>
 
-<script id="ritase-pivot-data" type="application/json">
-    @json($allRowsForPrint->map(function($r) {
+@php
+    $pivotJsonData = $allRowsForPrint->map(function($r) {
         return [
-            'tanggal' => \Carbon\Carbon::parse($r->waktu_masuk)->format('d/m/Y'),
-            'bulan' => \Carbon\Carbon::parse($r->waktu_masuk)->format('F Y'),
-            'plat_nomor' => $r->armada->plat_nomor ?? '-',
-            'jenis_armada' => $r->armada->jenis_armada ?? 'Lainnya',
-            'nama_klien' => $r->klien->nama_klien ?? '-',
-            'jenis_klien' => $r->klien->jenis ?? '-',
-            'berat_bruto' => (float)$r->berat_bruto,
-            'berat_tarra' => (float)$r->berat_tarra,
-            'berat_netto' => (float)$r->berat_netto,
+            'tanggal'       => \Carbon\Carbon::parse($r->waktu_masuk)->format('d/m/Y'),
+            'bulan'         => \Carbon\Carbon::parse($r->waktu_masuk)->format('F Y'),
+            'plat_nomor'    => $r->armada->plat_nomor ?? '-',
+            'jenis_armada'  => $r->armada->jenis_armada ?? 'Lainnya',
+            'nama_klien'    => $r->klien->nama_klien ?? '-',
+            'jenis_klien'   => $r->klien->jenis ?? '-',
+            'berat_bruto'   => (float)$r->berat_bruto,
+            'berat_tarra'   => (float)$r->berat_tarra,
+            'berat_netto'   => (float)$r->berat_netto,
             'biaya_tipping' => (float)$r->biaya_tipping,
-            'status' => ucfirst($r->status),
+            'status'        => ucfirst($r->status),
         ];
-    }))
+    });
+@endphp
+<script id="ritase-pivot-data" type="application/json">
+    @json($pivotJsonData)
 </script>
 
 <!-- Modal Preview -->
