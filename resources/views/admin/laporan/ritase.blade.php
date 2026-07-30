@@ -11,10 +11,10 @@
             <i class="cil-zoom-in me-1"></i> Preview & Cetak
         </button>
         <div class="btn-group shadow-sm">
-            <a href="{{ route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'is_approved' => $isApproved, 'export' => 'pdf']) }}" target="_blank" class="btn btn-danger" title="Export PDF">
+            <a href="{{ route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'jenis_armada' => $jenisArmada, 'status' => $status, 'is_approved' => $isApproved, 'export' => 'pdf']) }}" target="_blank" class="btn btn-danger" title="Export PDF">
                 <i class="cil-file me-1"></i> PDF
             </a>
-            <a href="{{ route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'status' => $status, 'is_approved' => $isApproved, 'export' => 'excel']) }}" class="btn btn-success" title="Export Excel">
+            <a href="{{ route('admin.laporan-operasional.ritase', ['dari' => $dari, 'sampai' => $sampai, 'jenis_klien' => $jenisKlien, 'klien_id' => $klienId, 'jenis_armada' => $jenisArmada, 'status' => $status, 'is_approved' => $isApproved, 'export' => 'excel']) }}" class="btn btn-success" title="Export Excel">
                 <i class="cil-spreadsheet me-1"></i> Excel
             </a>
         </div>
@@ -39,6 +39,15 @@
             <select name="klien_id" class="form-select">
                 <option value="">-- Semua Klien --</option>
                 @foreach($kliens as $k)<option value="{{ $k->id }}" {{ $klienId == $k->id ? 'selected' : '' }}>{{ $k->nama_klien }} ({{ $k->jenis }})</option>@endforeach
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Jenis Armada</label>
+            <select name="jenis_armada" class="form-select">
+                <option value="">-- Semua Jenis --</option>
+                @foreach(['Dump Truk', 'Pick Up', 'Tossa', 'Gerobak', 'Lainnya'] as $ja)
+                    <option value="{{ $ja }}" {{ $jenisArmada == $ja ? 'selected' : '' }}>{{ $ja }}</option>
+                @endforeach
             </select>
         </div>
         <div class="col-auto">
@@ -235,6 +244,11 @@
                                 $allRowsForPrint = \App\Models\Ritase::with(['armada', 'klien'])
                                     ->when($dari, fn($q)=>$q->whereDate('waktu_masuk','>=',$dari))
                                     ->when($sampai, fn($q)=>$q->whereDate('waktu_masuk','<=',$sampai))
+                                    ->when($jenisKlien, function ($q) use ($jenisKlien) {
+                                        $q->whereHas('klien', function ($qk) use ($jenisKlien) {
+                                            $qk->where('jenis', $jenisKlien);
+                                        });
+                                    })
                                     ->when($klienId, function ($q) use ($klienId) {
                                         $selectedKlien = \App\Models\Klien::find($klienId);
                                         if ($selectedKlien && ($selectedKlien->nama_klien === 'Dinas Lingkungan Hidup' || $selectedKlien->jenis === 'DLH')) {
@@ -245,7 +259,12 @@
                                     })
                                     ->when($status, fn($q)=>$q->where('status',$status))
                                     ->when($isApproved !== null && $isApproved !== '', fn($q)=>$q->where('ritase.is_approved', $isApproved))
-                                    ->orderByDesc('waktu_masuk')
+                                    ->when($jenisArmada, function ($q) use ($jenisArmada) {
+                                        $q->whereHas('armada', function ($qa) use ($jenisArmada) {
+                                            $qa->where('jenis_armada', $jenisArmada);
+                                        });
+                                    })
+                                    ->orderBy('waktu_masuk', $sortDate ?? 'desc')
                                     ->get(); 
                             @endphp
                             @foreach($allRowsForPrint as $index => $r)

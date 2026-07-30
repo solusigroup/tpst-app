@@ -528,6 +528,7 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $klienId = $request->get('klien_id');
         $jenisKlien = $request->get('jenis_klien');
+        $jenisArmada = $request->get('jenis_armada');
         $status = $request->get('status');
         $isApproved = $request->get('is_approved');
 
@@ -553,6 +554,11 @@ class LaporanController extends Controller
             })
             ->when($status, fn ($q) => $q->where('ritase.status', $status))
             ->when($isApproved !== null && $isApproved !== '', fn ($q) => $q->where('ritase.is_approved', $isApproved))
+            ->when($jenisArmada, function ($q) use ($jenisArmada) {
+                $q->whereHas('armada', function ($qa) use ($jenisArmada) {
+                    $qa->where('jenis_armada', $jenisArmada);
+                });
+            })
             ->orderBy('ritase.waktu_masuk', $sortDate);
 
         $totals = (clone $query)->reorder()->selectRaw('SUM(berat_bruto) as total_bruto, SUM(berat_tarra) as total_tarra, SUM(berat_netto) as total_netto, SUM(biaya_tipping) as total_tipping, COUNT(*) as total_rows')->first();
@@ -575,7 +581,7 @@ class LaporanController extends Controller
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate');
+            $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'jenisArmada', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.ritase-export', $data);
@@ -589,7 +595,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate'));
+        return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'jenisArmada', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate'));
     }
 
     public function rekapRitase(Request $request)
