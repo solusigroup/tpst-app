@@ -65,6 +65,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('penjualan', PenjualanController::class);
     Route::resource('machines', \App\Http\Controllers\Admin\MachineController::class);
     Route::resource('machine-logs', \App\Http\Controllers\Admin\MachineLogController::class);
+    Route::post('pengangkutan-residu/bulk-pembayaran', [\App\Http\Controllers\Admin\PengangkutanResiduController::class, 'bulkPembayaran'])->name('pengangkutan-residu.bulk-pembayaran');
     Route::resource('pengangkutan-residu', \App\Http\Controllers\Admin\PengangkutanResiduController::class);
 
     // Keuangan

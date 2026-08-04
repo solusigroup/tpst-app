@@ -84,6 +84,14 @@
                         <textarea name="keterangan" class="form-control" rows="3">{{ old('keterangan', $item->keterangan) }}</textarea>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Status Pembayaran</label>
+                        <select name="status_pembayaran" class="form-select">
+                            <option value="Belum" {{ old('status_pembayaran', $item->status_pembayaran) == 'Belum' ? 'selected' : '' }}>Belum</option>
+                            <option value="Sudah" {{ old('status_pembayaran', $item->status_pembayaran) == 'Sudah' ? 'selected' : '' }}>Sudah</option>
+                        </select>
+                    </div>
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('admin.pengangkutan-residu.index') }}" class="btn btn-outline-secondary">Batal</a>
                         <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>

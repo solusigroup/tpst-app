@@ -12,7 +12,14 @@
             </ol>
         </nav>
     </div>
-    <div class="btn-toolbar">
+    <div class="d-flex gap-2">
+        <form id="bulk-pembayaran-form" action="{{ route('admin.pengangkutan-residu.bulk-pembayaran') }}" method="POST" class="d-none">
+            @csrf
+            <input type="hidden" name="residu_ids" id="bulk-residu-ids">
+        </form>
+        <button type="button" id="btn-bulk-pembayaran" class="btn btn-success" style="display:none;" onclick="submitBulkPembayaran()">
+            <i class="cil-check-circle me-1"></i> Tandai Sudah Bayar (<span id="bulk-count">0</span>)
+        </button>
         <a href="{{ route('admin.pengangkutan-residu.create') }}" class="btn btn-primary">
             <i class="cil-plus me-1"></i> Catat Residu
         </a>
@@ -26,11 +33,18 @@
                 <input type="text" name="search" class="form-control" placeholder="No. Tiket / Plat..." value="{{ request('search') }}">
             </div>
             <div class="col-auto">
+                <select name="status_pembayaran" class="form-select" title="Status Pembayaran">
+                    <option value="">-- Semua Pembayaran --</option>
+                    <option value="Sudah" {{ request('status_pembayaran') == 'Sudah' ? 'selected' : '' }}>Sudah</option>
+                    <option value="Belum" {{ request('status_pembayaran') == 'Belum' ? 'selected' : '' }}>Belum</option>
+                </select>
+            </div>
+            <div class="col-auto">
                 <button class="btn btn-outline-primary" type="submit">
                     <i class="cil-search me-1"></i> Cari
                 </button>
             </div>
-            @if(request('search'))
+            @if(request()->hasAny(['search', 'status_pembayaran']))
                 <div class="col-auto">
                     <a href="{{ route('admin.pengangkutan-residu.index') }}" class="btn btn-outline-secondary">Reset</a>
                 </div>
@@ -42,11 +56,13 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 40px;"><input type="checkbox" id="checkAll" class="form-check-input"></th>
                         <th>No. Tiket</th>
                         <th>Tanggal</th>
                         <th>Armada</th>
                         <th>Netto (Kg)</th>
                         <th>Biaya</th>
+                        <th>Pembayaran</th>
                         <th>Tujuan</th>
                         <th class="text-center">Aksi</th>
                     </tr>
@@ -54,6 +70,11 @@
                 <tbody>
                     @forelse($entries as $item)
                     <tr>
+                        <td>
+                            @if($item->status_pembayaran !== 'Sudah')
+                                <input type="checkbox" class="form-check-input residu-checkbox" value="{{ $item->id }}">
+                            @endif
+                        </td>
                         <td><strong>{{ $item->nomor_tiket }}</strong></td>
                         <td>{{ $item->tanggal->format('d/m/Y') }}</td>
                         <td>
@@ -62,6 +83,13 @@
                         </td>
                         <td class="fw-bold">{{ number_format($item->berat_netto, 0, ',', '.') }}</td>
                         <td class="text-danger fw-semibold">Rp {{ number_format($item->biaya_retribusi, 0, ',', '.') }}</td>
+                        <td>
+                            @if($item->status_pembayaran === 'Sudah')
+                                <span class="badge bg-success">Sudah</span>
+                            @else
+                                <span class="badge bg-danger">Belum</span>
+                            @endif
+                        </td>
                         <td>{{ $item->tujuan }}</td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
@@ -83,7 +111,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data pengangkutan residu.</td>
+                        <td colspan="9" class="text-center py-4 text-body-secondary">Belum ada data pengangkutan residu.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -97,3 +125,53 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkAll = document.getElementById('checkAll');
+    const checkboxes = document.querySelectorAll('.residu-checkbox');
+    const btnBulkPembayaran = document.getElementById('btn-bulk-pembayaran');
+    const bulkCount = document.getElementById('bulk-count');
+    const bulkResiduIds = document.getElementById('bulk-residu-ids');
+    const bulkForm = document.getElementById('bulk-pembayaran-form');
+
+    function updateBulkButton() {
+        const checked = Array.from(checkboxes).filter(cb => cb.checked);
+        bulkCount.innerText = checked.length;
+        if (checked.length > 0) {
+            btnBulkPembayaran.style.display = 'inline-block';
+        } else {
+            btnBulkPembayaran.style.display = 'none';
+        }
+    }
+
+    if (checkAll) {
+        checkAll.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = checkAll.checked);
+            updateBulkButton();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+            const someChecked = Array.from(checkboxes).some(c => c.checked);
+            checkAll.checked = allChecked;
+            checkAll.indeterminate = someChecked && !allChecked;
+            updateBulkButton();
+        });
+    });
+
+    window.submitBulkPembayaran = function() {
+        const checked = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        if (checked.length === 0) return;
+
+        if (confirm(`Yakin ingin menandai ${checked.length} data sebagai sudah dibayar?`)) {
+            bulkResiduIds.value = checked.join(',');
+            bulkForm.submit();
+        }
+    }
+});
+</script>
+@endpush

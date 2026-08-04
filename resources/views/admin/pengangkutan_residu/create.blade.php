@@ -83,6 +83,14 @@
                         <textarea name="keterangan" class="form-control" rows="3">{{ old('keterangan') }}</textarea>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Status Pembayaran</label>
+                        <select name="status_pembayaran" class="form-select">
+                            <option value="Belum" {{ old('status_pembayaran', 'Belum') == 'Belum' ? 'selected' : '' }}>Belum</option>
+                            <option value="Sudah" {{ old('status_pembayaran') == 'Sudah' ? 'selected' : '' }}>Sudah</option>
+                        </select>
+                    </div>
+
                     <div class="alert alert-info d-flex align-items-center mb-4">
                         <i class="cil-info me-2 fs-5"></i>
                         <div>

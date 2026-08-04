@@ -26,6 +26,10 @@ class PengangkutanResiduController extends Controller
                   });
         }
 
+        if ($request->status_pembayaran) {
+            $query->where('status_pembayaran', $request->status_pembayaran);
+        }
+
         $entries = $query->paginate(20);
 
         return view('admin.pengangkutan_residu.index', compact('entries'));
@@ -49,6 +53,7 @@ class PengangkutanResiduController extends Controller
             'berat_bruto' => 'required|numeric|min:0',
             'berat_tarra' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'status_pembayaran' => 'nullable|in:Sudah,Belum',
         ]);
 
         PengangkutanResidu::create($request->all());
@@ -86,6 +91,7 @@ class PengangkutanResiduController extends Controller
             'berat_bruto' => 'required|numeric|min:0',
             'berat_tarra' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'status_pembayaran' => 'nullable|in:Sudah,Belum',
         ]);
 
         $pengangkutanResidu->update($request->all());
@@ -100,5 +106,29 @@ class PengangkutanResiduController extends Controller
         $pengangkutanResidu->delete();
         return redirect()->route('admin.pengangkutan-residu.index')
             ->with('success', 'Data pengangkutan residu berhasil dihapus.');
+    }
+
+    public function bulkPembayaran(Request $request)
+    {
+        Gate::authorize('update_pengangkutan_residu');
+
+        $request->validate([
+            'residu_ids' => 'required|string',
+        ]);
+
+        $ids = explode(',', $request->residu_ids);
+        $residus = PengangkutanResidu::whereIn('id', $ids)->where('status_pembayaran', 'Belum')->get();
+
+        if ($residus->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada data yang dipilih atau sudah dibayar.');
+        }
+
+        DB::transaction(function () use ($residus) {
+            foreach ($residus as $residu) {
+                $residu->update(['status_pembayaran' => 'Sudah']);
+            }
+        });
+
+        return redirect()->back()->with('success', count($residus) . ' data pengangkutan residu berhasil ditandai sudah dibayar.');
     }
 }

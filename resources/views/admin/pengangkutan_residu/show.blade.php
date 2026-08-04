@@ -78,6 +78,14 @@
                     <span>Biaya Retribusi TPA</span>
                     <span class="fw-bold text-danger">Rp {{ number_format($item->biaya_retribusi, 0, ',', '.') }}</span>
                 </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Status Pembayaran</span>
+                    @if($item->status_pembayaran === 'Sudah')
+                        <span class="badge bg-success">Sudah</span>
+                    @else
+                        <span class="badge bg-danger">Belum</span>
+                    @endif
+                </div>
                 
                 @if($item->jurnalHeader)
                 <div class="p-3 bg-light rounded border">

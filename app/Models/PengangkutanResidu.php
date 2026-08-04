@@ -25,6 +25,7 @@ class PengangkutanResidu extends Model
         'biaya_retribusi',
         'tujuan',
         'keterangan',
+        'status_pembayaran',
         'jurnal_header_id',
     ];
 
