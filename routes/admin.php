@@ -79,6 +79,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
     Route::get('rekonsiliasi-bank', [BankReconciliationController::class, 'index'])->name('rekonsiliasi-bank.index');
     Route::post('rekonsiliasi-bank/proses', [BankReconciliationController::class, 'proses'])->name('rekonsiliasi-bank.proses');
+    Route::post('rekonsiliasi-bank/export-excel', [BankReconciliationController::class, 'exportExcel'])->name('rekonsiliasi-bank.export-excel');
+    Route::get('rekonsiliasi-bank/export-excel', [BankReconciliationController::class, 'exportExcel'])->name('rekonsiliasi-bank.export-excel-get');
     Route::get('transfer-kas', [JurnalKasController::class, 'transfer'])->name('transfer-kas.create');
     Route::post('transfer-kas', [JurnalKasController::class, 'storeTransfer'])->name('transfer-kas.store');
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');

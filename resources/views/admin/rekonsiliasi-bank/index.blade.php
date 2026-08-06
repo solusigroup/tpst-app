@@ -163,7 +163,24 @@
     </div>
 </div>
 
-<!-- Hasil Rekonsiliasi Tabs -->
+<!-- Export Excel Button -->
+<div class="d-flex justify-content-end mb-3">
+    @error('export')
+        <div class="alert alert-warning py-2 px-3 me-3 mb-0">
+            <i class="cil-warning me-1"></i> {{ $message }}
+        </div>
+    @enderror
+    <form action="{{ route('admin.rekonsiliasi-bank.export-excel') }}" method="POST" id="form-export-excel">
+        @csrf
+    </form>
+    <button type="submit" form="form-export-excel"
+            class="btn btn-success px-4 shadow-sm d-flex align-items-center gap-2">
+        <i class="cil-cloud-download"></i>
+        <span>Export Excel</span>
+    </button>
+</div>
+
+
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white p-0">
         <ul class="nav nav-tabs card-header-tabs px-3 pt-2 border-0" id="reconciliationTabs" role="tablist">

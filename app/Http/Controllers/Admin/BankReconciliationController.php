@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\RekonsiliasiBankExport;
 use App\Http\Controllers\Controller;
 use App\Models\Coa;
 use App\Models\JurnalDetail;
@@ -9,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BankReconciliationController extends Controller
 {
@@ -197,10 +199,51 @@ class BankReconciliationController extends Controller
 
         $kasBankCoas = Coa::where('kode_akun', 'like', '11%')->orderBy('kode_akun')->get();
 
+        // Save reconciliation results to session for Excel export
+        session([
+            'rekonsiliasi_hasil' => [
+                'matched'        => $matched,
+                'matchedPartial' => $matchedPartial,
+                'unmatchedBank'  => $unmatchedBank,
+                'unmatchedBuku'  => $unmatchedBuku,
+                'stats'          => $stats,
+                'coa'            => [
+                    'id'         => $coa->id,
+                    'kode_akun'  => $coa->kode_akun,
+                    'nama_akun'  => $coa->nama_akun,
+                ],
+                'dari'           => $dari->format('d/m/Y'),
+                'sampai'         => $sampai->format('d/m/Y'),
+            ],
+        ]);
+
         return view('admin.rekonsiliasi-bank.index', compact(
             'kasBankCoas', 'coa', 'dari', 'sampai', 'toleransiHari',
             'matched', 'matchedPartial', 'unmatchedBank', 'unmatchedBuku', 'stats'
         ));
+    }
+
+    /**
+     * Export reconciliation results to Excel.
+     * Data is retrieved from the session saved by proses().
+     */
+    public function exportExcel(Request $request)
+    {
+        Gate::authorize('view_jurnal_kas');
+
+        $hasil = session('rekonsiliasi_hasil');
+
+        if (!$hasil) {
+            return back()->withErrors(['export' => 'Tidak ada hasil rekonsiliasi yang bisa diekspor. Silakan proses rekonsiliasi terlebih dahulu.']);
+        }
+
+        $coa    = $hasil['coa']    ?? [];
+        $dari   = $hasil['dari']   ?? '';
+        $sampai = $hasil['sampai'] ?? '';
+
+        $filename = 'Rekonsiliasi_Bank_' . ($coa['kode_akun'] ?? '') . '_' . str_replace('/', '-', $dari) . '_sd_' . str_replace('/', '-', $sampai) . '.xlsx';
+
+        return Excel::download(new RekonsiliasiBankExport($hasil), $filename);
     }
 
     /**
