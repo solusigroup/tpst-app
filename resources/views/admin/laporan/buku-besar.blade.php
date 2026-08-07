@@ -98,6 +98,23 @@
                     <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data jurnal untuk periode ini.</td></tr>
                     @endforelse
                 </tbody>
+                <tfoot class="border-top border-2 fw-bold">
+                    <tr>
+                        <td colspan="4" class="text-end">TOTAL</td>
+                        <td class="text-end">{{ number_format($totalDebit, 0, ',', '.') }}</td>
+                        <td class="text-end">{{ number_format($totalKredit, 0, ',', '.') }}</td>
+                        <td class="text-end">
+                            @if($selectedCoa)
+                                @php
+                                    $saldoAkhirTotal = $saldoAwal + ($isDebitNormal ? ($totalDebit - $totalKredit) : ($totalKredit - $totalDebit));
+                                @endphp
+                                <span class="{{ $saldoAkhirTotal < 0 ? 'text-danger' : 'text-primary' }}">{{ number_format($saldoAkhirTotal, 0, ',', '.') }}</span>
+                            @else
+                                <span class="text-muted small">N/A</span>
+                            @endif
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>

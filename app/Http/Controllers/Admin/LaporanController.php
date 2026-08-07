@@ -443,9 +443,12 @@ class LaporanController extends Controller
                 ->value('saldo') ?? 0;
         }
 
+        $totalDebit = (clone $query)->sum('jurnal_detail.debit');
+        $totalKredit = (clone $query)->sum('jurnal_detail.kredit');
+
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'title', 'sortDate');
+            $data = compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'title', 'sortDate', 'totalDebit', 'totalKredit');
             
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.buku-besar-export', $data);
@@ -497,7 +500,7 @@ class LaporanController extends Controller
             }
         }
 
-        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal', 'title', 'sortDate'));
+        return view('admin.laporan.buku-besar', compact('rows', 'coas', 'dari', 'sampai', 'coaId', 'selectedCoa', 'saldoAwal', 'pageSaldoAwal', 'title', 'sortDate', 'totalDebit', 'totalKredit'));
     }
 
     public function bukuKas(Request $request)

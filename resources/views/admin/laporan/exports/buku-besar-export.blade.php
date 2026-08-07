@@ -34,5 +34,12 @@
         </tr>
         @endforeach
     </tbody>
+    <tfoot>
+        <tr style="font-weight: bold; background-color: #f8f9fa;">
+            <td colspan="4" style="border: 1px solid #ddd; padding: 5px; text-align: right;">TOTAL</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ request('export') == 'excel' ? $totalDebit : number_format($totalDebit, 0, ',', '.') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{{ request('export') == 'excel' ? $totalKredit : number_format($totalKredit, 0, ',', '.') }}</td>
+        </tr>
+    </tfoot>
 </table>
 @endsection
