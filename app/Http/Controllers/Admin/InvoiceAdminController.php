@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Klien;
+use App\Models\BukuPembantu;
+use App\Models\JurnalHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
@@ -401,7 +403,60 @@ class InvoiceAdminController extends Controller
                 });
             }
 
-            $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
+            if ($request->export === 'excel') {
+                $invoiceList = $query->orderByDesc('tanggal_invoice')->get();
+            } else {
+                $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
+                $invoiceList = $invoices->getCollection();
+            }
+
+            // Efficiently populate tanggal_pelunasan for invoiceList (preventing N+1)
+            $invoiceIds = $invoiceList->pluck('id');
+
+            $payJhs = JurnalHeader::where('referensi_type', Invoice::class)
+                ->whereIn('referensi_id', $invoiceIds)
+                ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                ->get()
+                ->keyBy('referensi_id');
+
+            $bps = BukuPembantu::whereHas('jurnalHeader', function($q) use ($invoiceIds) {
+                    $q->where('referensi_type', Invoice::class)
+                      ->whereIn('referensi_id', $invoiceIds);
+                })
+                ->whereNotNull('settled_by_jurnal_header_id')
+                ->with('jurnalHeader')
+                ->get()
+                ->keyBy(function($item) {
+                    return $item->jurnalHeader->referensi_id;
+                });
+
+            $settledJhIds = $bps->pluck('settled_by_jurnal_header_id')->filter();
+            $settledJhs = JurnalHeader::whereIn('id', $settledJhIds)->get()->keyBy('id');
+
+            foreach ($invoiceList as $inv) {
+                $tgl = null;
+                if (isset($bps[$inv->id])) {
+                    $sId = $bps[$inv->id]->settled_by_jurnal_header_id;
+                    if (isset($settledJhs[$sId]) && $settledJhs[$sId]->tanggal) {
+                        $tgl = $settledJhs[$sId]->tanggal;
+                    }
+                }
+                if (!$tgl && isset($payJhs[$inv->id]) && $payJhs[$inv->id]->tanggal) {
+                    $tgl = $payJhs[$inv->id]->tanggal;
+                }
+                if (!$tgl) {
+                    $tgl = $inv->updated_at;
+                }
+                $inv->tanggal_pelunasan = \Carbon\Carbon::parse($tgl);
+            }
+
+            if ($request->export === 'excel') {
+                $data = compact('tab', 'invoiceList', 'totalPaidClients', 'totalPaidInvoices', 'totalCollected', 'totalOutstanding');
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.invoice.exports.swasta-lunas-export', $data),
+                    'Klien_Swasta_Lunas_Invoice_' . date('Ymd_His') . '.xlsx'
+                );
+            }
         } else {
             // Default to 'clients' tab
             $query = Klien::where('jenis', 'Swasta')
@@ -413,18 +468,23 @@ class InvoiceAdminController extends Controller
                 $query->where('nama_klien', 'like', '%' . $search . '%');
             }
 
-            $clients = $query
-                ->withCount(['invoices' => function ($q) {
+            $query->withCount(['invoices' => function ($q) {
                     $q->where('status', 'Paid');
                 }])
                 ->withSum(['invoices' => function ($q) {
                     $q->where('status', 'Paid');
                 }], 'total_tagihan')
-                ->orderByDesc('invoices_sum_total_tagihan')
-                ->paginate(15)->withQueryString();
+                ->orderByDesc('invoices_sum_total_tagihan');
 
-            // Load active outstanding receivables for each client in the page (preventing N+1)
-            $clientIds = $clients->pluck('id');
+            if ($request->export === 'excel') {
+                $clientList = $query->get();
+            } else {
+                $clients = $query->paginate(15)->withQueryString();
+                $clientList = $clients->getCollection();
+            }
+
+            // Load active outstanding receivables for each client (preventing N+1)
+            $clientIds = $clientList->pluck('id');
             $outstandings = Invoice::whereIn('klien_id', $clientIds)
                 ->where('status', 'Sent')
                 ->groupBy('klien_id')
@@ -432,8 +492,16 @@ class InvoiceAdminController extends Controller
                 ->get()
                 ->pluck('total_outstanding', 'klien_id');
 
-            foreach ($clients as $client) {
+            foreach ($clientList as $client) {
                 $client->outstanding_piutang = $outstandings->get($client->id, 0);
+            }
+
+            if ($request->export === 'excel') {
+                $data = compact('tab', 'clientList', 'totalPaidClients', 'totalPaidInvoices', 'totalCollected', 'totalOutstanding');
+                return \Maatwebsite\Excel\Facades\Excel::download(
+                    new \App\Exports\LaporanExcelExport('admin.invoice.exports.swasta-lunas-export', $data),
+                    'Klien_Swasta_Lunas_Klien_' . date('Ymd_His') . '.xlsx'
+                );
             }
         }
 

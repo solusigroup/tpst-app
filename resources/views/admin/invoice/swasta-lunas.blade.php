@@ -74,21 +74,26 @@
                 </li>
             </ul>
 
-            {{-- Search Form --}}
-            <form method="GET" class="d-flex align-items-center gap-2">
-                <input type="hidden" name="tab" value="{{ $tab }}">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" 
-                           placeholder="{{ $tab === 'clients' ? 'Cari nama klien...' : 'Cari nomor invoice / klien...' }}" 
-                           value="{{ request('search') }}">
-                    <button class="btn btn-outline-primary" type="submit">
-                        <i class="nav-icon cil-search"></i> Cari
-                    </button>
-                </div>
-                @if(request()->filled('search'))
-                    <a href="{{ route('admin.invoice.swasta-lunas', ['tab' => $tab]) }}" class="btn btn-outline-secondary">Reset</a>
-                @endif
-            </form>
+            {{-- Actions: Export & Search --}}
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('admin.invoice.swasta-lunas', ['tab' => $tab, 'search' => request('search'), 'export' => 'excel']) }}" class="btn btn-outline-success">
+                    <i class="nav-icon cil-spreadsheet me-1"></i> Export Excel
+                </a>
+                <form method="GET" class="d-flex align-items-center gap-2">
+                    <input type="hidden" name="tab" value="{{ $tab }}">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="{{ $tab === 'clients' ? 'Cari nama klien...' : 'Cari nomor invoice / klien...' }}" 
+                               value="{{ request('search') }}">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="nav-icon cil-search"></i> Cari
+                        </button>
+                    </div>
+                    @if(request()->filled('search'))
+                        <a href="{{ route('admin.invoice.swasta-lunas', ['tab' => $tab]) }}" class="btn btn-outline-secondary">Reset</a>
+                    @endif
+                </form>
+            </div>
         </div>
     </div>
 
@@ -162,6 +167,7 @@
                             <th class="text-end">Uang Muka</th>
                             <th class="text-end">Sisa Tagihan</th>
                             <th>Tgl Invoice</th>
+                            <th>Tgl Pelunasan</th>
                             <th class="text-end pe-4">Aksi</th>
                         </tr>
                     </thead>
@@ -179,6 +185,15 @@
                             <td class="text-end text-danger">Rp {{ number_format($item->uang_muka, 0, ',', '.') }}</td>
                             <td class="text-end fw-bold text-success">Rp {{ number_format($item->total_tagihan - $item->uang_muka, 0, ',', '.') }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tanggal_invoice)->format('d/m/Y') }}</td>
+                            <td>
+                                @if($item->tanggal_pelunasan)
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                        <i class="nav-icon cil-check-circle me-1"></i>{{ \Carbon\Carbon::parse($item->tanggal_pelunasan)->format('d/m/Y') }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td class="text-end pe-4" onclick="event.stopPropagation()">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ route('invoices.print', $item) }}" target="_blank" class="btn btn-outline-success" title="Cetak"><i class="nav-icon cil-print"></i> Cetak</a>
@@ -188,7 +203,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">Tidak ada data invoice lunas yang ditemukan.</td>
+                            <td colspan="9" class="text-center py-4 text-muted">Tidak ada data invoice lunas yang ditemukan.</td>
                         </tr>
                         @endforelse
                     </tbody>
