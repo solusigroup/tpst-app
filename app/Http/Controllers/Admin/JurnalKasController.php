@@ -131,7 +131,32 @@ class JurnalKasController extends Controller
         $coas = Coa::where('id', '!=', $targetCoaId)->orderBy('kode_akun')->get();
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
-        return view('admin.jurnal-kas.form', compact('coas', 'kliens', 'vendors'));
+
+        // AI Assistant pre-fill support via query parameters
+        $prefill = [];
+        if (request()->has('tipe')) {
+            $prefill['tipe'] = request('tipe'); // 'Penerimaan' or 'Pengeluaran'
+        }
+        if (request()->has('coa_lawan')) {
+            $coaLawan = Coa::where('kode_akun', request('coa_lawan'))->first();
+            if ($coaLawan) {
+                $prefill['coa_id'] = $coaLawan->id;
+            }
+        }
+        if (request()->has('coa_kas')) {
+            $coaKas = Coa::where('kode_akun', request('coa_kas'))->first();
+            if ($coaKas) {
+                $prefill['rekonsiliasi_target_coa'] = $coaKas->id;
+            }
+        }
+        if (request()->has('nominal')) {
+            $prefill['nominal'] = request('nominal');
+        }
+        if (request()->has('deskripsi')) {
+            $prefill['deskripsi'] = request('deskripsi');
+        }
+
+        return view('admin.jurnal-kas.form', compact('coas', 'kliens', 'vendors', 'prefill'));
     }
 
     public function store(Request $request)

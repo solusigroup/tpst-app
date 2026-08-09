@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\WageRateController;
 use App\Http\Controllers\Admin\WageCalculationController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\RitaseDlhController;
+use App\Http\Controllers\Admin\AiAssistantController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -170,5 +171,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('klien', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'klien'])->name('klien');
         Route::get('keuangan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'keuangan'])->name('keuangan');
         Route::get('produksi-penjualan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'produksiPenjualan'])->name('produksi-penjualan');
+    });
+
+    // AI Assistant
+    Route::prefix('ai-assistant')->name('ai-assistant.')->group(function () {
+        Route::post('chat', [AiAssistantController::class, 'chat'])->name('chat');
+        Route::get('history', [AiAssistantController::class, 'history'])->name('history');
+        Route::delete('history', [AiAssistantController::class, 'clearHistory'])->name('history.clear');
+        Route::post('new-session', [AiAssistantController::class, 'newSession'])->name('new-session');
     });
 });

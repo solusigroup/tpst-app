@@ -1173,6 +1173,8 @@
     </script>
     {{-- Client-side image compressor: prevents server OOM on mobile camera uploads --}}
     <script src="{{ asset('js/image-compressor.js') }}"></script>
+    {{-- AI Chat Widget --}}
+    @include('components.ai-chat-widget')
     @stack('scripts')
 </body>
 </html>
