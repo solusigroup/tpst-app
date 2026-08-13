@@ -28,7 +28,12 @@
                 <i class="cil-calculator me-1"></i> Hitung Ulang Biaya
             </button>
         </form>
-        <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-success">
+        @if($invoice->status !== 'Paid')
+            <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $invoice->id]) }}" class="btn btn-success fw-bold text-white">
+                <i class="cil-money me-1"></i> PELUNASAN (BANK JATIM)
+            </a>
+        @endif
+        <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-outline-success">
             <i class="cil-print me-1"></i> Cetak
         </a>
         <a href="{{ route('admin.invoice.edit', $invoice) }}" class="btn btn-warning">
@@ -198,6 +203,12 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @if($invoice->status !== 'Paid')
+                    <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $invoice->id]) }}" class="btn btn-success text-white text-start border d-flex justify-content-between align-items-center py-2 fw-bold shadow-sm">
+                        <span><i class="cil-money me-2"></i>PELUNASAN VIA BANK JATIM</span>
+                        <i class="cil-chevron-right small"></i>
+                    </a>
+                    @endif
                     @if(in_array($invoice->klien->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($invoice->status, ['Paid', 'Canceled']))
                     <form method="POST" action="{{ route('admin.invoice.send-wa', $invoice) }}" class="m-0" target="_blank">
                         @csrf

@@ -118,26 +118,63 @@
                                     </tr>
                                     @endforeach
                                 @else
+                                    {{-- Row 0: Debit Bank Jatim / Kas --}}
                                     <tr>
-                                        <td><select name="details[0][coa_id]" class="form-select form-select-sm" required><option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach</select></td>
+                                        <td>
+                                            <select name="details[0][coa_id]" class="form-select form-select-sm" required>
+                                                <option value="">-- Pilih Akun --</option>
+                                                @foreach($coas as $c)
+                                                    <option value="{{ $c->id }}" {{ (isset($bankJatimCoaId) && $bankJatimCoaId == $c->id) ? 'selected' : (old('details.0.coa_id') == $c->id ? 'selected' : '') }}>
+                                                        {{ $c->kode_akun }} - {{ $c->nama_akun }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
                                         <td>
                                             <select name="details[0][contactable_type_id]" class="form-select form-select-sm">
                                                 <option value="">-- Tanpa Mitra --</option>
-                                                <optgroup label="Klien">@foreach($kliens as $k)<option value="App\Models\Klien:{{ $k->id }}">{{ $k->nama_klien }}</option>@endforeach</optgroup>
-                                                <optgroup label="Vendor">@foreach($vendors as $v)<option value="App\Models\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>@endforeach</optgroup>
+                                                <optgroup label="Klien">
+                                                    @foreach($kliens as $k)
+                                                        <option value="App\Models\Klien:{{ $k->id }}" {{ (isset($klienContactId) && $klienContactId == "App\Models\Klien:{$k->id}") ? 'selected' : '' }}>{{ $k->nama_klien }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                                <optgroup label="Vendor">
+                                                    @foreach($vendors as $v)
+                                                        <option value="App\Models\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>
+                                                    @endforeach
+                                                </optgroup>
                                             </select>
                                         </td>
                                         <td><input type="number" name="details[0][debit]" class="form-control form-control-sm debit-input" value="{{ old('details.0.debit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><input type="number" name="details[0][kredit]" class="form-control form-control-sm kredit-input" value="0" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
                                     </tr>
+
+                                    {{-- Row 1: Kredit Piutang --}}
                                     <tr>
-                                        <td><select name="details[1][coa_id]" class="form-select form-select-sm" required><option value="">-- Pilih --</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->kode_akun }} - {{ $c->nama_akun }}</option>@endforeach</select></td>
+                                        <td>
+                                            <select name="details[1][coa_id]" class="form-select form-select-sm" required>
+                                                <option value="">-- Pilih Akun --</option>
+                                                @foreach($coas as $c)
+                                                    <option value="{{ $c->id }}" {{ (isset($piutangCoaId) && $piutangCoaId == $c->id) ? 'selected' : (old('details.1.coa_id') == $c->id ? 'selected' : '') }}>
+                                                        {{ $c->kode_akun }} - {{ $c->nama_akun }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
                                         <td>
                                             <select name="details[1][contactable_type_id]" class="form-select form-select-sm">
                                                 <option value="">-- Tanpa Mitra --</option>
-                                                <optgroup label="Klien">@foreach($kliens as $k)<option value="App\Models\Klien:{{ $k->id }}">{{ $k->nama_klien }}</option>@endforeach</optgroup>
-                                                <optgroup label="Vendor">@foreach($vendors as $v)<option value="App\Models\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>@endforeach</optgroup>
+                                                <optgroup label="Klien">
+                                                    @foreach($kliens as $k)
+                                                        <option value="App\Models\Klien:{{ $k->id }}" {{ (isset($klienContactId) && $klienContactId == "App\Models\Klien:{$k->id}") ? 'selected' : '' }}>{{ $k->nama_klien }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                                <optgroup label="Vendor">
+                                                    @foreach($vendors as $v)
+                                                        <option value="App\Models\Vendor:{{ $v->id }}">{{ $v->nama_vendor }}</option>
+                                                    @endforeach
+                                                </optgroup>
                                             </select>
                                         </td>
                                         <td><input type="number" name="details[1][debit]" class="form-control form-control-sm debit-input" value="0" oninput="updateTotals()"></td>

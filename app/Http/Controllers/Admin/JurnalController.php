@@ -66,12 +66,40 @@ class JurnalController extends Controller
         $refType = is_string($request->ref_type) ? urldecode($request->ref_type) : null;
         $refId = $request->ref_id;
 
+        // Auto-lookup Bank Jatim COA
+        $bankJatimCoa = Coa::where('nama_akun', 'like', '%Bank Jatim%')->first()
+            ?: Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Bank%')->first();
+        $bankJatimCoaId = $bankJatimCoa ? $bankJatimCoa->id : null;
+
+        $piutangCoaId = null;
+        $klienContactId = null;
+        $isPelunasan = false;
+
         if ($refType && $refId) {
             if ($refType === Invoice::class) {
-                $invoice = Invoice::find($refId);
+                $invoice = Invoice::with('klien')->find($refId);
                 if ($invoice) {
-                    $defaultDeskripsi = "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice}";
-                    $defaultNominal = $invoice->total_tagihan;
+                    $isPelunasan = true;
+                    $sisaNominal = (float) ($invoice->total_tagihan - ($invoice->uang_muka ?? 0));
+                    $defaultNominal = $sisaNominal > 0 ? $sisaNominal : (float) $invoice->total_tagihan;
+                    $defaultDeskripsi = "Penerimaan Pembayaran Pelunasan Invoice {$invoice->nomor_invoice} - " . ($invoice->klien->nama_klien ?? '');
+
+                    $targetCategory = 'piutang_swasta';
+                    if ($invoice->klien) {
+                        $klienContactId = "App\\Models\\Klien:{$invoice->klien_id}";
+                        if ($invoice->klien->jenis === 'Offtaker') {
+                            $targetCategory = 'piutang_offtaker';
+                        } elseif ($invoice->klien->jenis === 'DLH') {
+                            $targetCategory = 'piutang_dlh';
+                        }
+                    }
+
+                    $piutangCoa = Coa::where('tipe', 'Asset')
+                        ->where('kategori_buku_pembantu', $targetCategory)
+                        ->first()
+                        ?: Coa::where('tipe', 'Asset')->where('nama_akun', 'like', '%Piutang%')->first();
+
+                    $piutangCoaId = $piutangCoa ? $piutangCoa->id : null;
                 }
             } elseif ($refType === WageCalculation::class) {
                 $wage = WageCalculation::find($refId);
@@ -86,7 +114,11 @@ class JurnalController extends Controller
         $vendors = \App\Models\Vendor::orderBy('nama_vendor')->get();
         $templates = JurnalTemplate::orderBy('nama')->get();
 
-        return view('admin.jurnal.form', compact('coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId', 'kliens', 'vendors', 'templates'));
+        return view('admin.jurnal.form', compact(
+            'coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId',
+            'kliens', 'vendors', 'templates', 'bankJatimCoaId', 'piutangCoaId',
+            'klienContactId', 'isPelunasan'
+        ));
     }
 
     public function store(Request $request)
