@@ -97,6 +97,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('buku-pembantu/utang', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'utang'])->name('buku-pembantu.utang');
     Route::post('buku-pembantu/sync-status', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'syncStatus'])->name('buku-pembantu.sync-status');
 
+    // Tracing Transaksi & Audit Trail
+    Route::get('tracing', [\App\Http\Controllers\Admin\TracingController::class, 'index'])->name('tracing.index');
+    Route::get('tracing/detail/{type}/{id}', [\App\Http\Controllers\Admin\TracingController::class, 'show'])->name('tracing.show');
+    Route::get('tracing/audit-check', [\App\Http\Controllers\Admin\TracingController::class, 'auditCheck'])->name('tracing.audit');
+    Route::post('tracing/sync', [\App\Http\Controllers\Admin\TracingController::class, 'syncDiscrepancies'])->name('tracing.sync');
+
     // PENGATURAN
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class)->except(['show']);

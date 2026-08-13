@@ -60,6 +60,7 @@
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('admin.penjualan.show', $item) }}" class="btn btn-outline-info" title="Lihat"><i class="cil-search"></i></a>
+                                <a href="{{ route('admin.tracing.show', ['type' => 'penjualan', 'id' => $item->id]) }}" class="btn btn-outline-secondary" title="Lacak Alur"><i class="cil-find-in-page"></i></a>
                                 <a href="{{ route('admin.penjualan.edit', $item) }}" class="btn btn-outline-primary" title="Edit"><i class="cil-pencil"></i></a>
                                 <form method="POST" action="{{ route('admin.penjualan.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger" title="Hapus"><i class="cil-trash"></i></button></form>
                             </div>

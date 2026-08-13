@@ -72,6 +72,7 @@
                                         </button>
                                     </form>
                                 @endif
+                                <a href="{{ route('admin.tracing.show', ['type' => 'invoice', 'id' => $item->id]) }}" class="btn btn-outline-secondary" title="Lacak Alur"><i class="cil-find-in-page"></i></a>
                                 <a href="{{ route('admin.invoice.edit', $item) }}" class="btn btn-outline-primary"><i class="cil-pencil"></i></a>
                                 <form method="POST" action="{{ route('admin.invoice.destroy', $item) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                             </div>

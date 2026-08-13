@@ -66,6 +66,7 @@
                         <th>Jatuh Tempo</th>
                         <th>Bukti</th>
                         <th>Status</th>
+                        <th class="text-end">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -101,10 +102,15 @@
                                 {{ ucfirst($item->status) }}
                             </span>
                         </td>
+                        <td class="text-end">
+                            <a href="{{ route('admin.tracing.show', ['type' => 'buku-pembantu', 'id' => $item->id]) }}" class="btn btn-sm btn-outline-secondary" title="Lacak Alur">
+                                <i class="cil-find-in-page"></i>
+                            </a>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data piutang.</td>
+                        <td colspan="9" class="text-center py-4 text-body-secondary">Belum ada data piutang.</td>
                     </tr>
                     @endforelse
                 </tbody>

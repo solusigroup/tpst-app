@@ -816,6 +816,11 @@
                     </li>
                 </ul>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.tracing.*') ? 'active' : '' }}" href="{{ route('admin.tracing.index') }}">
+                    <i class="nav-icon cil-find-in-page"></i> Tracing Transaksi
+                </a>
+            </li>
             @endcan
 
             {{-- HRD (Sumber Daya Manusia) --}}
