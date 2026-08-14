@@ -215,8 +215,9 @@ EOT;
 
     private function callGeminiApi(array $contents, string $apiKey): array
     {
-        $model = config('ai-assistant.gemini.model', 'gemini-2.0-flash');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        $model = config('ai-assistant.gemini.model', 'gemini-1.5-flash');
+        $baseUrl = config('ai-assistant.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta');
+        $url = "{$baseUrl}/models/{$model}:generateContent?key={$apiKey}";
 
         $payload = [
             'system_instruction' => [
@@ -230,10 +231,16 @@ EOT;
             ]
         ];
 
-        $response = Http::post($url, $payload);
+        try {
+            $response = Http::timeout(30)
+                ->connectTimeout(10)
+                ->post($url, $payload);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new \Exception('Koneksi ke Google Gemini API mengalami timeout (cURL 28). Server tidak dapat terhubung ke generativelanguage.googleapis.com. Harap periksa koneksi outbound 443 atau firewall server.');
+        }
 
         if (!$response->successful()) {
-            throw new \Exception('Gagal terhubung ke Gemini API: ' . $response->body());
+            throw new \Exception('Gagal terhubung ke Gemini API (' . $response->status() . '): ' . $response->body());
         }
 
         return $response->json();
