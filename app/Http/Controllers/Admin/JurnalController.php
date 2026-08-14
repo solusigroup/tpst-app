@@ -417,4 +417,66 @@ class JurnalController extends Controller
         $jurnalTemplate->delete();
         return back()->with('success', 'Template jurnal berhasil dihapus.');
     }
+
+    /**
+     * Purge (permanently delete) a single jurnal with complete cascade cleanup.
+     */
+    public function purge(JurnalHeader $jurnal)
+    {
+        Gate::authorize('delete_jurnal');
+
+        $nomorRef = $jurnal->nomor_referensi;
+
+        DB::transaction(function () use ($jurnal) {
+            // 1. Revert any BukuPembantu settlements made by this jurnal
+            \App\Models\BukuPembantu::where('settled_by_jurnal_header_id', $jurnal->id)
+                ->update([
+                    'settled_by_jurnal_header_id' => null,
+                    'terbayar' => 0,
+                    'status' => 'pending',
+                ]);
+
+            // 2. Delete the jurnal (model's deleting hook handles:
+            //    - jurnalDetails cascade delete (triggers JurnalDetailObserver@deleted)
+            //    - bukti_transaksi file deletion
+            //    - BukuPembantu where jurnal_header_id cleanup)
+            $jurnal->delete();
+        });
+
+        return redirect()->route('admin.jurnal.index')
+            ->with('success', "Jurnal {$nomorRef} berhasil di-purge.");
+    }
+
+    /**
+     * Purge multiple selected jurnals.
+     */
+    public function purgeSelected(Request $request)
+    {
+        Gate::authorize('delete_jurnal');
+
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:jurnal_header,id',
+        ]);
+
+        $count = 0;
+        DB::transaction(function () use ($request, &$count) {
+            $jurnals = JurnalHeader::whereIn('id', $request->ids)->get();
+            foreach ($jurnals as $jurnal) {
+                // Revert BukuPembantu settlements
+                \App\Models\BukuPembantu::where('settled_by_jurnal_header_id', $jurnal->id)
+                    ->update([
+                        'settled_by_jurnal_header_id' => null,
+                        'terbayar' => 0,
+                        'status' => 'pending',
+                    ]);
+
+                $jurnal->delete();
+                $count++;
+            }
+        });
+
+        return redirect()->route('admin.jurnal.index')
+            ->with('success', "{$count} jurnal berhasil di-purge.");
+    }
 }

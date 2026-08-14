@@ -510,4 +510,87 @@ class InvoiceAdminController extends Controller
             'totalPaidClients', 'totalPaidInvoices', 'totalCollected', 'totalOutstanding'
         ));
     }
+
+    /**
+     * Purge (permanently delete) a single invoice with complete cascade cleanup.
+     */
+    public function purge(Invoice $invoice)
+    {
+        Gate::authorize('delete_invoice');
+
+        $nomorInvoice = $invoice->nomor_invoice;
+
+        DB::transaction(function () use ($invoice) {
+            // 1. Detach Ritase — reset to Draft so they can be re-invoiced
+            \App\Models\Ritase::where('invoice_id', $invoice->id)->update([
+                'invoice_id' => null,
+                'status_invoice' => 'Draft',
+            ]);
+
+            // 2. Detach Penjualan — reset to Draft
+            \App\Models\Penjualan::where('invoice_id', $invoice->id)->update([
+                'invoice_id' => null,
+                'status_invoice' => 'Draft',
+            ]);
+
+            // 3. Delete related JurnalHeaders (the model's deleting hook
+            //    will cascade-delete JurnalDetails, BukuPembantu, and bukti_transaksi)
+            JurnalHeader::where('referensi_type', Invoice::class)
+                ->where('referensi_id', $invoice->id)
+                ->get()
+                ->each->delete();
+
+            // 4. Clean up any remaining BukuPembantu referencing this invoice's journals
+            //    (safety net — should already be handled by JurnalHeader::deleting)
+
+            // 5. Delete the invoice itself
+            $invoice->delete();
+        });
+
+        return redirect()->route('admin.invoice.index')
+            ->with('success', "Invoice {$nomorInvoice} berhasil di-purge. Ritase & Penjualan dikembalikan ke status Draft.");
+    }
+
+    /**
+     * Purge multiple selected invoices.
+     */
+    public function purgeSelected(Request $request)
+    {
+        Gate::authorize('delete_invoice');
+
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:invoices,id',
+        ]);
+
+        $count = 0;
+        DB::transaction(function () use ($request, &$count) {
+            $invoices = Invoice::whereIn('id', $request->ids)->get();
+            foreach ($invoices as $invoice) {
+                // Detach Ritase
+                \App\Models\Ritase::where('invoice_id', $invoice->id)->update([
+                    'invoice_id' => null,
+                    'status_invoice' => 'Draft',
+                ]);
+
+                // Detach Penjualan
+                \App\Models\Penjualan::where('invoice_id', $invoice->id)->update([
+                    'invoice_id' => null,
+                    'status_invoice' => 'Draft',
+                ]);
+
+                // Delete related JurnalHeaders (cascade via model hook)
+                JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->get()
+                    ->each->delete();
+
+                $invoice->delete();
+                $count++;
+            }
+        });
+
+        return redirect()->route('admin.invoice.index')
+            ->with('success', "{$count} invoice berhasil di-purge.");
+    }
 }

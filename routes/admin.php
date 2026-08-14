@@ -72,9 +72,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Keuangan
     Route::resource('coa', CoaController::class);
     Route::resource('vendor', \App\Http\Controllers\Admin\VendorController::class);
+    Route::post('jurnal/purge-selected', [JurnalController::class, 'purgeSelected'])->name('jurnal.purge-selected');
     Route::resource('jurnal', JurnalController::class);
     Route::post('jurnal/{jurnal}/post', [JurnalController::class, 'post'])->name('jurnal.post');
     Route::post('jurnal/{jurnal}/unpost', [JurnalController::class, 'unpost'])->name('jurnal.unpost');
+    Route::post('jurnal/{jurnal}/purge', [JurnalController::class, 'purge'])->name('jurnal.purge');
     Route::post('jurnal-template', [JurnalController::class, 'storeTemplate'])->name('jurnal-template.store');
     Route::delete('jurnal-template/{jurnalTemplate}', [JurnalController::class, 'destroyTemplate'])->name('jurnal-template.destroy');
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
@@ -90,7 +92,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('invoice/{invoice}/recalculate', [InvoiceAdminController::class, 'recalculate'])->name('invoice.recalculate');
     Route::post('invoice/{invoice}/send-wa', [InvoiceAdminController::class, 'sendWhatsappReminder'])->name('invoice.send-wa');
     Route::get('invoice/swasta-lunas', [InvoiceAdminController::class, 'swastaLunas'])->name('invoice.swasta-lunas');
+    Route::post('invoice/purge-selected', [InvoiceAdminController::class, 'purgeSelected'])->name('invoice.purge-selected');
     Route::resource('invoice', InvoiceAdminController::class);
+    Route::post('invoice/{invoice}/purge', [InvoiceAdminController::class, 'purge'])->name('invoice.purge');
 
     // Buku Pembantu
     Route::get('buku-pembantu/piutang', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'piutang'])->name('buku-pembantu.piutang');
