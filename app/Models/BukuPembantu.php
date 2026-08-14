@@ -26,6 +26,7 @@ class BukuPembantu extends Model
         'tenant_id',
         'jurnal_header_id',
         'settled_by_jurnal_header_id',
+        'coa_id',
         'contactable_type',
         'contactable_id',
         'tipe',
@@ -83,6 +84,22 @@ class BukuPembantu extends Model
     public function jurnalHeader(): BelongsTo
     {
         return $this->belongsTo(JurnalHeader::class);
+    }
+
+    /**
+     * Get the payment settlement journal header if settled.
+     */
+    public function settledByJurnalHeader(): BelongsTo
+    {
+        return $this->belongsTo(JurnalHeader::class, 'settled_by_jurnal_header_id');
+    }
+
+    /**
+     * Get the COA account this entry belongs to.
+     */
+    public function coa(): BelongsTo
+    {
+        return $this->belongsTo(Coa::class);
     }
 
     /**

@@ -25,7 +25,7 @@ class JurnalDetailObserver
         // Check if accounts are AR or AP dynamically
         if ($coa->tipe === 'Asset' && (in_array($coa->kategori_buku_pembantu, ['piutang_dlh', 'piutang_swasta', 'piutang_offtaker']) || (str_contains(strtolower($coa->nama_akun), 'piutang') && !str_contains(strtolower($coa->nama_akun), 'uang muka')))) {
             $tipe = 'piutang';
-        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu && str_starts_with($coa->kategori_buku_pembantu, 'utang_') || str_contains(strtolower($coa->nama_akun), 'utang') || str_contains(strtolower($coa->nama_akun), 'hutang') || str_contains(strtolower($coa->nama_akun), 'kewajiban') || str_contains(strtolower($coa->nama_akun), 'pencadangan') || str_contains(strtolower($coa->nama_akun), 'tabungan'))) {
+        } elseif ($coa->tipe === 'Liability') {
             $tipe = 'utang';
         }
 
@@ -52,6 +52,7 @@ class JurnalDetailObserver
                         'tipe' => $tipe,
                     ],
                     [
+                        'coa_id' => $detail->coa_id,
                         'tanggal' => $detail->jurnalHeader->tanggal,
                         'tanggal_jatuh_tempo' => $detail->jurnalHeader->tanggal->addDays(30),
                         'jumlah' => abs($jumlah),
@@ -115,6 +116,7 @@ class JurnalDetailObserver
                      BukuPembantu::create([
                         'tenant_id' => $detail->jurnalHeader->tenant_id,
                         'jurnal_header_id' => $detail->jurnal_header_id,
+                        'coa_id' => $detail->coa_id,
                         'contactable_type' => $detail->contactable_type,
                         'contactable_id' => $detail->contactable_id,
                         'tipe' => $tipe,
@@ -143,7 +145,7 @@ class JurnalDetailObserver
 
         if ($coa->tipe === 'Asset' && (in_array($coa->kategori_buku_pembantu, ['piutang_dlh', 'piutang_swasta', 'piutang_offtaker']) || (str_contains(strtolower($coa->nama_akun), 'piutang') && !str_contains(strtolower($coa->nama_akun), 'uang muka')))) {
             $tipe = 'piutang';
-        } elseif ($coa->tipe === 'Liability' && ($coa->kategori_buku_pembantu && str_starts_with($coa->kategori_buku_pembantu, 'utang_') || str_contains(strtolower($coa->nama_akun), 'utang') || str_contains(strtolower($coa->nama_akun), 'hutang') || str_contains(strtolower($coa->nama_akun), 'kewajiban') || str_contains(strtolower($coa->nama_akun), 'pencadangan') || str_contains(strtolower($coa->nama_akun), 'tabungan'))) {
+        } elseif ($coa->tipe === 'Liability') {
             $tipe = 'utang';
         }
 

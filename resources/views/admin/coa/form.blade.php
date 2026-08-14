@@ -71,7 +71,12 @@ const kategoriMap = {
         'piutang_offtaker': 'Piutang Offtaker'
     },
     'Liability': {
-        'utang_usaha': 'Utang Usaha (AP)'
+        'utang_usaha': 'Utang Usaha (AP)',
+        'utang_bank': 'Utang Bank',
+        'utang_gaji': 'Utang Gaji',
+        'utang_pajak': 'Utang Pajak',
+        'utang_jangka_panjang': 'Utang Jangka Panjang',
+        'utang_lainnya': 'Utang / Liabilitas Lainnya'
     }
 };
 function updateKlasifikasi() {

@@ -51,20 +51,30 @@ class BukuPembantuController extends Controller
     }
 
     /**
-     * Display the AP Subsidiary Ledger (Buku Pembantu Utang).
+     * Display the AP / Liability Subsidiary Ledger (Buku Pembantu Utang).
      */
     public function utang(Request $request)
     {
         try {
             Gate::authorize('view_buku_pembantu');
-            $query = BukuPembantu::with(['contactable', 'jurnalHeader'])
+            $query = BukuPembantu::with(['contactable', 'jurnalHeader', 'settledByJurnalHeader', 'coa'])
                 ->whereNotNull('jurnal_header_id')
                 ->where('tipe', 'utang');
+
+            $liabilityCoas = \App\Models\Coa::where('tipe', 'Liability')->orderBy('kode_akun')->get();
+
+            if ($request->filled('coa_id')) {
+                $query->where('coa_id', $request->coa_id);
+            }
 
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
                     $q->where('keterangan', 'like', "%{$search}%")
+                      ->orWhereHas('coa', function ($qCoa) use ($search) {
+                          $qCoa->where('kode_akun', 'like', "%{$search}%")
+                               ->orWhere('nama_akun', 'like', "%{$search}%");
+                      })
                       ->orWhereHasMorph('contactable', [
                         \App\Models\Klien::class, 
                         \App\Models\Vendor::class
@@ -82,10 +92,19 @@ class BukuPembantuController extends Controller
                 $query->where('status', $request->status);
             }
 
+            $totalHutangAwal = (clone $query)->sum('jumlah');
+            $totalTerbayar = (clone $query)->sum('terbayar');
             $totalJumlah = (clone $query)->where('status', 'pending')->selectRaw('SUM(jumlah - terbayar) as total')->value('total') ?? 0;
+            
             $entries = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
-            return view('admin.buku_pembantu.utang', compact('entries', 'totalJumlah'));
+            return view('admin.buku_pembantu.utang', compact(
+                'entries', 
+                'liabilityCoas', 
+                'totalHutangAwal', 
+                'totalTerbayar', 
+                'totalJumlah'
+            ));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }

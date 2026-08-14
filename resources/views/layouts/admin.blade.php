@@ -811,7 +811,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.buku-pembantu.utang') ? 'active' : '' }}" href="{{ route('admin.buku-pembantu.utang') }}">
-                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Utang Lancar
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Utang / Liabilitas
                         </a>
                     </li>
                 </ul>
