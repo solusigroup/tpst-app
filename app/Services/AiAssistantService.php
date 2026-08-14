@@ -224,7 +224,6 @@ EOT;
         }
 
         $baseUrl = config('ai-assistant.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta');
-        $url = "{$baseUrl}/models/{$model}:generateContent?key={$apiKey}";
 
         $payload = [
             'system_instruction' => [
@@ -238,19 +237,43 @@ EOT;
             ]
         ];
 
-        try {
-            $response = Http::timeout(60)
-                ->connectTimeout(10)
-                ->post($url, $payload);
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            throw new \Exception('Koneksi ke Google Gemini API mengalami timeout (cURL 28). Server tidak dapat terhubung ke generativelanguage.googleapis.com. Harap periksa koneksi outbound 443 atau firewall server.');
+        // Try primary model with retries, then fallback model
+        $modelsToTry = [$model, 'gemini-3.5-flash-lite'];
+        $lastException = null;
+
+        foreach (array_unique($modelsToTry) as $tryModel) {
+            $url = "{$baseUrl}/models/{$tryModel}:generateContent?key={$apiKey}";
+
+            for ($attempt = 1; $attempt <= 2; $attempt++) {
+                try {
+                    $response = Http::timeout(60)
+                        ->connectTimeout(10)
+                        ->post($url, $payload);
+                } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                    $lastException = new \Exception('Koneksi ke Google Gemini API mengalami timeout. Server tidak dapat terhubung ke generativelanguage.googleapis.com. Harap coba lagi.');
+                    continue;
+                }
+
+                if ($response->successful()) {
+                    return $response->json();
+                }
+
+                // Retry on 503 (overloaded) or 429 (rate limit)
+                if (in_array($response->status(), [503, 429]) && $attempt < 2) {
+                    usleep(1500000); // 1.5 second backoff
+                    continue;
+                }
+
+                // 404 means model not found — skip to fallback immediately
+                if ($response->status() === 404) {
+                    break;
+                }
+
+                $lastException = new \Exception('Gagal terhubung ke Gemini API (' . $response->status() . '): ' . $response->body());
+            }
         }
 
-        if (!$response->successful()) {
-            throw new \Exception('Gagal terhubung ke Gemini API (' . $response->status() . '): ' . $response->body());
-        }
-
-        return $response->json();
+        throw $lastException ?? new \Exception('Semua model Gemini API sedang tidak tersedia. Silakan coba beberapa saat lagi.');
     }
 
     private function hasToolCalls(array $response): bool
