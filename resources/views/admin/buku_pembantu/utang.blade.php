@@ -124,12 +124,12 @@
                             Rp {{ number_format($item->terbayar, 0, ',', '.') }}
                         </td>
                         <td class="text-nowrap small">
-                            @if($item->settledByJurnalHeader)
+                            @if($item->settledByJurnalHeader && $item->settledByJurnalHeader->tanggal)
                                 <span title="Via Jurnal JV-{{ $item->settledByJurnalHeader->nomor_referensi }}">
                                     {{ $item->settledByJurnalHeader->tanggal->format('d/m/Y') }}
                                 </span>
                             @elseif($item->status == 'lunas')
-                                {{ $item->updated_at->format('d/m/Y') }}
+                                {{ $item->updated_at?->format('d/m/Y') ?? '-' }}
                             @else
                                 <span class="text-muted">-</span>
                             @endif
@@ -165,7 +165,6 @@
                             <i class="cil-info me-1"></i> Belum ada data buku pembantu utang / liabilitas.
                         </td>
                     </tr>
-                    @empty
                     @endforelse
                 </tbody>
             </table>
