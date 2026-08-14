@@ -215,18 +215,19 @@ EOT;
 
     private function callGeminiApi(array $contents, string $apiKey): array
     {
-        $model = config('ai-assistant.gemini.model', 'gemini-2.0-flash');
+        $model = config('ai-assistant.gemini.model', 'gemini-2.5-flash');
 
         // Normalize deprecated/retired model names to current working model
         $deprecatedModels = [
             'gemini-1.5-flash',
-            'gemini-flash-latest',
             'gemini-1.5-flash-latest',
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-lite',
             'gemini-1.0-pro',
             'gemini-pro',
         ];
         if (in_array($model, $deprecatedModels, true)) {
-            $model = 'gemini-2.0-flash';
+            $model = 'gemini-2.5-flash';
         }
 
         $baseUrl = config('ai-assistant.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta');
@@ -240,12 +241,12 @@ EOT;
             'tools' => $this->buildToolDeclarations(),
             'generationConfig' => [
                 'temperature' => 0.7,
-                'maxOutputTokens' => 2048,
+                'maxOutputTokens' => 4096,
             ]
         ];
 
         try {
-            $response = Http::timeout(30)
+            $response = Http::timeout(60)
                 ->connectTimeout(10)
                 ->post($url, $payload);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
