@@ -215,19 +215,12 @@ EOT;
 
     private function callGeminiApi(array $contents, string $apiKey): array
     {
-        $model = config('ai-assistant.gemini.model', 'gemini-2.5-flash');
+        $model = config('ai-assistant.gemini.model', 'gemini-3.5-flash');
 
-        // Normalize deprecated/retired model names to current working model
-        $deprecatedModels = [
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-2.0-flash',
-            'gemini-2.0-flash-lite',
-            'gemini-1.0-pro',
-            'gemini-pro',
-        ];
-        if (in_array($model, $deprecatedModels, true)) {
-            $model = 'gemini-2.5-flash';
+        // Auto-correct any retired/deprecated model to the current stable model.
+        // All gemini-1.x and gemini-2.x models have been retired by Google.
+        if (preg_match('/^gemini-(1\.|2\.|pro|flash-latest|1\.0)/', $model)) {
+            $model = 'gemini-3.5-flash';
         }
 
         $baseUrl = config('ai-assistant.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta');
