@@ -216,6 +216,19 @@ EOT;
     private function callGeminiApi(array $contents, string $apiKey): array
     {
         $model = config('ai-assistant.gemini.model', 'gemini-2.0-flash');
+
+        // Normalize deprecated/retired model names to current working model
+        $deprecatedModels = [
+            'gemini-1.5-flash',
+            'gemini-flash-latest',
+            'gemini-1.5-flash-latest',
+            'gemini-1.0-pro',
+            'gemini-pro',
+        ];
+        if (in_array($model, $deprecatedModels, true)) {
+            $model = 'gemini-2.0-flash';
+        }
+
         $baseUrl = config('ai-assistant.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta');
         $url = "{$baseUrl}/models/{$model}:generateContent?key={$apiKey}";
 
