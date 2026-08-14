@@ -215,7 +215,7 @@ EOT;
 
     private function callGeminiApi(array $contents, string $apiKey): array
     {
-        $model = config('ai-assistant.gemini.model', 'gemini-1.5-flash');
+        $model = config('ai-assistant.gemini.model', 'gemini-2.0-flash');
         $baseUrl = config('ai-assistant.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta');
         $url = "{$baseUrl}/models/{$model}:generateContent?key={$apiKey}";
 
