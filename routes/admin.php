@@ -42,6 +42,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         $content = file_get_contents($logPath);
         return response(substr($content, -20000), 200)->header('Content-Type', 'text/plain');
     });
+    Route::get('/invoice-debug', function() {
+        try {
+            $invoices = \App\Models\Invoice::with('klien')->orderByDesc('tanggal_invoice')->paginate(15);
+            return view('admin.invoice.index', compact('invoices'))->render();
+        } catch (\Throwable $e) {
+            return response('<pre style="color:red; font-size:14px;"><strong>ERROR:</strong> ' . htmlspecialchars($e->getMessage()) . "\n<strong>FILE:</strong> " . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . "\n\n<strong>STACK TRACE:</strong>\n" . htmlspecialchars($e->getTraceAsString()) . '</pre>', 200)->header('Content-Type', 'text/html');
+        }
+    });
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional
