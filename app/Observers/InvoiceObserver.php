@@ -61,7 +61,8 @@ class InvoiceObserver
 
         try {
             DB::transaction(function () use ($invoice) {
-                $klienJenis = $invoice->klien->jenis ?? 'DLH';
+                $klienJenis = $invoice->klien?->jenis ?? 'DLH';
+                $klienNama = $invoice->klien?->nama_klien ?? 'Umum';
 
                 // ========================================
                 // ACCOUNT LOOKUPS
@@ -162,12 +163,12 @@ class InvoiceObserver
                         'tanggal'        => $invoice->tanggal_invoice->toDateString(),
                         'referensi_type' => Invoice::class,
                         'referensi_id'   => $invoice->id,
-                        'deskripsi'      => "Piutang Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
+                        'deskripsi'      => "Piutang Invoice {$invoice->nomor_invoice} - {$klienNama}",
                     ]);
                 } else {
                     $revenueJurnal->update([
                         'tanggal'   => $invoice->tanggal_invoice->toDateString(),
-                        'deskripsi' => "Piutang Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
+                        'deskripsi' => "Piutang Invoice {$invoice->nomor_invoice} - {$klienNama}",
                     ]);
                 }
 
@@ -250,7 +251,7 @@ class InvoiceObserver
                             'tanggal'        => now()->toDateString(),
                             'referensi_type' => Invoice::class,
                             'referensi_id'   => $invoice->id,
-                            'deskripsi'      => "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
+                            'deskripsi'      => "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$klienNama}",
                         ]);
                     }
 

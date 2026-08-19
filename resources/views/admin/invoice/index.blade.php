@@ -59,8 +59,8 @@
                     <tr>
                         <td onclick="event.stopPropagation()"><input type="checkbox" class="purge-checkbox" value="{{ $item->id }}"></td>
                         <td onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;"><strong>{{ $item->nomor_invoice ?? '-' }}</strong></td>
-                        <td onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;">{{ $item->klien->nama_klien ?? '-' }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ $item->klien->jenis ?? '-' }}</span></td>
+                        <td onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;">{{ $item->klien?->nama_klien ?? '-' }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ $item->klien?->jenis ?? '-' }}</span></td>
                         <td>{{ $item->periode_bulan }}/{{ $item->periode_tahun }}</td>
                         <td>Rp {{ number_format($item->total_tagihan, 0, ',', '.') }}</td>
                         <td class="text-danger">Rp {{ number_format($item->uang_muka, 0, ',', '.') }}</td>
@@ -78,10 +78,10 @@
                                 @else
                                     <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->id]) }}" class="btn btn-outline-info" title="Buat Jurnal Ledger"><i class="cil-book"></i></a>
                                 @endif
-                                @if(in_array($item->klien->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($item->status, ['Paid', 'Canceled']))
+                                @if(in_array($item->klien?->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($item->status, ['Paid', 'Canceled']))
                                     <form method="POST" action="{{ route('admin.invoice.send-wa', $item) }}" class="d-inline" target="_blank">
                                         @csrf
-                                        <button type="submit" onclick="return confirm('Buka WhatsApp untuk mengirim pesan ke {{ $item->klien->nama_klien ?? '-' }}?')" class="btn btn-outline-success" title="Kirim WA">
+                                        <button type="submit" onclick="return confirm('Buka WhatsApp untuk mengirim pesan ke {{ $item->klien?->nama_klien ?? '-' }}?')" class="btn btn-outline-success" title="Kirim WA">
                                             <i class="cib-whatsapp"></i>
                                         </button>
                                     </form>
