@@ -361,50 +361,9 @@ class TracingController extends Controller
     {
         Gate::authorize('view_buku_pembantu');
 
-        $fixed = 0;
+        \Illuminate\Support\Facades\Artisan::call('app:rebuild-invoice-journals', ['--force' => true]);
 
-        DB::transaction(function () use (&$fixed) {
-            // Fix 1: BP pending but jumlah <= terbayar
-            $stale = BukuPembantu::where('status', 'pending')
-                ->whereColumn('terbayar', '>=', 'jumlah')
-                ->get();
-            foreach ($stale as $bp) {
-                $bp->save(); // Triggers saving hook that auto-corrects status
-                $fixed++;
-            }
-
-            // Fix 2: BP pending but linked Invoice is Paid (re-trigger observer)
-            $bpPendingPaid = BukuPembantu::where('tipe', 'piutang')
-                ->where('status', 'pending')
-                ->whereHas('jurnalHeader', function ($q) {
-                    $q->where('referensi_type', Invoice::class);
-                })
-                ->with('jurnalHeader')
-                ->get();
-
-            foreach ($bpPendingPaid as $bp) {
-                $inv = Invoice::find($bp->jurnalHeader->referensi_id);
-                if ($inv && $inv->status === 'Paid') {
-                    $bp->update([
-                        'status' => 'lunas',
-                        'terbayar' => $bp->jumlah,
-                    ]);
-                    $fixed++;
-                }
-            }
-
-            // Fix 3: Regenerate missing journals for Sent/Paid invoices
-            $noJournalInvoices = Invoice::whereIn('status', ['Sent', 'Paid'])
-                ->whereDoesntHave('jurnalHeaders')
-                ->get();
-            foreach ($noJournalInvoices as $inv) {
-                // Re-saving the invoice triggers InvoiceObserver which recreates the journal
-                $inv->save();
-                $fixed++;
-            }
-        });
-
-        return back()->with('success', "Sinkronisasi selesai. {$fixed} data berhasil diperbaiki.");
+        return back()->with('success', "Sinkronisasi selesai. Seluruh jurnal invoice dan Buku Pembantu berhasil dibangun ulang sesuai aturan COA terbaru.");
     }
 
     /**

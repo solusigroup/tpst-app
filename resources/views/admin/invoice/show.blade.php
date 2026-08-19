@@ -33,6 +33,14 @@
                 <i class="cil-money me-1"></i> PELUNASAN (BANK JATIM)
             </a>
         @endif
+        @if(in_array($invoice->status, ['Sent', 'Paid']))
+            <form action="{{ route('admin.invoice.rebuild-journal', $invoice) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-outline-primary" onclick="return confirm('Bangun ulang jurnal transaksi untuk invoice ini sesuai aturan COA terbaru?')">
+                    <i class="cil-reload me-1"></i> Sinkron Jurnal
+                </button>
+            </form>
+        @endif
         <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-outline-success">
             <i class="cil-print me-1"></i> Cetak
         </a>

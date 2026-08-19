@@ -593,4 +593,32 @@ class InvoiceAdminController extends Controller
         return redirect()->route('admin.invoice.index')
             ->with('success', "{$count} invoice berhasil di-purge.");
     }
+
+    /**
+     * Rebuild journal(s) for a single invoice.
+     */
+    public function rebuildJournal(Invoice $invoice)
+    {
+        Gate::authorize('update_invoice');
+
+        DB::transaction(function () use ($invoice) {
+            $invoice->loadMissing(['klien', 'ritase', 'penjualan']);
+            $observer = new \App\Observers\InvoiceObserver();
+            $observer->saved($invoice);
+        });
+
+        return back()->with('success', "Jurnal untuk Invoice {$invoice->nomor_invoice} berhasil dibangun ulang sesuai aturan COA terbaru.");
+    }
+
+    /**
+     * Rebuild all invoice journals and sync Buku Pembantu.
+     */
+    public function rebuildAllJournals()
+    {
+        Gate::authorize('update_invoice');
+
+        \Illuminate\Support\Facades\Artisan::call('app:rebuild-invoice-journals', ['--force' => true]);
+
+        return back()->with('success', 'Seluruh jurnal invoice dan Buku Pembantu berhasil diperbarui dan disinkronkan sesuai aturan COA terbaru.');
+    }
 }

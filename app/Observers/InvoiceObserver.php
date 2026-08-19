@@ -135,16 +135,16 @@ class InvoiceObserver
                 // ========================================
                 // JOURNAL 1: Revenue Recognition (Piutang ↔ Pendapatan)
                 // ========================================
-                $revenueJurnal = JurnalHeader::where('tenant_id', $invoice->tenant_id)
+                $revenueJournals = JurnalHeader::where('tenant_id', $invoice->tenant_id)
                     ->where('referensi_type', Invoice::class)
                     ->where('referensi_id', $invoice->id)
                     ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
-                    ->first();
+                    ->get();
 
-                // Only recreate revenue journal details when:
-                // - Status is 'Sent' (may have amount changes)
-                // - Revenue journal doesn't exist yet (direct-to-Paid or first time)
-                $shouldRecreateRevenue = ($invoice->status === 'Sent' || !$revenueJurnal);
+                $revenueJurnal = $revenueJournals->first();
+                if ($revenueJournals->count() > 1) {
+                    $revenueJournals->slice(1)->each->delete();
+                }
 
                 if (!$revenueJurnal) {
                     $revenueJurnal = JurnalHeader::create([
@@ -154,80 +154,87 @@ class InvoiceObserver
                         'referensi_id'   => $invoice->id,
                         'deskripsi'      => "Piutang Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
                     ]);
+                } else {
+                    $revenueJurnal->update([
+                        'tanggal'   => $invoice->tanggal_invoice->toDateString(),
+                        'deskripsi' => "Piutang Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
+                    ]);
                 }
 
-                if ($shouldRecreateRevenue) {
-                    // Clear old details (triggers JurnalDetailObserver::deleted)
-                    $revenueJurnal->jurnalDetails()->get()->each->delete();
+                // Always refresh details for Journal 1 to ensure accurate accounts
+                $revenueJurnal->jurnalDetails()->get()->each->delete();
 
-                    // DEBIT: Piutang (net after DP)
-                    if ($netPiutang > 0) {
-                        $revenueJurnal->jurnalDetails()->create([
-                            'coa_id'           => $piutangCoa->id,
-                            'debit'            => $netPiutang,
-                            'kredit'           => 0,
-                            'contactable_type' => \App\Models\Klien::class,
-                            'contactable_id'   => $invoice->klien_id,
-                        ]);
-                    }
+                // DEBIT: Piutang (net after DP)
+                if ($netPiutang > 0) {
+                    $revenueJurnal->jurnalDetails()->create([
+                        'coa_id'           => $piutangCoa->id,
+                        'debit'            => $netPiutang,
+                        'kredit'           => 0,
+                        'contactable_type' => \App\Models\Klien::class,
+                        'contactable_id'   => $invoice->klien_id,
+                    ]);
+                }
 
-                    // DEBIT: Bank/Kas for Down Payment (if any)
-                    if ($uangMuka > 0 && $bankCoa) {
-                        $revenueJurnal->jurnalDetails()->create([
-                            'coa_id'           => $bankCoa->id,
-                            'debit'            => $uangMuka,
-                            'kredit'           => 0,
-                            'contactable_type' => \App\Models\Klien::class,
-                            'contactable_id'   => $invoice->klien_id,
-                        ]);
-                    }
+                // DEBIT: Bank/Kas for Down Payment (if any)
+                if ($uangMuka > 0 && $bankCoa) {
+                    $revenueJurnal->jurnalDetails()->create([
+                        'coa_id'           => $bankCoa->id,
+                        'debit'            => $uangMuka,
+                        'kredit'           => 0,
+                        'contactable_type' => \App\Models\Klien::class,
+                        'contactable_id'   => $invoice->klien_id,
+                    ]);
+                }
 
-                    // CREDIT: Revenue — split by source with type-specific accounts
-                    //
-                    // Ritase → Tipping Revenue (4101 DLH / 4103 Swasta)
-                    if ($totalTipping > 0 && $tippingRevenueCoa) {
+                // CREDIT: Revenue — split by source with type-specific accounts
+                // Ritase → Tipping Revenue (4101 DLH / 4103 Swasta)
+                if ($totalTipping > 0 && $tippingRevenueCoa) {
+                    $revenueJurnal->jurnalDetails()->create([
+                        'coa_id' => $tippingRevenueCoa->id,
+                        'debit'  => 0,
+                        'kredit' => $totalTipping,
+                    ]);
+                }
+
+                // Penjualan → 4102 Pendapatan Penjualan Material
+                if ($totalPenjualan > 0 && $penjualanRevenueCoa) {
+                    $revenueJurnal->jurnalDetails()->create([
+                        'coa_id' => $penjualanRevenueCoa->id,
+                        'debit'  => 0,
+                        'kredit' => $totalPenjualan,
+                    ]);
+                }
+
+                // Remaining difference (fee bulanan, rounding, manual adjustments)
+                $capturedRevenue = $totalTipping + $totalPenjualan;
+                $difference = $totalTagihan - $capturedRevenue;
+                if (abs($difference) > 0.01) {
+                    $fallbackRevenue = $tippingRevenueCoa ?? $penjualanRevenueCoa;
+                    if ($fallbackRevenue) {
                         $revenueJurnal->jurnalDetails()->create([
-                            'coa_id' => $tippingRevenueCoa->id,
+                            'coa_id' => $fallbackRevenue->id,
                             'debit'  => 0,
-                            'kredit' => $totalTipping,
+                            'kredit' => $difference,
                         ]);
-                    }
-
-                    // Penjualan → 4102 Pendapatan Penjualan Material
-                    if ($totalPenjualan > 0 && $penjualanRevenueCoa) {
-                        $revenueJurnal->jurnalDetails()->create([
-                            'coa_id' => $penjualanRevenueCoa->id,
-                            'debit'  => 0,
-                            'kredit' => $totalPenjualan,
-                        ]);
-                    }
-
-                    // Remaining difference (fee bulanan, rounding, manual adjustments)
-                    $capturedRevenue = $totalTipping + $totalPenjualan;
-                    $difference = $totalTagihan - $capturedRevenue;
-                    if (abs($difference) > 0.01) {
-                        $fallbackRevenue = $tippingRevenueCoa ?? $penjualanRevenueCoa;
-                        if ($fallbackRevenue) {
-                            $revenueJurnal->jurnalDetails()->create([
-                                'coa_id' => $fallbackRevenue->id,
-                                'debit'  => 0,
-                                'kredit' => $difference,
-                            ]);
-                        }
                     }
                 }
 
                 // ========================================
                 // JOURNAL 2: Payment Receipt (Bank ↔ Piutang) — PAID only
                 // ========================================
-                if ($invoice->status === 'Paid') {
-                    $paymentJurnal = JurnalHeader::where('tenant_id', $invoice->tenant_id)
-                        ->where('referensi_type', Invoice::class)
-                        ->where('referensi_id', $invoice->id)
-                        ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                        ->first();
+                $paymentJournals = JurnalHeader::where('tenant_id', $invoice->tenant_id)
+                    ->where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->get();
 
-                    if (!$paymentJurnal && $bankCoa) {
+                if ($invoice->status === 'Paid') {
+                    $paymentJurnal = $paymentJournals->first();
+                    if ($paymentJournals->count() > 1) {
+                        $paymentJournals->slice(1)->each->delete();
+                    }
+
+                    if (!$paymentJurnal) {
                         $paymentJurnal = JurnalHeader::create([
                             'tenant_id'      => $invoice->tenant_id,
                             'tanggal'        => now()->toDateString(),
@@ -235,7 +242,12 @@ class InvoiceObserver
                             'referensi_id'   => $invoice->id,
                             'deskripsi'      => "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$invoice->klien->nama_klien}",
                         ]);
+                    }
 
+                    // Always refresh details for Journal 2
+                    $paymentJurnal->jurnalDetails()->get()->each->delete();
+
+                    if ($bankCoa && $netPiutang > 0) {
                         // DEBIT: Bank Jatim (amount = net piutang, after DP)
                         $paymentJurnal->jurnalDetails()->create([
                             'coa_id'           => $bankCoa->id,
@@ -255,12 +267,8 @@ class InvoiceObserver
                         ]);
                     }
                 } else {
-                    // Status is 'Sent' — delete payment journal if exists (Paid→Sent reversal)
-                    JurnalHeader::where('tenant_id', $invoice->tenant_id)
-                        ->where('referensi_type', Invoice::class)
-                        ->where('referensi_id', $invoice->id)
-                        ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                        ->get()->each->delete();
+                    // Status is 'Sent' — delete payment journals if exist (Paid→Sent reversal)
+                    $paymentJournals->each->delete();
                 }
 
                 // ========================================
@@ -272,11 +280,13 @@ class InvoiceObserver
                         $bp->update([
                             'status'   => 'lunas',
                             'terbayar' => $netPiutang,
+                            'settled_by_jurnal_header_id' => isset($paymentJurnal) ? $paymentJurnal->id : $bp->settled_by_jurnal_header_id,
                         ]);
                     } else {
                         $bp->update([
                             'status'   => 'pending',
                             'terbayar' => $uangMuka,
+                            'settled_by_jurnal_header_id' => null,
                         ]);
                     }
                 }
