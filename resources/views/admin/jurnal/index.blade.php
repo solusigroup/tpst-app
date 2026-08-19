@@ -8,6 +8,12 @@
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Jurnal</li></ol></nav>
     </div>
     <div class="d-flex gap-2">
+        <form method="POST" action="{{ route('admin.invoice.rebuild-all-journals') }}" class="m-0">
+            @csrf
+            <button type="submit" class="btn btn-outline-info" onclick="return confirm('Bangun dan sinkronkan ulang seluruh jurnal invoice serta Buku Pembantu sesuai aturan COA terbaru?')">
+                <i class="cil-sync me-1"></i> Sinkronkan Jurnal Invoice
+            </button>
+        </form>
         <button type="button" class="btn btn-danger" id="btnPurgeSelected" style="display:none;" onclick="document.getElementById('purgeModal').classList.add('show'); document.getElementById('purgeModal').style.display='block';">
             <i class="cil-fire me-1"></i> Purge Terpilih (<span id="selectedCount">0</span>)
         </button>
