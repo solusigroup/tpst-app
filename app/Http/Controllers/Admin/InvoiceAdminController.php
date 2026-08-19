@@ -16,29 +16,48 @@ class InvoiceAdminController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('view_invoice');
-        $query = Invoice::with('klien');
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_invoice', 'like', '%' . $search . '%')
-                  ->orWhereHas('klien', function($qKlien) use ($search) {
-                      $qKlien->where('nama_klien', 'like', '%' . $search . '%');
-                  });
-            });
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('jenis')) {
-            $query->whereHas('klien', function($q) use ($request) {
-                $q->where('jenis', $request->jenis);
-            });
-        }
+        try {
+            $query = Invoice::with('klien');
 
-        $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_invoice', 'like', '%' . $search . '%')
+                      ->orWhereHas('klien', function($qKlien) use ($search) {
+                          $qKlien->where('nama_klien', 'like', '%' . $search . '%');
+                      });
+                });
+            }
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+            if ($request->filled('jenis')) {
+                $query->whereHas('klien', function($q) use ($request) {
+                    $q->where('jenis', $request->jenis);
+                });
+            }
 
-        return view('admin.invoice.index', compact('invoices'));
+            $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
+
+            return view('admin.invoice.index', compact('invoices'));
+        } catch (\Throwable $e) {
+            \Log::error('Error loading invoices index: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response(
+                '<div style="font-family:sans-serif; padding:40px; max-width:800px; margin:0 auto;">' .
+                '<h2 style="color:#e53e3e;">Terjadi Kesalahan Saat Memuat Invoice</h2>' .
+                '<p><strong>Pesan Error:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>' .
+                '<p><strong>File:</strong> ' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>' .
+                '<hr><p><a href="' . route('admin.dashboard') . '" style="color:#3182ce;">Kembali ke Dashboard</a></p>' .
+                '</div>',
+                500
+            );
+        }
     }
 
     public function create()

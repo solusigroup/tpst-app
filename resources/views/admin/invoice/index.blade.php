@@ -61,15 +61,15 @@
                         <td onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;"><strong>{{ $item->nomor_invoice ?? '-' }}</strong></td>
                         <td onclick="window.location='{{ route('admin.invoice.show', $item) }}'" style="cursor: pointer;">{{ $item->klien?->nama_klien ?? '-' }}</td>
                         <td><span class="badge bg-light text-dark border">{{ $item->klien?->jenis ?? '-' }}</span></td>
-                        <td>{{ $item->periode_bulan }}/{{ $item->periode_tahun }}</td>
-                        <td>Rp {{ number_format($item->total_tagihan, 0, ',', '.') }}</td>
-                        <td class="text-danger">Rp {{ number_format($item->uang_muka, 0, ',', '.') }}</td>
-                        <td class="fw-bold">Rp {{ number_format($item->total_tagihan - $item->uang_muka, 0, ',', '.') }}</td>
+                        <td>{{ $item->periode_bulan ?? '-' }}/{{ $item->periode_tahun ?? '-' }}</td>
+                        <td>Rp {{ number_format((float)($item->total_tagihan ?? 0), 0, ',', '.') }}</td>
+                        <td class="text-danger">Rp {{ number_format((float)($item->uang_muka ?? 0), 0, ',', '.') }}</td>
+                        <td class="fw-bold">Rp {{ number_format((float)(($item->total_tagihan ?? 0) - ($item->uang_muka ?? 0)), 0, ',', '.') }}</td>
                         <td>
                             @php $invColors = ['Paid'=>'success','Sent'=>'info','Draft'=>'warning','Canceled'=>'danger']; @endphp
-                            <span class="badge bg-{{ $invColors[$item->status] ?? 'secondary' }}">{{ $item->status }}</span>
+                            <span class="badge bg-{{ $invColors[$item->status] ?? 'secondary' }}">{{ $item->status ?? 'Draft' }}</span>
                         </td>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal_invoice)->format('d/m/Y') }}</td>
+                        <td>{{ !empty($item->tanggal_invoice) ? \Carbon\Carbon::parse($item->tanggal_invoice)->format('d/m/Y') : '-' }}</td>
                         <td class="text-end" onclick="event.stopPropagation()">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('invoices.print', $item) }}" target="_blank" class="btn btn-outline-success" title="Cetak"><i class="cil-print"></i></a>
