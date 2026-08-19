@@ -8,7 +8,7 @@
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Invoice</li></ol></nav>
     </div>
     <div class="d-flex gap-2">
-        <form method="POST" action="{{ route('admin.invoice.rebuild-all-journals') }}" class="m-0">
+        <form method="POST" action="{{ Route::has('admin.invoice.rebuild-all-journals') ? route('admin.invoice.rebuild-all-journals') : url('admin/invoice/rebuild-all-journals') }}" class="m-0">
             @csrf
             <button type="submit" class="btn btn-outline-info" onclick="return confirm('Bangun ulang seluruh jurnal invoice dan sinkronkan Buku Pembantu sesuai aturan COA terbaru?')">
                 <i class="cil-sync me-1"></i> Sinkron Semua Jurnal

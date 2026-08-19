@@ -40,15 +40,34 @@ class RebuildInvoiceJournals extends Command
         $this->warn(' REBUILD JURNAL INVOICE & SINKRONISASI BUKU PEMBANTU');
         $this->warn('================================================================');
         $this->info('Perintah ini akan:');
-        $this->info('1. Memperbarui jurnal untuk seluruh invoice berstatus SENT (Piutang ↔ Pendapatan).');
-        $this->info('2. Memperbarui jurnal kedua untuk invoice berstatus PAID (Bank Jatim ↔ Piutang).');
-        $this->info('3. Membangun ulang Buku Pembantu piutang agar sinkron 100% dengan jurnal.');
+        $this->info('1. Memulihkan status invoice yang sebelumnya sudah PAID.');
+        $this->info('2. Memperbarui jurnal untuk seluruh invoice berstatus SENT (Piutang ↔ Pendapatan).');
+        $this->info('3. Memperbarui jurnal kedua untuk invoice berstatus PAID (Bank Jatim ↔ Piutang).');
+        $this->info('4. Membangun ulang Buku Pembantu piutang agar sinkron 100% dengan jurnal.');
         $this->newLine();
 
         if (!$this->option('force') && !$this->confirm('Apakah Anda yakin ingin melanjutkan proses rebuild ini?')) {
             $this->info('Proses dibatalkan.');
             return 0;
         }
+
+        // 1. Restore known and verified Paid invoices that were accidentally changed to Sent
+        $knownPaidIds = [6, 8, 18, 32, 34, 35, 36, 42, 57, 58, 61, 62, 63, 66, 67, 70, 73, 74, 75, 76, 77, 78, 79, 81, 83, 87, 88];
+        Invoice::withoutGlobalScopes()
+            ->whereIn('id', $knownPaidIds)
+            ->update(['status' => 'Paid']);
+
+        // Also restore any invoices whose linked items are marked Paid
+        Invoice::withoutGlobalScopes()
+            ->where('status', '!=', 'Paid')
+            ->where(function($q) {
+                $q->whereHas('ritase', function($r) {
+                    $r->where('status_invoice', 'Paid');
+                })->orWhereHas('penjualan', function($p) {
+                    $p->where('status_invoice', 'Paid');
+                });
+            })
+            ->update(['status' => 'Paid']);
 
         $query = Invoice::withoutGlobalScopes()->with(['klien', 'ritase', 'penjualan']);
 

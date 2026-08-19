@@ -87,27 +87,6 @@ class JurnalDetailObserver
                     
                     if ($entry->terbayar >= $entry->jumlah) {
                         $entry->update(['status' => 'lunas']);
-
-                        // Sync status to source document (Invoice or Ritase)
-                        if ($entry->jurnalHeader && $entry->jurnalHeader->referensi) {
-                            $ref = $entry->jurnalHeader->referensi;
-                            if ($ref instanceof \App\Models\Invoice) {
-                                if (!in_array($ref->status, ['Draft', 'Canceled'])) {
-                                    $ref->update(['status' => 'Paid']);
-                                }
-                            } elseif ($ref instanceof \App\Models\Ritase) {
-                                $ref->update(['status_invoice' => 'Paid']);
-                                // If Ritase belongs to an Invoice, check if we should update Invoice status too
-                                if ($ref->invoice && !in_array($ref->invoice->status, ['Draft', 'Canceled'])) {
-                                    $allPaid = $ref->invoice->ritase()->where('status_invoice', '!=', 'Paid')->count() == 0;
-                                    if ($allPaid) {
-                                        $ref->invoice->update(['status' => 'Paid']);
-                                    }
-                                }
-                            } elseif ($ref instanceof \App\Models\Penjualan) {
-                                $ref->update(['status_invoice' => 'Paid']);
-                            }
-                        }
                     }
 
                     $amountToSettle -= $paymentForThisEntry;
@@ -209,23 +188,6 @@ class JurnalDetailObserver
                             'status' => 'pending', 
                             'settled_by_jurnal_header_id' => null
                         ]);
-                        
-                        // Reverse sync to source document
-                        if ($entry->jurnalHeader && $entry->jurnalHeader->referensi) {
-                            $ref = $entry->jurnalHeader->referensi;
-                            if ($ref instanceof \App\Models\Invoice) {
-                                if (!in_array($ref->status, ['Draft', 'Canceled'])) {
-                                    $ref->update(['status' => 'Sent']); 
-                                }
-                            } elseif ($ref instanceof \App\Models\Ritase) {
-                                $ref->update(['status_invoice' => ($ref->invoice_id ? 'Sent' : 'Draft')]);
-                                if ($ref->invoice && !in_array($ref->invoice->status, ['Draft', 'Canceled'])) {
-                                    $ref->invoice->update(['status' => 'Sent']);
-                                }
-                            } elseif ($ref instanceof \App\Models\Penjualan) {
-                                $ref->update(['status_invoice' => 'Sent']);
-                            }
-                        }
                     }
                     $amountToReverse -= $reduction;
                 }

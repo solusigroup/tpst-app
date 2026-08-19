@@ -34,7 +34,7 @@
             </a>
         @endif
         @if(in_array($invoice->status, ['Sent', 'Paid']))
-            <form action="{{ route('admin.invoice.rebuild-journal', $invoice) }}" method="POST" class="d-inline">
+            <form action="{{ Route::has('admin.invoice.rebuild-journal') ? route('admin.invoice.rebuild-journal', $invoice) : url('admin/invoice/' . $invoice->id . '/rebuild-journal') }}" method="POST" class="d-inline">
                 @csrf
                 <button type="submit" class="btn btn-outline-primary" onclick="return confirm('Bangun ulang jurnal transaksi untuk invoice ini sesuai aturan COA terbaru?')">
                     <i class="cil-reload me-1"></i> Sinkron Jurnal
