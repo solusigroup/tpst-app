@@ -14,11 +14,11 @@ class CoaSeeder extends Seeder
     {
         $coas = [
             ['kode_akun' => '1101', 'nama_akun' => 'Kas Kecil Operasional TPST', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar'],
-            ['kode_akun' => '1102', 'nama_akun' => 'Bank (Rekening Bersama KSO)', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar'],
-            ['kode_akun' => '1103', 'nama_akun' => 'Piutang Usaha - DLH Lamongan', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar', 'kategori_buku_pembantu' => 'piutang_dlh'],
-            ['kode_akun' => '1104', 'nama_akun' => 'Piutang Usaha - Swasta/Komersial', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar', 'kategori_buku_pembantu' => 'piutang_swasta'],
-            ['kode_akun' => '1105', 'nama_akun' => 'Piutang Transito - PT TABUM', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar', 'kategori_buku_pembantu' => 'piutang_offtaker'],
-            ['kode_akun' => '1106', 'nama_akun' => 'Uang Muka & Biaya Dibayar Dimuka', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar'],
+            ['kode_akun' => '1103', 'nama_akun' => 'Bank Jatim', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar'],
+            ['kode_akun' => '1113', 'nama_akun' => 'Piutang Usaha - DLH Lamongan', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar', 'kategori_buku_pembantu' => 'piutang_dlh'],
+            ['kode_akun' => '1114', 'nama_akun' => 'Piutang Jasa - Swasta/Komersial', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar', 'kategori_buku_pembantu' => 'piutang_swasta'],
+            ['kode_akun' => '1115', 'nama_akun' => 'Piutang Penjualan', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar', 'kategori_buku_pembantu' => 'piutang_offtaker'],
+            ['kode_akun' => '1116', 'nama_akun' => 'Uang Muka & Biaya Dibayar Dimuka', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Lancar'],
             ['kode_akun' => '1201', 'nama_akun' => 'Mesin & Peralatan TPST', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Tidak Lancar'],
             ['kode_akun' => '1202', 'nama_akun' => 'Kendaraan Operasional', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Tidak Lancar'],
             ['kode_akun' => '1203', 'nama_akun' => 'Akumulasi Penyusutan Aset Tetap', 'tipe' => 'Asset', 'klasifikasi' => 'Aset Tidak Lancar'],
