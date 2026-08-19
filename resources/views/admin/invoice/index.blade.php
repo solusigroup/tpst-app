@@ -124,7 +124,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="document.getElementById('purgeModal').classList.remove('show'); document.getElementById('purgeModal').style.display='none';">Batal</button>
-                <form method="POST" action="{{ route('admin.invoice.purge-selected') }}" id="purgeForm">
+                <form method="POST" action="{{ Route::has('admin.invoice.purge-selected') ? route('admin.invoice.purge-selected') : url('admin/invoice/purge-selected') }}" id="purgeForm">
                     @csrf
                     <button type="submit" class="btn btn-danger"><i class="cil-fire me-1"></i> Ya, Purge Sekarang</button>
                 </form>

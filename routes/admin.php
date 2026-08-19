@@ -102,6 +102,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('invoice/swasta-lunas', [InvoiceAdminController::class, 'swastaLunas'])->name('invoice.swasta-lunas');
     Route::post('invoice/rebuild-all-journals', [InvoiceAdminController::class, 'rebuildAllJournals'])->name('invoice.rebuild-all-journals');
     Route::post('invoice/{invoice}/rebuild-journal', [InvoiceAdminController::class, 'rebuildJournal'])->name('invoice.rebuild-journal');
+    Route::post('invoice/purge-selected', [InvoiceAdminController::class, 'purgeSelected'])->name('invoice.purge-selected');
     Route::resource('invoice', InvoiceAdminController::class);
     Route::post('invoice/{invoice}/purge', [InvoiceAdminController::class, 'purge'])->name('invoice.purge');
 
