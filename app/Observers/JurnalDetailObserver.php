@@ -92,11 +92,13 @@ class JurnalDetailObserver
                         if ($entry->jurnalHeader && $entry->jurnalHeader->referensi) {
                             $ref = $entry->jurnalHeader->referensi;
                             if ($ref instanceof \App\Models\Invoice) {
-                                $ref->update(['status' => 'Paid']);
+                                if (!in_array($ref->status, ['Draft', 'Canceled'])) {
+                                    $ref->update(['status' => 'Paid']);
+                                }
                             } elseif ($ref instanceof \App\Models\Ritase) {
                                 $ref->update(['status_invoice' => 'Paid']);
                                 // If Ritase belongs to an Invoice, check if we should update Invoice status too
-                                if ($ref->invoice) {
+                                if ($ref->invoice && !in_array($ref->invoice->status, ['Draft', 'Canceled'])) {
                                     $allPaid = $ref->invoice->ritase()->where('status_invoice', '!=', 'Paid')->count() == 0;
                                     if ($allPaid) {
                                         $ref->invoice->update(['status' => 'Paid']);
@@ -212,10 +214,12 @@ class JurnalDetailObserver
                         if ($entry->jurnalHeader && $entry->jurnalHeader->referensi) {
                             $ref = $entry->jurnalHeader->referensi;
                             if ($ref instanceof \App\Models\Invoice) {
-                                $ref->update(['status' => 'Sent']); 
+                                if (!in_array($ref->status, ['Draft', 'Canceled'])) {
+                                    $ref->update(['status' => 'Sent']); 
+                                }
                             } elseif ($ref instanceof \App\Models\Ritase) {
                                 $ref->update(['status_invoice' => ($ref->invoice_id ? 'Sent' : 'Draft')]);
-                                if ($ref->invoice) {
+                                if ($ref->invoice && !in_array($ref->invoice->status, ['Draft', 'Canceled'])) {
                                     $ref->invoice->update(['status' => 'Sent']);
                                 }
                             } elseif ($ref instanceof \App\Models\Penjualan) {

@@ -36,9 +36,19 @@ class InvoiceObserver
 
         // 1. If status is Draft or Canceled, delete any existing journals
         if (in_array($invoice->status, ['Draft', 'Canceled'])) {
-            JurnalHeader::where('referensi_type', Invoice::class)
-                ->where('referensi_id', $invoice->id)
-                ->get()->each->delete();
+            self::$processing = true;
+            try {
+                JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->get()->each->delete();
+
+                if (!empty($invoice->nomor_invoice)) {
+                    JurnalHeader::where('deskripsi', 'like', '%' . $invoice->nomor_invoice . '%')
+                        ->get()->each->delete();
+                }
+            } finally {
+                self::$processing = false;
+            }
             return;
         }
 
