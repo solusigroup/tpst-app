@@ -3,7 +3,7 @@
 @section('content')
 <div class="text-center mb-4">
     <h2 style="font-size: 16px; margin: 0; font-weight: bold;">{{ strtoupper($title ?? 'BUKU BESAR') }}</h2>
-    <p style="margin: 5px 0 0 0; color: #555;">Periode: {{ \Carbon\Carbon::parse($dari)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p>
+    <p style="margin: 5px 0 0 0; color: #555;">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}</p>
     @if($coaId)
         <p style="margin: 5px 0 0 0; color: #555;">Akun: {{ $coas->where('id', $coaId)->first()->kode_akun ?? '' }} - {{ $coas->where('id', $coaId)->first()->nama_akun ?? '' }}</p>
     @else
@@ -25,7 +25,7 @@
     <tbody>
         @foreach($rows as $r)
         <tr>
-            <td style="border: 1px solid #ddd; padding: 5px;">{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
+            <td style="border: 1px solid #ddd; padding: 5px;">{{ \Carbon\Carbon::parse($r->tanggal)->translatedFormat('d M Y') }}</td>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $r->kode_akun }}</td>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $r->nama_akun }}</td>
             <td style="border: 1px solid #ddd; padding: 5px;">{{ $r->deskripsi }}</td>

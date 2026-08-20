@@ -62,7 +62,7 @@
 
                     @if($coaId && $rows->currentPage() == 1)
                     <tr class="table-light italic">
-                        <td colspan="4"><strong>SALDO AWAL (Per {{ \Carbon\Carbon::parse($dari)->format('d M Y') }})</strong></td>
+                        <td colspan="4"><strong>SALDO AWAL (Per {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }})</strong></td>
                         <td class="text-end">-</td>
                         <td class="text-end">-</td>
                         <td class="text-end fw-bold text-primary">{{ number_format($saldoAwal, 0, ',', '.') }}</td>
@@ -80,7 +80,7 @@
                         }
                     @endphp
                     <tr>
-                        <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($r->tanggal)->translatedFormat('d M Y') }}</td>
                         <td><strong>{{ $r->kode_akun }}</strong></td>
                         <td>{{ $r->nama_akun }}</td>
                         <td style="font-size: 0.85rem; max-width: 300px; white-space: normal; word-wrap: break-word;">{{ $r->deskripsi }}</td>

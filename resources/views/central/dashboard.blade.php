@@ -32,7 +32,7 @@
                 <thead class="bg-light"><tr><th>Nama Tenant</th><th>Domain</th><th>Tanggal Daftar</th></tr></thead>
                 <tbody>
                     @foreach($recentTenants as $t)
-                    <tr><td><strong>{{ $t->name }}</strong></td><td>{{ $t->domain }}</td><td>{{ $t->created_at->format('d M Y') }}</td></tr>
+                    <tr><td><strong>{{ $t->name }}</strong></td><td>{{ $t->domain }}</td><td>{{ $t->created_at->translatedFormat('d M Y') }}</td></tr>
                     @endforeach
                     @if($recentTenants->isEmpty())<tr><td colspan="3" class="text-center py-4">Belum ada tenant</td></tr>@endif
                 </tbody>

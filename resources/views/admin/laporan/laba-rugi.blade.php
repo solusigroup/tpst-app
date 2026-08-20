@@ -71,9 +71,9 @@
     <div class="card-body">
         <div class="text-center mb-4 print-header">
             <h5 class="fw-bold mb-1">LAPORAN LABA RUGI</h5>
-            <p class="text-body-secondary mb-0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p>
+            <p class="text-body-secondary mb-0">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}</p>
             @if(isset($penyajian) && $penyajian == 'komparatif')
-            <p class="text-body-secondary mb-0">Pembanding: {{ \Carbon\Carbon::parse($dariPembanding)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampaiPembanding)->format('d M Y') }}</p>
+            <p class="text-body-secondary mb-0">Pembanding: {{ \Carbon\Carbon::parse($dariPembanding)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($sampaiPembanding)->translatedFormat('d M Y') }}</p>
             @endif
         </div>
 

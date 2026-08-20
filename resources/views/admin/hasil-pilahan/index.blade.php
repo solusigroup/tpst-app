@@ -43,7 +43,7 @@
                 <tbody>
                     @forelse($hasilPilahans as $item)
                     <tr>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d M Y') }}</td>
                         <td>
                             @php $catColors = ['Organik'=>'success','Anorganik'=>'info','B3'=>'danger','Residu'=>'warning']; @endphp
                             <span class="badge bg-{{ $catColors[$item->kategori] ?? 'secondary' }}">{{ $item->kategori }}</span>

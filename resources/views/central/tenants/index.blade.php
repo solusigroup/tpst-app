@@ -26,7 +26,7 @@
                         <td><strong>{{ $t->name }}</strong></td>
                         <td><code>{{ $t->domain }}</code></td>
                         <td class="text-center"><span class="badge bg-secondary rounded-pill">{{ $t->users_count }}</span></td>
-                        <td>{{ $t->created_at->format('d M Y H:i') }}</td>
+                        <td>{{ $t->created_at->translatedFormat('d M Y H:i') }} WIB</td>
                         <td class="text-end">
                             <a href="{{ route('central.tenants.edit', $t->id) }}" class="btn btn-sm btn-warning"><i class="cil-pencil"></i></a>
                             <form action="{{ route('central.tenants.destroy', $t->id) }}" method="POST" class="d-inline" >

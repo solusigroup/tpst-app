@@ -26,7 +26,7 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-sm-4 text-muted">Tanggal</div>
-                    <div class="col-sm-8">{{ \Carbon\Carbon::parse($penjualan->tanggal)->format('d F Y') }}</div>
+                    <div class="col-sm-8">{{ \Carbon\Carbon::parse($penjualan->tanggal)->translatedFormat('d F Y') }}</div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-sm-4 text-muted">Jenis Produk</div>

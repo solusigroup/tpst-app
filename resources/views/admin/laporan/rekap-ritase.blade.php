@@ -138,7 +138,7 @@
                 <tbody>
                     @forelse($pivotData as $row)
                     <tr>
-                        <td class="fw-semibold text-center">{{ \Carbon\Carbon::parse($row['tanggal'])->format('d M Y') }}</td>
+                        <td class="fw-semibold text-center">{{ \Carbon\Carbon::parse($row['tanggal'])->translatedFormat('d M Y') }}</td>
                         @foreach($jenisTypes as $jt)
                         @php $cell = $row['jenis'][$jt] ?? null; @endphp
                         <td class="text-center border-start">{{ $cell ? number_format($cell['total_ritase'], 0, ',', '.') : '-' }}</td>

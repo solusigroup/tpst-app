@@ -44,7 +44,7 @@
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
-                        <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($r->tanggal)->translatedFormat('d M Y') }}</td>
                         <td>{{ $r->klien->nama_klien ?? '-' }}</td>
                         <td>{{ $r->jenis_produk }}</td>
                         <td class="text-end">{{ number_format($r->berat_kg, 2, ',', '.') }} kg</td>

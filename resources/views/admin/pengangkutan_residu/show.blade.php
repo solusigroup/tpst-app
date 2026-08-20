@@ -27,7 +27,7 @@
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td>: {{ $item->tanggal->format('d F Y') }}</td>
+                        <td>: {{ $item->tanggal->translatedFormat('d F Y') }}</td>
                     </tr>
                     <tr>
                         <th>Armada</th>

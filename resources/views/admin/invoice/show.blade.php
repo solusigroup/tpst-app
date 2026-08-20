@@ -88,10 +88,10 @@
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted d-block small text-uppercase fw-bold mb-1">Tanggal Invoice</label>
-                        <p class="mb-3 text-dark">{{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->format('d F Y') }}</p>
+                        <p class="mb-3 text-dark">{{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->translatedFormat('d F Y') }}</p>
                         
                         <label class="text-muted d-block small text-uppercase fw-bold mb-1">Jatuh Tempo</label>
-                        <p class="mb-3 text-dark">{{ \Carbon\Carbon::parse($invoice->tanggal_jatuh_tempo)->format('d F Y') }}</p>
+                        <p class="mb-3 text-dark">{{ \Carbon\Carbon::parse($invoice->tanggal_jatuh_tempo)->translatedFormat('d F Y') }}</p>
                     </div>
                 </div>
 

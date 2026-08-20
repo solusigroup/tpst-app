@@ -36,7 +36,7 @@
                 <tbody>
                     @forelse($logs as $log)
                     <tr>
-                        <td>{{ $log->created_at->format('d M Y H:i') }}</td>
+                        <td>{{ $log->created_at->translatedFormat('d M Y H:i') }} WIB</td>
                         <td><span class="badge bg-secondary">{{ $log->waktu_cek }}</span></td>
                         <td><strong>{{ $log->machine->nama_mesin }}</strong> <br><small class="text-muted">{{ $log->machine->nomor_mesin }}</small></td>
                         <td>

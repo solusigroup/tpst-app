@@ -35,7 +35,7 @@
                     <tr><td class="text-body-secondary">Status</td><td>: 
                         @if($wageCalculation->status == 'pending') <span class="badge bg-warning">Pending</span>
                         @elseif($wageCalculation->status == 'approved') <span class="badge bg-info">Disetujui</span>
-                        @elseif($wageCalculation->status == 'paid') <span class="badge bg-success">Dibayar ({{ \Carbon\Carbon::parse($wageCalculation->paid_date)->format('d M Y') }})</span>
+                        @elseif($wageCalculation->status == 'paid') <span class="badge bg-success">Dibayar ({{ \Carbon\Carbon::parse($wageCalculation->paid_date)->translatedFormat('d M Y') }})</span>
                         @endif
                     </td></tr>
                 </table>

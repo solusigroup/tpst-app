@@ -117,7 +117,7 @@
                 <tbody>
                     @forelse($rows as $r)
                     <tr>
-                        <td>{{ \Carbon\Carbon::parse($r->attendance_date)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($r->attendance_date)->translatedFormat('d M Y') }}</td>
                         <td><strong>{{ $r->user->name ?? '-' }}</strong></td>
                         <td>{{ $r->check_in ? \Carbon\Carbon::parse($r->check_in)->format('H:i') : '-' }}</td>
                         <td>{{ $r->check_out ? \Carbon\Carbon::parse($r->check_out)->format('H:i') : '-' }}</td>

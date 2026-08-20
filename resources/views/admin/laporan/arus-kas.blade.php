@@ -34,7 +34,7 @@
 </div></div>
 
 <div class="card" id="printable"><div class="card-body">
-    <div class="text-center mb-4"><h5 class="fw-bold mb-1">LAPORAN ARUS KAS</h5><p class="text-body-secondary mb-0">Metode Langsung<br>Periode: {{ \Carbon\Carbon::parse($dari)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p></div>
+    <div class="text-center mb-4"><h5 class="fw-bold mb-1">LAPORAN ARUS KAS</h5><p class="text-body-secondary mb-0">Metode Langsung<br>Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}</p></div>
 
     <table class="table table-sm mb-4">
         <tbody>

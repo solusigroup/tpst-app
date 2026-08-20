@@ -34,7 +34,7 @@
 </div></div>
 
 <div class="card" id="printable"><div class="card-body">
-    <div class="text-center mb-4"><h5 class="fw-bold mb-1">LAPORAN PERUBAHAN EKUITAS</h5><p class="text-body-secondary mb-0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p></div>
+    <div class="text-center mb-4"><h5 class="fw-bold mb-1">LAPORAN PERUBAHAN EKUITAS</h5><p class="text-body-secondary mb-0">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}</p></div>
 
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">

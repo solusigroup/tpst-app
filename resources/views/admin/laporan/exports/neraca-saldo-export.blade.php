@@ -3,7 +3,7 @@
 @section('content')
 <div class="text-center mb-4">
     <h2 style="font-size: 16px; margin: 0; font-weight: bold;">NERACA SALDO</h2>
-    <p style="margin: 5px 0 0 0; color: #555;">Periode: {{ \Carbon\Carbon::parse($dari)->format('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p>
+    <p style="margin: 5px 0 0 0; color: #555;">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}</p>
 </div>
 
 <table style="width: 100%; border-collapse: collapse;">

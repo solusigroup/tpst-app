@@ -122,7 +122,7 @@
                         $pageTotalWage += $wage;
                     @endphp
                     <tr>
-                        <td>{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($r->tanggal)->translatedFormat('d M Y') }}</td>
                         <td>
                             @php $catColors = ['Organik'=>'success','Anorganik'=>'info','B3'=>'danger','Residu'=>'warning']; @endphp
                             <span class="badge bg-{{ $catColors[$r->kategori] ?? 'secondary' }}">{{ $r->kategori }}</span>

@@ -86,11 +86,11 @@
                     </div>
                     <div class="col-md-6 border-top pt-3">
                         <label class="small text-muted mb-1">Tanggal Mulai Kerja</label>
-                        <p class="mb-0 h6 text-success">{{ $employee->joined_at ? \Carbon\Carbon::parse($employee->joined_at)->format('d F Y') : '-' }}</p>
+                        <p class="mb-0 h6 text-success">{{ $employee->joined_at ? \Carbon\Carbon::parse($employee->joined_at)->translatedFormat('d F Y') : '-' }}</p>
                     </div>
                     <div class="col-md-6 border-top pt-3">
                         <label class="small text-muted mb-1">Tanggal Akhir Kerja</label>
-                        <p class="mb-0 h6 text-danger">{{ $employee->ended_at ? \Carbon\Carbon::parse($employee->ended_at)->format('d F Y') : '-' }}</p>
+                        <p class="mb-0 h6 text-danger">{{ $employee->ended_at ? \Carbon\Carbon::parse($employee->ended_at)->translatedFormat('d F Y') : '-' }}</p>
                     </div>
                 </div>
             </div>

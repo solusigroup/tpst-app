@@ -3,9 +3,9 @@
 @section('content')
 <div class="text-center mb-4">
     <h2 style="font-size: 16px; margin: 0; font-weight: bold;">POSISI KEUANGAN</h2>
-    <p style="margin: 5px 0 0 0; color: #555;">Per Tanggal: {{ \Carbon\Carbon::parse($sampai)->format('d M Y') }}</p>
+    <p style="margin: 5px 0 0 0; color: #555;">Per Tanggal: {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}</p>
     @if(isset($penyajian) && $penyajian == 'komparatif')
-    <p style="margin: 2px 0 0 0; color: #777;">Pembanding: {{ \Carbon\Carbon::parse($sampaiPembanding)->format('d M Y') }}</p>
+    <p style="margin: 2px 0 0 0; color: #777;">Pembanding: {{ \Carbon\Carbon::parse($sampaiPembanding)->translatedFormat('d M Y') }}</p>
     @endif
 </div>
 

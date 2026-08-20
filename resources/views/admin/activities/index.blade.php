@@ -45,7 +45,7 @@
                     @else
                     @foreach($activities as $log)
                     <tr>
-                        <td>{{ $log->created_at->format('d M Y H:i:s') }}</td>
+                        <td>{{ $log->created_at->translatedFormat('d M Y H:i:s') }} WIB</td>
                         <td>
                             @if($log->causer)
                                 <strong>{{ $log->causer->name }}</strong><br>

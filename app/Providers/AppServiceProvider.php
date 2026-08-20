@@ -4,7 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Pagination\Paginator;
+use Carbon\Carbon;
+use Illuminate\Support\Carbon as IlluminateCarbon;
+use App\Helpers\DateHelper;
 
 use App\Models\HasilPilahan;
 use App\Models\Penjualan;
@@ -37,6 +41,50 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        // Set locale Carbon and PHP to Indonesian
+        Carbon::setLocale('id');
+        IlluminateCarbon::setLocale('id');
+        setlocale(LC_TIME, 'id_ID', 'id_ID.utf8', 'id', 'indonesian');
+
+        // Carbon Macros for convenient Indonesian formatting
+        IlluminateCarbon::macro('formatIndo', function (string $format = 'd F Y') {
+            return $this->translatedFormat($format);
+        });
+
+        IlluminateCarbon::macro('formatIndoWaktu', function (bool $withWib = true) {
+            $formatted = $this->translatedFormat('d F Y H:i');
+            return $withWib ? $formatted . ' WIB' : $formatted;
+        });
+
+        IlluminateCarbon::macro('formatIndoHari', function () {
+            return $this->translatedFormat('l, d F Y');
+        });
+
+        IlluminateCarbon::macro('formatIndoSingkat', function () {
+            return $this->format('d/m/Y');
+        });
+
+        // Blade Directives for Indonesian formatting
+        Blade::directive('tgl', function ($expression) {
+            return "<?php echo \App\Helpers\DateHelper::formatTanggal($expression); ?>";
+        });
+
+        Blade::directive('tglWaktu', function ($expression) {
+            return "<?php echo \App\Helpers\DateHelper::formatTanggalWaktu($expression); ?>";
+        });
+
+        Blade::directive('tglHari', function ($expression) {
+            return "<?php echo \App\Helpers\DateHelper::formatHariTanggal($expression); ?>";
+        });
+
+        Blade::directive('tglShort', function ($expression) {
+            return "<?php echo \App\Helpers\DateHelper::formatSingkat($expression); ?>";
+        });
+
+        Blade::directive('rentangTgl', function ($expression) {
+            return "<?php echo \App\Helpers\DateHelper::formatRentang($expression); ?>";
+        });
 
         // Super admin bypasses all permission/ability checks
         Gate::before(function ($user, $ability) {

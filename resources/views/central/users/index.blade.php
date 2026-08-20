@@ -45,7 +45,7 @@
                             <span class="badge bg-{{ $roleColors[$u->role] ?? 'secondary' }}">{{ ucfirst($u->role) }}</span>
                         </td>
                         <td class="text-center">@if($u->is_super_admin) <i class="cil-check-circle text-success fs-5"></i> @else <i class="cil-x-circle text-danger fs-5"></i> @endif</td>
-                        <td>{{ $u->created_at->format('d M Y') }}</td>
+                        <td>{{ $u->created_at->translatedFormat('d M Y') }}</td>
                         <td class="text-end">
                             <a href="{{ route('central.users.edit', $u->id) }}" class="btn btn-sm btn-warning"><i class="cil-pencil"></i></a>
                             @if($u->id !== auth()->id())

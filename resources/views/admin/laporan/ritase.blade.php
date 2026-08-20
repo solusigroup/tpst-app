@@ -135,7 +135,7 @@
                         <tbody>
                             @forelse($rows as $r)
                             <tr>
-                                <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->format('d M Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->translatedFormat('d M Y') }}</td>
                                 <td><strong>{{ $r->nomor_tiket }}</strong></td>
                                 <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                                 <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
