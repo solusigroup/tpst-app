@@ -286,13 +286,20 @@ class InvoiceObserver
                         $paymentJournals->slice(1)->each->delete();
                     }
 
+                    $paymentDate = $invoice->tanggal_invoice ? $invoice->tanggal_invoice->toDateString() : now()->toDateString();
+
                     if (!$paymentJurnal) {
                         $paymentJurnal = JurnalHeader::create([
                             'tenant_id'      => $invoice->tenant_id,
-                            'tanggal'        => now()->toDateString(),
+                            'tanggal'        => $paymentDate,
                             'referensi_type' => Invoice::class,
                             'referensi_id'   => $invoice->id,
                             'deskripsi'      => "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$klienNama}",
+                        ]);
+                    } else {
+                        $paymentJurnal->update([
+                            'tanggal'   => $paymentDate,
+                            'deskripsi' => "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$klienNama}",
                         ]);
                     }
 

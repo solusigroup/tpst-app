@@ -47,7 +47,8 @@ class JurnalHeader extends Model
 
         static::creating(function (JurnalHeader $header) {
             if (empty($header->nomor_referensi)) {
-                $prefix = 'JV-' . now()->format('Ym') . '-';
+                $tanggal = $header->tanggal ? \Carbon\Carbon::parse($header->tanggal) : now();
+                $prefix = 'JV-' . $tanggal->format('Ym') . '-';
                 
                 // Get the last reference number for this month
                 $lastHeader = self::withoutGlobalScope(TenantScope::class)
