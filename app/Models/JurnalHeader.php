@@ -103,4 +103,15 @@ class JurnalHeader extends Model
     {
         return $this->hasMany(JurnalDetail::class);
     }
+
+    /**
+     * Get total nominal (total debit) of this journal header.
+     */
+    public function getNominalAttribute(): float
+    {
+        if ($this->relationLoaded('jurnalDetails')) {
+            return (float) ($this->jurnalDetails->sum('debit') ?: $this->jurnalDetails->sum('kredit'));
+        }
+        return (float) $this->jurnalDetails()->sum('debit');
+    }
 }
