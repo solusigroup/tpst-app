@@ -45,14 +45,14 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th style="width:40px;"><input type="checkbox" id="selectAll" title="Pilih Semua"></th><th>Tanggal</th><th>No. Referensi</th><th>Deskripsi</th><th>Status</th><th>Bukti</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th style="width:40px;"><input type="checkbox" id="selectAll" title="Pilih Semua"></th><th>Tanggal</th><th>No. Referensi</th><th style="min-width:260px;">Deskripsi</th><th>Status</th><th>Bukti</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($jurnals as $item)
                     <tr>
                         <td><input type="checkbox" class="purge-checkbox" value="{{ $item->id }}"></td>
                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                         <td><strong>{{ $item->nomor_referensi ?? '-' }}</strong></td>
-                        <td>{{ \Illuminate\Support\Str::limit($item->deskripsi, 50) }}</td>
+                        <td style="max-width:380px; white-space:normal; word-break:break-word;">{{ $item->deskripsi ?? '-' }}</td>
                         <td><span class="badge bg-{{ $item->status === 'posted' ? 'success' : 'warning' }}">{{ ucfirst($item->status) }}</span></td>
                         <td>
                             @if($item->bukti_transaksi)

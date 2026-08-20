@@ -53,6 +53,12 @@ class BukuPembantu extends Model
     {
         static::addGlobalScope(new TenantScope());
 
+        static::creating(function (BukuPembantu $model) {
+            if (empty($model->tenant_id) && $model->jurnal_header_id) {
+                $model->tenant_id = $model->jurnalHeader?->tenant_id ?? JurnalHeader::where('id', $model->jurnal_header_id)->value('tenant_id');
+            }
+        });
+
         static::saving(function ($model) {
             if ($model->jumlah < 0) {
                 if ($model->terbayar <= $model->jumlah) {

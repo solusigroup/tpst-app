@@ -70,7 +70,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>Jenis</th><th>Akun</th><th>Jumlah</th><th>Deskripsi</th><th>Status</th><th>Bukti</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Jenis</th><th>Akun</th><th>Jumlah</th><th style="min-width:260px;">Deskripsi</th><th>Status</th><th>Bukti</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($jurnalKas as $item)
                     <tr>
@@ -78,7 +78,7 @@
                         <td><span class="badge bg-{{ $item->tipe=='Penerimaan'?'success':'danger' }}">{{ $item->tipe=='Penerimaan'?'Kas Masuk':'Kas Keluar' }}</span></td>
                         <td>{{ $item->coaLawan->nama_akun ?? '-' }}</td>
                         <td><strong>Rp {{ number_format($item->nominal, 0, ',', '.') }}</strong></td>
-                        <td>{{ \Illuminate\Support\Str::limit($item->deskripsi, 40) }}</td>
+                        <td style="max-width:350px; white-space:normal; word-break:break-word;">{{ $item->deskripsi ?? '-' }}</td>
                         <td>
                             @if($item->status == 'posted')
                                 <span class="badge bg-success">Posted</span>

@@ -92,6 +92,7 @@ class TracingController extends Controller
         $invoiceIds = $invoices->pluck('id');
         $jurnalHeaders = JurnalHeader::where('referensi_type', Invoice::class)
             ->whereIn('referensi_id', $invoiceIds)
+            ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
             ->get()
             ->keyBy('referensi_id');
 
@@ -147,17 +148,36 @@ class TracingController extends Controller
             // Step 2: Invoice
             $data['invoice'] = $invoice;
 
-            // Step 3: Journal (GL)
+            // Step 3: Journal (GL) - Primary Revenue Recognition Journal
             $jurnalHeader = JurnalHeader::where('referensi_type', Invoice::class)
                 ->where('referensi_id', $invoice->id)
+                ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
                 ->with('jurnalDetails.coa')
                 ->first();
+
+            if (!$jurnalHeader) {
+                $jurnalHeader = JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->with('jurnalDetails.coa')
+                    ->orderBy('id', 'asc')
+                    ->first();
+            }
             $data['jurnal'] = $jurnalHeader;
 
             // Step 4: Subsidiary Ledger (Buku Pembantu)
             $bukuPembantu = null;
             if ($jurnalHeader) {
                 $bukuPembantu = BukuPembantu::where('jurnal_header_id', $jurnalHeader->id)
+                    ->with('contactable')
+                    ->first();
+            }
+            if (!$bukuPembantu && $invoice->klien_id) {
+                $bukuPembantu = BukuPembantu::where('contactable_type', Klien::class)
+                    ->where('contactable_id', $invoice->klien_id)
+                    ->whereHas('jurnalHeader', function ($q) use ($invoice) {
+                        $q->where('referensi_type', Invoice::class)
+                          ->where('referensi_id', $invoice->id);
+                    })
                     ->with('contactable')
                     ->first();
             }
@@ -169,9 +189,16 @@ class TracingController extends Controller
                 $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
                     ->find($bukuPembantu->settled_by_jurnal_header_id);
             }
-            // Also look for payment journal by description pattern
             if (!$paymentJurnal && $invoice) {
-                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%Penerimaan Pembayaran%' . $invoice->nomor_invoice . '%')
+                $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->with('jurnalDetails.coa')
+                    ->first();
+            }
+            if (!$paymentJurnal && $invoice) {
+                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%' . $invoice->nomor_invoice . '%')
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
                     ->with('jurnalDetails.coa')
                     ->first();
             }
@@ -194,6 +221,7 @@ class TracingController extends Controller
             if ($penjualan->invoice) {
                 $jurnalHeader = JurnalHeader::where('referensi_type', Invoice::class)
                     ->where('referensi_id', $penjualan->invoice_id)
+                    ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
                     ->with('jurnalDetails.coa')
                     ->first();
             }
@@ -205,12 +233,35 @@ class TracingController extends Controller
                     ->with('contactable')
                     ->first();
             }
+            if (!$bukuPembantu && $penjualan->invoice && $penjualan->invoice->klien_id) {
+                $bukuPembantu = BukuPembantu::where('contactable_type', Klien::class)
+                    ->where('contactable_id', $penjualan->invoice->klien_id)
+                    ->whereHas('jurnalHeader', function ($q) use ($penjualan) {
+                        $q->where('referensi_type', Invoice::class)
+                          ->where('referensi_id', $penjualan->invoice_id);
+                    })
+                    ->with('contactable')
+                    ->first();
+            }
             $data['buku_pembantu'] = $bukuPembantu;
 
             $paymentJurnal = null;
             if ($bukuPembantu && $bukuPembantu->settled_by_jurnal_header_id) {
                 $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
                     ->find($bukuPembantu->settled_by_jurnal_header_id);
+            }
+            if (!$paymentJurnal && $penjualan->invoice) {
+                $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $penjualan->invoice_id)
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->with('jurnalDetails.coa')
+                    ->first();
+            }
+            if (!$paymentJurnal && $penjualan->invoice) {
+                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%' . $penjualan->invoice->nomor_invoice . '%')
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->with('jurnalDetails.coa')
+                    ->first();
             }
             $data['payment'] = $paymentJurnal;
 
@@ -239,6 +290,19 @@ class TracingController extends Controller
             if ($bp->settled_by_jurnal_header_id) {
                 $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
                     ->find($bp->settled_by_jurnal_header_id);
+            }
+            if (!$paymentJurnal && $invoice) {
+                $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $invoice->id)
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->with('jurnalDetails.coa')
+                    ->first();
+            }
+            if (!$paymentJurnal && $invoice) {
+                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%' . $invoice->nomor_invoice . '%')
+                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->with('jurnalDetails.coa')
+                    ->first();
             }
             $data['payment'] = $paymentJurnal;
 
@@ -278,7 +342,9 @@ class TracingController extends Controller
         // 2. Journals for invoices but no Buku Pembantu
         // bukuPembantu relation may not exist on JurnalHeader, so do manual query
         $jhIdsWithBP = BukuPembantu::whereNotNull('jurnal_header_id')->pluck('jurnal_header_id')->unique();
-        $invoiceJournals = JurnalHeader::where('referensi_type', Invoice::class)->get();
+        $invoiceJournals = JurnalHeader::where('referensi_type', Invoice::class)
+            ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
+            ->get();
         foreach ($invoiceJournals as $jh) {
             if (!$jhIdsWithBP->contains($jh->id)) {
                 $inv = Invoice::with('klien')->find($jh->referensi_id);
@@ -313,6 +379,7 @@ class TracingController extends Controller
         foreach ($sentPaidInvoices as $inv) {
             $jh = JurnalHeader::where('referensi_type', Invoice::class)
                 ->where('referensi_id', $inv->id)
+                ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
                 ->first();
             if ($jh) {
                 $totalDebit = JurnalDetail::where('jurnal_header_id', $jh->id)->sum('debit');
@@ -331,7 +398,8 @@ class TracingController extends Controller
         $bpPendingPaid = BukuPembantu::where('tipe', 'piutang')
             ->where('status', 'pending')
             ->whereHas('jurnalHeader', function ($q) {
-                $q->where('referensi_type', Invoice::class);
+                $q->where('referensi_type', Invoice::class)
+                  ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%');
             })
             ->with('jurnalHeader')
             ->get();

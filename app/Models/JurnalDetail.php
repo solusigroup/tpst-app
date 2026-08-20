@@ -24,6 +24,18 @@ class JurnalDetail extends Model
     ];
 
     /**
+     * Boot the model.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (JurnalDetail $detail) {
+            if (empty($detail->tenant_id) && $detail->jurnal_header_id) {
+                $detail->tenant_id = $detail->jurnalHeader?->tenant_id ?? JurnalHeader::where('id', $detail->jurnal_header_id)->value('tenant_id');
+            }
+        });
+    }
+
+    /**
      * Get the parent contactable model (Klien or Vendor).
      */
     public function contactable(): \Illuminate\Database\Eloquent\Relations\MorphTo
