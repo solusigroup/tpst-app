@@ -260,26 +260,25 @@ class RitaseController extends Controller
 
     private function processApproval(Ritase $ritase)
     {
+        $isDlh = $ritase->klien && $ritase->klien->jenis === 'DLH';
+
         $ritase->update([
             'is_approved' => true,
             'approved_at' => now(),
             'status' => 'selesai',
-            'status_invoice' => 'Draft'
+            'status_invoice' => $isDlh ? null : 'Draft'
         ]);
 
-        // Auto-Invoice Logic
+        // Khusus DLH: Tidak membuat invoice eceran harian.
+        // Rekapitulasi dilakukan di akhir bulan dalam 1 invoice resmi.
+        if ($isDlh) {
+            return;
+        }
+
+        // Auto-Invoice Logic untuk Klien Non-DLH
         $month = $ritase->waktu_masuk->format('n');
         $year = $ritase->waktu_masuk->format('Y');
-
         $klienId = $ritase->klien_id;
-        
-        // If client is DLH type, use the master DLH client as payer
-        if ($ritase->klien && $ritase->klien->jenis === 'DLH') {
-            $masterDLH = \App\Models\Klien::where('nama_klien', 'Dinas Lingkungan Hidup')->first();
-            if ($masterDLH) {
-                $klienId = $masterDLH->id;
-            }
-        }
 
         $invoice = \App\Models\Invoice::where('tenant_id', $ritase->tenant_id)
             ->where('klien_id', $klienId)
@@ -320,7 +319,11 @@ class RitaseController extends Controller
             $this->processApproval($ritase);
         });
 
-        return redirect()->back()->with('success', 'Ritase berhasil di-approve dan ditambahkan ke Invoice Draft.');
+        $msg = ($ritase->klien && $ritase->klien->jenis === 'DLH')
+            ? 'Ritase DLH berhasil di-approve (siap direkap pada Invoice Bulanan DLH).'
+            : 'Ritase berhasil di-approve dan ditambahkan ke Invoice Draft.';
+
+        return redirect()->back()->with('success', $msg);
     }
 
     public function bulkApprove(Request $request)

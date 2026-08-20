@@ -95,6 +95,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('transfer-kas', [JurnalKasController::class, 'transfer'])->name('transfer-kas.create');
     Route::post('transfer-kas', [JurnalKasController::class, 'storeTransfer'])->name('transfer-kas.store');
     Route::get('invoice-items/pending', [InvoiceItemController::class, 'getPendingItems'])->name('invoice-items.pending');
+    Route::post('invoice/generate-monthly-dlh', [InvoiceAdminController::class, 'generateMonthlyDlh'])->name('invoice.generate-monthly-dlh');
+    Route::get('invoice/preview-monthly-dlh', [InvoiceAdminController::class, 'previewMonthlyDlh'])->name('invoice.preview-monthly-dlh');
     Route::post('invoice/merge-drafts', [InvoiceAdminController::class, 'mergeDrafts'])->name('invoice.merge-drafts');
     Route::post('invoice/{invoice}/sync-dlh', [InvoiceAdminController::class, 'syncDlhItems'])->name('invoice.sync-dlh');
     Route::post('invoice/{invoice}/recalculate', [InvoiceAdminController::class, 'recalculate'])->name('invoice.recalculate');

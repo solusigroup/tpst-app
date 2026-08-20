@@ -39,8 +39,10 @@ class InvoiceAdminController extends Controller
             }
 
             $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
+            $dlhClients = Klien::where('jenis', 'DLH')->orderBy('nama_klien')->get();
+            $masterDlh = Klien::where('nama_klien', 'Dinas Lingkungan Hidup')->first() ?? $dlhClients->first();
 
-            return view('admin.invoice.index', compact('invoices'));
+            return view('admin.invoice.index', compact('invoices', 'dlhClients', 'masterDlh'));
         } catch (\Throwable $e) {
             \Log::error('Error loading invoices index: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -639,5 +641,160 @@ class InvoiceAdminController extends Controller
         \Illuminate\Support\Facades\Artisan::call('app:rebuild-invoice-journals', ['--force' => true]);
 
         return back()->with('success', 'Seluruh jurnal invoice dan Buku Pembantu berhasil diperbarui dan disinkronkan sesuai aturan COA terbaru.');
+    }
+
+    /**
+     * Preview DLH approved ritase data for the selected month/year.
+     */
+    public function previewMonthlyDlh(Request $request)
+    {
+        Gate::authorize('view_invoice');
+
+        $month = (int)$request->input('periode_bulan', now()->month);
+        $year = (int)$request->input('periode_tahun', now()->year);
+
+        $masterDLH = $request->filled('klien_id') 
+            ? Klien::find($request->klien_id) 
+            : (Klien::where('nama_klien', 'Dinas Lingkungan Hidup')->first() ?? Klien::where('jenis', 'DLH')->first());
+
+        $query = \App\Models\Ritase::whereHas('klien', fn($q) => $q->where('jenis', 'DLH'))
+            ->whereYear('waktu_masuk', $year)
+            ->whereMonth('waktu_masuk', $month)
+            ->where('is_approved', true)
+            ->where(function($q) {
+                $q->whereNull('status_invoice')
+                  ->orWhere('status_invoice', '!=', 'Paid');
+            });
+
+        $count = (clone $query)->count();
+        $totalNetto = (clone $query)->sum('berat_netto');
+        $totalTipping = (clone $query)->sum('biaya_tipping');
+
+        // Check if an existing invoice already exists
+        $existingInvoice = null;
+        if ($masterDLH) {
+            $existingInvoice = Invoice::where('klien_id', $masterDLH->id)
+                ->where('periode_bulan', $month)
+                ->where('periode_tahun', $year)
+                ->first();
+        }
+
+        return response()->json([
+            'success' => true,
+            'count' => $count,
+            'total_netto_ton' => number_format($totalNetto / 1000, 2, ',', '.'),
+            'total_tipping_rp' => 'Rp ' . number_format($totalTipping, 0, ',', '.'),
+            'total_tipping_raw' => $totalTipping,
+            'klien_nama' => $masterDLH->nama_klien ?? 'Dinas Lingkungan Hidup',
+            'has_existing' => $existingInvoice !== null,
+            'existing_nomor' => $existingInvoice->nomor_invoice ?? null,
+            'existing_status' => $existingInvoice->status ?? null,
+        ]);
+    }
+
+    /**
+     * Generate or consolidate the single monthly invoice for DLH client.
+     */
+    public function generateMonthlyDlh(Request $request)
+    {
+        Gate::authorize('create_invoice');
+
+        $request->validate([
+            'periode_bulan' => 'required|integer|between:1,12',
+            'periode_tahun' => 'required|integer|min:2020|max:2099',
+            'tanggal_invoice' => 'required|date',
+            'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_invoice',
+            'klien_id' => 'nullable|exists:kliens,id',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
+
+        // Validate due date: maximum 30 days from invoice date
+        $invDate = \Carbon\Carbon::parse($request->tanggal_invoice);
+        $dueDate = \Carbon\Carbon::parse($request->tanggal_jatuh_tempo);
+        $diffDays = $invDate->diffInDays($dueDate, false);
+
+        if ($diffDays > 30) {
+            return back()->withInput()->with('error', 'Jatuh tempo maksimal 30 hari dari tanggal invoice (selisih saat ini: ' . $diffDays . ' hari).');
+        }
+
+        $month = (int)$request->periode_bulan;
+        $year = (int)$request->periode_tahun;
+
+        $masterDLH = $request->filled('klien_id') 
+            ? Klien::find($request->klien_id) 
+            : (Klien::where('nama_klien', 'Dinas Lingkungan Hidup')->first() ?? Klien::where('jenis', 'DLH')->first());
+
+        if (!$masterDLH) {
+            return back()->withInput()->with('error', 'Master Klien DLH (Dinas Lingkungan Hidup) tidak ditemukan di database.');
+        }
+
+        // Query all approved DLH ritase for that month/year that are not on a Paid invoice
+        $ritases = \App\Models\Ritase::whereHas('klien', fn($q) => $q->where('jenis', 'DLH'))
+            ->whereYear('waktu_masuk', $year)
+            ->whereMonth('waktu_masuk', $month)
+            ->where('is_approved', true)
+            ->where(function($q) {
+                $q->whereNull('status_invoice')
+                  ->orWhere('status_invoice', '!=', 'Paid');
+            })
+            ->get();
+
+        if ($ritases->isEmpty()) {
+            return back()->withInput()->with('error', "Tidak ditemukan ritase DLH yang sudah di-approve pada periode " . \App\Helpers\DateHelper::indonesianMonthName($month) . " {$year}.");
+        }
+
+        $invoice = null;
+        $isNew = false;
+
+        DB::transaction(function () use ($request, $masterDLH, $month, $year, $ritases, &$invoice, &$isNew) {
+            $existing = Invoice::where('klien_id', $masterDLH->id)
+                ->where('periode_bulan', $month)
+                ->where('periode_tahun', $year)
+                ->first();
+
+            if ($existing) {
+                if ($existing->status === 'Paid') {
+                    throw new \Exception("Invoice DLH untuk periode " . \App\Helpers\DateHelper::indonesianMonthName($month) . " {$year} sudah berstatus Lunas (Paid) dan tidak dapat dimodifikasi.");
+                }
+
+                $existing->update([
+                    'tanggal_invoice' => $request->tanggal_invoice,
+                    'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
+                    'keterangan' => $request->keterangan ?? $existing->keterangan,
+                ]);
+                $invoice = $existing;
+            } else {
+                $invoice = Invoice::create([
+                    'tenant_id' => auth()->user()->tenant_id ?? null,
+                    'klien_id' => $masterDLH->id,
+                    'periode_bulan' => $month,
+                    'periode_tahun' => $year,
+                    'tanggal_invoice' => $request->tanggal_invoice,
+                    'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
+                    'total_tagihan' => 0,
+                    'status' => 'Draft',
+                    'keterangan' => $request->keterangan ?? ('Tagihan Rekapitulasi Jasa Pengelolaan Sampah (Tipping Fee) Periode ' . \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year),
+                ]);
+                $isNew = true;
+            }
+
+            // Link all ritase
+            foreach ($ritases as $r) {
+                $r->update([
+                    'invoice_id' => $invoice->id,
+                    'status_invoice' => $invoice->status,
+                    'status' => 'selesai',
+                ]);
+            }
+
+            $invoice->recalculateTotals();
+        });
+
+        $actionText = $isNew ? 'dibuat' : 'diperbarui';
+        $monthName = \App\Helpers\DateHelper::indonesianMonthName($month);
+        $totalFormatted = 'Rp ' . number_format($invoice->total_tagihan, 0, ',', '.');
+
+        return redirect()->route('admin.invoice.show', $invoice->id)
+            ->with('success', "Invoice Rekap Bulanan DLH Periode {$monthName} {$year} berhasil {$actionText}. Sebanyak {$ritases->count()} tiket ritase telah direkap dengan total tagihan {$totalFormatted}.");
     }
 }
