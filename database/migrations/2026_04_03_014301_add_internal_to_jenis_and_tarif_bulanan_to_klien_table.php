@@ -17,7 +17,9 @@ return new class extends Migration
         });
         
         // Use DB statement for MySQL enum change as Laravel's change() on enum is sometimes problematic
-        DB::statement("ALTER TABLE klien MODIFY COLUMN jenis ENUM('DLH', 'Swasta', 'Offtaker', 'Internal') NOT NULL DEFAULT 'Swasta'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE klien MODIFY COLUMN jenis ENUM('DLH', 'Swasta', 'Offtaker', 'Internal') NOT NULL DEFAULT 'Swasta'");
+        }
     }
 
     /**
@@ -30,6 +32,8 @@ return new class extends Migration
         });
 
         DB::table('klien')->where('jenis', 'Internal')->update(['jenis' => 'Swasta']);
-        DB::statement("ALTER TABLE klien MODIFY COLUMN jenis ENUM('DLH', 'Swasta', 'Offtaker') NOT NULL DEFAULT 'Swasta'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE klien MODIFY COLUMN jenis ENUM('DLH', 'Swasta', 'Offtaker') NOT NULL DEFAULT 'Swasta'");
+        }
     }
 };

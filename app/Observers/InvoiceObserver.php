@@ -286,7 +286,9 @@ class InvoiceObserver
                         $paymentJournals->slice(1)->each->delete();
                     }
 
-                    $paymentDate = $invoice->tanggal_invoice ? $invoice->tanggal_invoice->toDateString() : now()->toDateString();
+                    $paymentDate = ($paymentJurnal && $paymentJurnal->tanggal)
+                        ? $paymentJurnal->tanggal->toDateString()
+                        : ($invoice->tanggal_invoice ? $invoice->tanggal_invoice->toDateString() : now()->toDateString());
 
                     if (!$paymentJurnal) {
                         $paymentJurnal = JurnalHeader::create([

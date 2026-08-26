@@ -456,14 +456,13 @@ class InvoiceAdminController extends Controller
 
             foreach ($invoiceList as $inv) {
                 $tgl = null;
-                if (isset($bps[$inv->id])) {
+                if (isset($payJhs[$inv->id]) && $payJhs[$inv->id]->tanggal) {
+                    $tgl = $payJhs[$inv->id]->tanggal;
+                } elseif (isset($bps[$inv->id])) {
                     $sId = $bps[$inv->id]->settled_by_jurnal_header_id;
                     if (isset($settledJhs[$sId]) && $settledJhs[$sId]->tanggal) {
                         $tgl = $settledJhs[$sId]->tanggal;
                     }
-                }
-                if (!$tgl && isset($payJhs[$inv->id]) && $payJhs[$inv->id]->tanggal) {
-                    $tgl = $payJhs[$inv->id]->tanggal;
                 }
                 if (!$tgl) {
                     $tgl = $inv->updated_at;

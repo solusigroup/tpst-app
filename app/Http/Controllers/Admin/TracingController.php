@@ -184,25 +184,7 @@ class TracingController extends Controller
             $data['buku_pembantu'] = $bukuPembantu;
 
             // Step 5: Payment / Settlement Journal
-            $paymentJurnal = null;
-            if ($bukuPembantu && $bukuPembantu->settled_by_jurnal_header_id) {
-                $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
-                    ->find($bukuPembantu->settled_by_jurnal_header_id);
-            }
-            if (!$paymentJurnal && $invoice) {
-                $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
-                    ->where('referensi_id', $invoice->id)
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                    ->with('jurnalDetails.coa')
-                    ->first();
-            }
-            if (!$paymentJurnal && $invoice) {
-                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%' . $invoice->nomor_invoice . '%')
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                    ->with('jurnalDetails.coa')
-                    ->first();
-            }
-            $data['payment'] = $paymentJurnal;
+            $data['payment'] = $this->resolvePaymentJournal($invoice, $bukuPembantu);
 
             // Integrity checks
             $data['checks'] = $this->runIntegrityChecks($invoice, $jurnalHeader, $bukuPembantu);
@@ -245,25 +227,8 @@ class TracingController extends Controller
             }
             $data['buku_pembantu'] = $bukuPembantu;
 
-            $paymentJurnal = null;
-            if ($bukuPembantu && $bukuPembantu->settled_by_jurnal_header_id) {
-                $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
-                    ->find($bukuPembantu->settled_by_jurnal_header_id);
-            }
-            if (!$paymentJurnal && $penjualan->invoice) {
-                $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
-                    ->where('referensi_id', $penjualan->invoice_id)
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                    ->with('jurnalDetails.coa')
-                    ->first();
-            }
-            if (!$paymentJurnal && $penjualan->invoice) {
-                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%' . $penjualan->invoice->nomor_invoice . '%')
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                    ->with('jurnalDetails.coa')
-                    ->first();
-            }
-            $data['payment'] = $paymentJurnal;
+            // Step 5: Payment / Settlement Journal
+            $data['payment'] = $this->resolvePaymentJournal($penjualan->invoice, $bukuPembantu);
 
             $data['checks'] = $penjualan->invoice
                 ? $this->runIntegrityChecks($penjualan->invoice, $jurnalHeader, $bukuPembantu)
@@ -286,25 +251,8 @@ class TracingController extends Controller
             $data['jurnal'] = $bp->jurnalHeader;
             $data['buku_pembantu'] = $bp;
 
-            $paymentJurnal = null;
-            if ($bp->settled_by_jurnal_header_id) {
-                $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
-                    ->find($bp->settled_by_jurnal_header_id);
-            }
-            if (!$paymentJurnal && $invoice) {
-                $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
-                    ->where('referensi_id', $invoice->id)
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                    ->with('jurnalDetails.coa')
-                    ->first();
-            }
-            if (!$paymentJurnal && $invoice) {
-                $paymentJurnal = JurnalHeader::where('deskripsi', 'like', '%' . $invoice->nomor_invoice . '%')
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                    ->with('jurnalDetails.coa')
-                    ->first();
-            }
-            $data['payment'] = $paymentJurnal;
+            // Step 5: Payment / Settlement Journal
+            $data['payment'] = $this->resolvePaymentJournal($invoice, $bp);
 
             $data['checks'] = $invoice
                 ? $this->runIntegrityChecks($invoice, $bp->jurnalHeader, $bp)
@@ -492,5 +440,50 @@ class TracingController extends Controller
             ->count();
 
         return $count;
+    }
+
+    /**
+     * Resolve the exact payment journal for an invoice / subsidiary ledger.
+     */
+    private function resolvePaymentJournal(?Invoice $invoice, ?BukuPembantu $bp): ?JurnalHeader
+    {
+        $paymentJurnal = null;
+
+        if ($invoice) {
+            // Priority 1: Direct payment journal with referensi_type = Invoice & referensi_id = $invoice->id
+            $paymentJurnal = JurnalHeader::where('referensi_type', Invoice::class)
+                ->where('referensi_id', $invoice->id)
+                ->where(function($q) {
+                    $q->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                      ->orWhere('deskripsi', 'like', '%Pelunasan%');
+                })
+                ->with('jurnalDetails.coa')
+                ->orderByDesc('id')
+                ->first();
+
+            // Priority 2: Direct payment journal mentioning invoice number in deskripsi or nomor_referensi
+            if (!$paymentJurnal && !empty($invoice->nomor_invoice)) {
+                $paymentJurnal = JurnalHeader::where(function($q) use ($invoice) {
+                        $q->where('deskripsi', 'like', '%' . $invoice->nomor_invoice . '%')
+                          ->orWhere('nomor_referensi', 'like', '%' . $invoice->nomor_invoice . '%');
+                    })
+                    ->where(function($q) {
+                        $q->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                          ->orWhere('deskripsi', 'like', '%Pelunasan%')
+                          ->orWhere('referensi_type', Invoice::class);
+                    })
+                    ->with('jurnalDetails.coa')
+                    ->orderByDesc('id')
+                    ->first();
+            }
+        }
+
+        // Priority 3: Fallback to BukuPembantu settled_by_jurnal_header_id
+        if (!$paymentJurnal && $bp && $bp->settled_by_jurnal_header_id) {
+            $paymentJurnal = JurnalHeader::with('jurnalDetails.coa')
+                ->find($bp->settled_by_jurnal_header_id);
+        }
+
+        return $paymentJurnal;
     }
 }

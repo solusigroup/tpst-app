@@ -53,7 +53,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Tanggal <span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', isset($jurnal) ? \Carbon\Carbon::parse($jurnal->tanggal)->format('Y-m-d') : '') }}" required>
+                            <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', isset($jurnal) ? \Carbon\Carbon::parse($jurnal->tanggal)->format('Y-m-d') : ($defaultTanggal ?: date('Y-m-d'))) }}" required>
                             @error('tanggal') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
@@ -83,7 +83,6 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table align-middle mb-0" id="detail-table">
-                            <thead class="table-light">
                             <thead class="table-light">
                                 <tr><th>Akun</th><th>Mitra (Opsional)</th><th style="width:180px;">Debit</th><th style="width:180px;">Kredit</th><th style="width:50px;"></th></tr>
                             </thead>
@@ -118,13 +117,13 @@
                                     </tr>
                                     @endforeach
                                 @else
-                                    {{-- Row 0: Debit Bank Jatim / Kas --}}
+                                    {{-- Row 0 --}}
                                     <tr>
                                         <td>
                                             <select name="details[0][coa_id]" class="form-select form-select-sm" required>
                                                 <option value="">-- Pilih Akun --</option>
                                                 @foreach($coas as $c)
-                                                    <option value="{{ $c->id }}" {{ (isset($bankJatimCoaId) && $bankJatimCoaId == $c->id) ? 'selected' : (old('details.0.coa_id') == $c->id ? 'selected' : '') }}>
+                                                    <option value="{{ $c->id }}" {{ (old('details.0.coa_id', $row0CoaId ?? $bankJatimCoaId) == $c->id) ? 'selected' : '' }}>
                                                         {{ $c->kode_akun }} - {{ $c->nama_akun }}
                                                     </option>
                                                 @endforeach
@@ -145,18 +144,18 @@
                                                 </optgroup>
                                             </select>
                                         </td>
-                                        <td><input type="number" name="details[0][debit]" class="form-control form-control-sm debit-input" value="{{ old('details.0.debit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
-                                        <td><input type="number" name="details[0][kredit]" class="form-control form-control-sm kredit-input" value="0" oninput="updateTotals()"></td>
+                                        <td><input type="number" name="details[0][debit]" class="form-control form-control-sm debit-input" value="{{ old('details.0.debit', rtrim(rtrim(number_format($row0Debit ?? $defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
+                                        <td><input type="number" name="details[0][kredit]" class="form-control form-control-sm kredit-input" value="{{ old('details.0.kredit', rtrim(rtrim(number_format($row0Kredit ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
                                     </tr>
 
-                                    {{-- Row 1: Kredit Piutang --}}
+                                    {{-- Row 1 --}}
                                     <tr>
                                         <td>
                                             <select name="details[1][coa_id]" class="form-select form-select-sm" required>
                                                 <option value="">-- Pilih Akun --</option>
                                                 @foreach($coas as $c)
-                                                    <option value="{{ $c->id }}" {{ (isset($piutangCoaId) && $piutangCoaId == $c->id) ? 'selected' : (old('details.1.coa_id') == $c->id ? 'selected' : '') }}>
+                                                    <option value="{{ $c->id }}" {{ (old('details.1.coa_id', $row1CoaId ?? $piutangCoaId) == $c->id) ? 'selected' : '' }}>
                                                         {{ $c->kode_akun }} - {{ $c->nama_akun }}
                                                     </option>
                                                 @endforeach
@@ -177,8 +176,8 @@
                                                 </optgroup>
                                             </select>
                                         </td>
-                                        <td><input type="number" name="details[1][debit]" class="form-control form-control-sm debit-input" value="0" oninput="updateTotals()"></td>
-                                        <td><input type="number" name="details[1][kredit]" class="form-control form-control-sm kredit-input" value="{{ old('details.1.kredit', rtrim(rtrim(number_format($defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
+                                        <td><input type="number" name="details[1][debit]" class="form-control form-control-sm debit-input" value="{{ old('details.1.debit', rtrim(rtrim(number_format($row1Debit ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
+                                        <td><input type="number" name="details[1][kredit]" class="form-control form-control-sm kredit-input" value="{{ old('details.1.kredit', rtrim(rtrim(number_format($row1Kredit ?? $defaultNominal ?? 0, 2, '.', ''), '0'), '.') ?: 0) }}" oninput="updateTotals()"></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();updateTotals()"><i class="cil-trash"></i></button></td>
                                     </tr>
                                 @endif

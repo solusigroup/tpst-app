@@ -377,15 +377,18 @@
                                 </td>
                                 <td class="text-end">
                                     @php
+                                        $isMasuk = $bank['kredit'] > 0;
+                                        $nominal = $isMasuk ? $bank['kredit'] : $bank['debit'];
                                         $queryParam = [
                                             'tanggal' => $bank['tanggal'],
                                             'deskripsi' => $bank['keterangan'],
-                                            'nominal' => $bank['kredit'] > 0 ? $bank['kredit'] : $bank['debit'],
-                                            'tipe' => $bank['kredit'] > 0 ? 'Penerimaan' : 'Pengeluaran',
-                                            'rekonsiliasi_target_coa' => $coa->id
+                                            'nominal' => $nominal,
+                                            'tipe' => $isMasuk ? 'masuk' : 'keluar',
+                                            'target_coa_id' => $coa->id,
+                                            'source' => 'rekonsiliasi_bank',
                                         ];
                                     @endphp
-                                    <a href="{{ route('admin.jurnal-kas.create', $queryParam) }}" class="btn btn-sm btn-primary py-1 px-2 text-nowrap" target="_blank">
+                                    <a href="{{ route('admin.jurnal.create', $queryParam) }}" class="btn btn-sm btn-primary py-1 px-2 text-nowrap" target="_blank">
                                         <i class="cil-external-link me-1"></i> Buat Jurnal
                                     </a>
                                 </td>

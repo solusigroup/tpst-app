@@ -113,7 +113,7 @@
                     <i class="cil-book fs-3 d-block mb-1 {{ $hasJurnal ? 'text-warning' : 'text-body-secondary' }}"></i>
                     <div class="fw-semibold small">3. Jurnal GL</div>
                     @if($hasJurnal)
-                        <div class="text-body-secondary" style="font-size: 0.75rem;">{{ $data['jurnal']->nomor_referensi }}</div>
+                        <div class="text-body-secondary" style="font-size: 0.75rem;">{{ $data['jurnal']->nomor_jurnal ?? $data['jurnal']->nomor_referensi ?? '-' }}</div>
                         <span class="badge bg-{{ $data['jurnal']->status === 'posted' ? 'success' : 'secondary' }}" style="font-size: 0.65rem;">{{ ucfirst($data['jurnal']->status) }}</span>
                     @else
                         <div class="text-danger" style="font-size: 0.75rem;">Belum ada</div>
@@ -147,7 +147,7 @@
                     <i class="cil-money fs-3 d-block mb-1 {{ $hasPay ? 'text-success' : 'text-body-secondary' }}"></i>
                     <div class="fw-semibold small">5. Pelunasan</div>
                     @if($hasPay)
-                        <div class="text-body-secondary" style="font-size: 0.75rem;">{{ $data['payment']->nomor_referensi }}</div>
+                        <div class="text-body-secondary" style="font-size: 0.75rem;">{{ $data['payment']->nomor_jurnal ?? $data['payment']->nomor_referensi ?? '-' }}</div>
                         <div class="text-success" style="font-size: 0.75rem;">Terbayar</div>
                     @else
                         <div class="text-body-secondary" style="font-size: 0.75rem;">Belum ada</div>
@@ -281,7 +281,7 @@
                     <div class="px-3 py-2 border-bottom bg-light">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>{{ $jh->nomor_referensi }}</strong>
+                                <strong>{{ $jh->nomor_jurnal ?? $jh->nomor_referensi }}</strong>
                                 <span class="badge bg-{{ $jh->status === 'posted' ? 'success' : 'secondary' }} ms-2">{{ ucfirst($jh->status) }}</span>
                             </div>
                             <div class="text-body-secondary small">{{ \Carbon\Carbon::parse($jh->tanggal)->format('d/m/Y') }}</div>
@@ -377,7 +377,7 @@
                     <div class="px-3 py-2 border-bottom bg-light">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>{{ $pay->nomor_referensi }}</strong>
+                                <strong>{{ $pay->nomor_jurnal ?? $pay->nomor_referensi }}</strong>
                                 <span class="badge bg-success ms-2">{{ ucfirst($pay->status) }}</span>
                             </div>
                             <div class="text-body-secondary small">{{ \Carbon\Carbon::parse($pay->tanggal)->format('d/m/Y') }}</div>

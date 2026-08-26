@@ -61,19 +61,38 @@ class JurnalController extends Controller
         Gate::authorize('create_jurnal');
         $coas = Coa::orderBy('kode_akun')->get();
 
-        $defaultDeskripsi = '';
-        $defaultNominal = 0;
+        $defaultTanggal = $request->filled('tanggal') ? $request->tanggal : '';
+        $defaultDeskripsi = $request->input('deskripsi', '');
+        $defaultNominal = (float) $request->input('nominal', 0);
         $refType = is_string($request->ref_type) ? urldecode($request->ref_type) : null;
         $refId = $request->ref_id;
 
-        // Auto-lookup Bank Jatim COA
-        $bankJatimCoa = Coa::where('nama_akun', 'like', '%Bank Jatim%')->first()
-            ?: Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Bank%')->first();
-        $bankJatimCoaId = $bankJatimCoa ? $bankJatimCoa->id : null;
+        // Auto-lookup Bank Jatim COA or target COA from reconciliation
+        $bankJatimCoaId = null;
+        if ($request->filled('target_coa_id') || $request->filled('rekonsiliasi_target_coa')) {
+            $targetId = $request->target_coa_id ?? $request->rekonsiliasi_target_coa;
+            $targetCoa = Coa::find($targetId);
+            if ($targetCoa) {
+                $bankJatimCoaId = $targetCoa->id;
+            }
+        }
+        if (!$bankJatimCoaId) {
+            $bankJatimCoa = Coa::where('nama_akun', 'like', '%Bank Jatim%')->first()
+                ?: Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Bank%')->first();
+            $bankJatimCoaId = $bankJatimCoa ? $bankJatimCoa->id : null;
+        }
 
         $piutangCoaId = null;
         $klienContactId = null;
         $isPelunasan = false;
+
+        // Inisialisasi baris jurnal default (Row 0 & Row 1)
+        $row0CoaId = $bankJatimCoaId;
+        $row0Debit = $defaultNominal;
+        $row0Kredit = 0;
+        $row1CoaId = null;
+        $row1Debit = 0;
+        $row1Kredit = $defaultNominal;
 
         if ($refType && $refId) {
             if ($refType === Invoice::class) {
@@ -100,13 +119,62 @@ class JurnalController extends Controller
                         ?: Coa::where('tipe', 'Asset')->where('nama_akun', 'like', '%Piutang%')->first();
 
                     $piutangCoaId = $piutangCoa ? $piutangCoa->id : null;
+
+                    $row0CoaId = $bankJatimCoaId;
+                    $row0Debit = $defaultNominal;
+                    $row0Kredit = 0;
+                    $row1CoaId = $piutangCoaId;
+                    $row1Debit = 0;
+                    $row1Kredit = $defaultNominal;
                 }
             } elseif ($refType === WageCalculation::class) {
                 $wage = WageCalculation::find($refId);
                 if ($wage) {
                     $defaultDeskripsi = "Pembayaran Gaji Karyawan Borongan ID-{$wage->id}";
                     $defaultNominal = $wage->total_wage;
+                    $row0Debit = $defaultNominal;
+                    $row1Kredit = $defaultNominal;
                 }
+            }
+        } elseif ($request->filled('tipe') || $request->input('source') === 'rekonsiliasi_bank') {
+            // Logika khusus dari Rekonsiliasi Bank
+            $tipe = strtolower($request->tipe);
+            $deskripsiLower = strtolower($defaultDeskripsi);
+
+            if ($tipe === 'keluar' || $tipe === 'pengeluaran' || $tipe === 'debit') {
+                // Bank Debit (Uang Keluar / Tarikan / Beban Admin Bank)
+                // Di pembukuan: Kas/Bank berkurang (Kredit), Akun Lawan/Beban bertambah (Debet)
+                $suggestedLawanCoa = null;
+                if (str_contains($deskripsiLower, 'adm') || str_contains($deskripsiLower, 'admin') || str_contains($deskripsiLower, 'biaya')) {
+                    $suggestedLawanCoa = Coa::where('kode_akun', '8102')->first()
+                        ?: Coa::where('nama_akun', 'like', '%administrasi bank%')->first()
+                        ?: Coa::where('nama_akun', 'like', '%biaya admin%')->first();
+                }
+
+                $row0CoaId = $suggestedLawanCoa ? $suggestedLawanCoa->id : null;
+                $row0Debit = $defaultNominal;
+                $row0Kredit = 0;
+
+                $row1CoaId = $bankJatimCoaId;
+                $row1Debit = 0;
+                $row1Kredit = $defaultNominal;
+            } else {
+                // Bank Kredit (Uang Masuk / Setoran / Pendapatan Bunga Bank)
+                // Di pembukuan: Kas/Bank bertambah (Debet), Akun Lawan/Pendapatan bertambah (Kredit)
+                $suggestedLawanCoa = null;
+                if (str_contains($deskripsiLower, 'bunga') || str_contains($deskripsiLower, 'interest')) {
+                    $suggestedLawanCoa = Coa::where('kode_akun', '7102')->first()
+                        ?: Coa::where('nama_akun', 'like', '%pendapatan bunga%')->first()
+                        ?: Coa::where('nama_akun', 'like', '%bunga bank%')->first();
+                }
+
+                $row0CoaId = $bankJatimCoaId;
+                $row0Debit = $defaultNominal;
+                $row0Kredit = 0;
+
+                $row1CoaId = $suggestedLawanCoa ? $suggestedLawanCoa->id : null;
+                $row1Debit = 0;
+                $row1Kredit = $defaultNominal;
             }
         }
 
@@ -115,9 +183,10 @@ class JurnalController extends Controller
         $templates = JurnalTemplate::orderBy('nama')->get();
 
         return view('admin.jurnal.form', compact(
-            'coas', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId',
+            'coas', 'defaultTanggal', 'defaultDeskripsi', 'defaultNominal', 'refType', 'refId',
             'kliens', 'vendors', 'templates', 'bankJatimCoaId', 'piutangCoaId',
-            'klienContactId', 'isPelunasan'
+            'klienContactId', 'isPelunasan',
+            'row0CoaId', 'row0Debit', 'row0Kredit', 'row1CoaId', 'row1Debit', 'row1Kredit'
         ));
     }
 
