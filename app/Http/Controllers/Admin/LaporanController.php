@@ -903,7 +903,9 @@ class LaporanController extends Controller
         $reports = [];
         $grandTotalBerat = 0;
         $grandTotalNominal = 0;
+        $grandTotalTerbayar = 0;
         $grandTotalUangMuka = 0;
+        $grandTotalSisa = 0;
         $invoiceIdsSeen = [];
         $totalInvoicePaid = 0;
         $totalInvoiceUnpaid = 0;
@@ -919,7 +921,9 @@ class LaporanController extends Controller
             $invoicesData = [];
             $offtakerBerat = 0;
             $offtakerNominal = 0;
+            $offtakerTerbayar = 0;
             $offtakerUangMuka = 0;
+            $offtakerSisa = 0;
 
             foreach ($groupedByInvoice as $invId => $items) {
                 $invoice = $invId > 0 ? $items->first()->invoice : null;
@@ -927,9 +931,28 @@ class LaporanController extends Controller
                 $invNominal = $items->sum('total_harga');
                 $invUangMuka = $items->sum('jumlah_bayar');
 
+                $isPaid = ($invoice && $invoice->status === 'Paid');
+                $isCanceled = ($invoice && $invoice->status === 'Canceled');
+
+                if ($isPaid) {
+                    // Invoice berstatus Lunas: seluruh nilai tagihan telah terbayar lunas 100%
+                    $invTerbayar = $invNominal;
+                    $invSisa = 0;
+                } elseif ($isCanceled) {
+                    // Invoice dibatalkan
+                    $invTerbayar = 0;
+                    $invSisa = 0;
+                } else {
+                    // Invoice Sent / Draft / Belum Di-invoice: terbayar sesuai DP yang masuk
+                    $invTerbayar = max($invUangMuka, (float)($invoice->uang_muka ?? 0));
+                    $invSisa = max(0, $invNominal - $invTerbayar);
+                }
+
                 $offtakerBerat += $invBerat;
                 $offtakerNominal += $invNominal;
+                $offtakerTerbayar += $invTerbayar;
                 $offtakerUangMuka += $invUangMuka;
+                $offtakerSisa += $invSisa;
 
                 if ($invoice && !in_array($invoice->id, $invoiceIdsSeen)) {
                     $invoiceIdsSeen[] = $invoice->id;
@@ -945,17 +968,21 @@ class LaporanController extends Controller
                     'invoice_id' => $invId > 0 ? $invId : null,
                     'invoice' => $invoice,
                     'is_uninvoiced' => $invId === 0,
+                    'is_paid' => $isPaid,
                     'items' => $items,
                     'total_berat' => $invBerat,
                     'total_nominal' => $invNominal,
                     'total_uang_muka' => $invUangMuka,
-                    'sisa_tagihan' => max(0, $invNominal - $invUangMuka),
+                    'total_terbayar' => $invTerbayar,
+                    'sisa_tagihan' => $invSisa,
                 ];
             }
 
             $grandTotalBerat += $offtakerBerat;
             $grandTotalNominal += $offtakerNominal;
+            $grandTotalTerbayar += $offtakerTerbayar;
             $grandTotalUangMuka += $offtakerUangMuka;
+            $grandTotalSisa += $offtakerSisa;
 
             $reports[] = (object)[
                 'klien' => $klien,
@@ -963,17 +990,17 @@ class LaporanController extends Controller
                 'total_items' => $pItems->count(),
                 'total_berat' => $offtakerBerat,
                 'total_nominal' => $offtakerNominal,
+                'total_terbayar' => $offtakerTerbayar,
                 'total_uang_muka' => $offtakerUangMuka,
-                'total_sisa' => max(0, $offtakerNominal - $offtakerUangMuka),
+                'total_sisa' => $offtakerSisa,
             ];
         }
-
-        $grandTotalSisa = max(0, $grandTotalNominal - $grandTotalUangMuka);
 
         $summary = (object)[
             'total_berat_kg' => $grandTotalBerat,
             'total_berat_ton' => $grandTotalBerat / 1000,
             'total_omzet' => $grandTotalNominal,
+            'total_terbayar' => $grandTotalTerbayar,
             'total_uang_muka' => $grandTotalUangMuka,
             'total_sisa' => $grandTotalSisa,
             'total_invoice_count' => count($invoiceIdsSeen),

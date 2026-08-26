@@ -70,7 +70,7 @@
                             {{ request('export') == 'excel' ? $inv->total_nominal : number_format($inv->total_nominal, 0, ',', '.') }}
                         </td>
                         <td class="text-end fw-bold">
-                            {{ request('export') == 'excel' ? $inv->total_uang_muka : number_format($inv->total_uang_muka, 0, ',', '.') }}
+                            {{ request('export') == 'excel' ? $inv->total_terbayar : number_format($inv->total_terbayar, 0, ',', '.') }}
                         </td>
                         <td class="text-center">
                             {{ $inv->is_uninvoiced ? 'Pending' : $inv->invoice->status }}
@@ -94,7 +94,7 @@
                     <td class="text-end">{{ request('export') == 'excel' ? $rep->total_berat : number_format($rep->total_berat, 2, ',', '.') }}</td>
                     <td></td>
                     <td class="text-end">{{ request('export') == 'excel' ? $rep->total_nominal : number_format($rep->total_nominal, 0, ',', '.') }}</td>
-                    <td class="text-end">{{ request('export') == 'excel' ? $rep->total_uang_muka : number_format($rep->total_uang_muka, 0, ',', '.') }}</td>
+                    <td class="text-end">{{ request('export') == 'excel' ? $rep->total_terbayar : number_format($rep->total_terbayar, 0, ',', '.') }}</td>
                     <td class="text-center">Sisa: {{ request('export') == 'excel' ? $rep->total_sisa : number_format($rep->total_sisa, 0, ',', '.') }}</td>
                 </tr>
             @empty
@@ -109,7 +109,7 @@
                 <td class="text-end">{{ request('export') == 'excel' ? $summary->total_berat_kg : number_format($summary->total_berat_kg, 2, ',', '.') }}</td>
                 <td></td>
                 <td class="text-end">{{ request('export') == 'excel' ? $summary->total_omzet : number_format($summary->total_omzet, 0, ',', '.') }}</td>
-                <td class="text-end">{{ request('export') == 'excel' ? $summary->total_uang_muka : number_format($summary->total_uang_muka, 0, ',', '.') }}</td>
+                <td class="text-end">{{ request('export') == 'excel' ? $summary->total_terbayar : number_format($summary->total_terbayar, 0, ',', '.') }}</td>
                 <td class="text-center">Sisa: {{ request('export') == 'excel' ? $summary->total_sisa : number_format($summary->total_sisa, 0, ',', '.') }}</td>
             </tr>
         </tfoot>

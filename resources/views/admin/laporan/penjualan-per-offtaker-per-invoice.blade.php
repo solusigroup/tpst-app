@@ -62,8 +62,8 @@
         <div class="card stat-card stat-success shadow-sm h-100">
             <div class="card-body d-flex align-items-center justify-content-between p-3">
                 <div>
-                    <span class="text-body-secondary small fw-semibold text-uppercase">Total Terbayar / DP</span>
-                    <h4 class="mb-0 fw-bold text-success mt-1">Rp {{ number_format($summary->total_uang_muka, 0, ',', '.') }}</h4>
+                    <span class="text-body-secondary small fw-semibold text-uppercase">Total Terbayar</span>
+                    <h4 class="mb-0 fw-bold text-success mt-1">Rp {{ number_format($summary->total_terbayar, 0, ',', '.') }}</h4>
                     <small class="text-success"><i class="cil-check-circle me-1"></i>{{ $summary->total_invoice_paid }} Invoice Lunas</small>
                 </div>
                 <div class="stat-icon bg-success-light">
@@ -172,8 +172,12 @@
                     <strong class="fs-6 text-primary">Rp {{ number_format($report->total_nominal, 0, ',', '.') }}</strong>
                 </div>
                 <div class="badge bg-light text-body border p-2 px-3 text-end">
+                    <span class="d-block small text-muted text-uppercase">Terbayar</span>
+                    <strong class="fs-6 text-success">Rp {{ number_format($report->total_terbayar, 0, ',', '.') }}</strong>
+                </div>
+                <div class="badge bg-light text-body border p-2 px-3 text-end">
                     <span class="d-block small text-muted text-uppercase">Sisa Piutang</span>
-                    <strong class="fs-6 text-danger">Rp {{ number_format($report->total_sisa, 0, ',', '.') }}</strong>
+                    <strong class="fs-6 {{ $report->total_sisa > 0 ? 'text-danger' : 'text-success' }}">Rp {{ number_format($report->total_sisa, 0, ',', '.') }}</strong>
                 </div>
             </div>
         </div>
@@ -211,11 +215,19 @@
                     <div class="small fw-semibold text-end">
                         <span class="text-muted">Subtotal Tagihan:</span>
                         <span class="text-primary fs-6 ms-1">Rp {{ number_format($invData->total_nominal, 0, ',', '.') }}</span>
-                        @if($invData->total_uang_muka > 0)
-                            <span class="text-success ms-2">(DP: Rp {{ number_format($invData->total_uang_muka, 0, ',', '.') }})</span>
-                        @endif
-                        @if($invData->sisa_tagihan > 0)
+                        @if($invData->is_paid)
+                            <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 px-2 py-1">
+                                <i class="cil-check-circle me-1"></i> Terbayar Lunas (Sisa: Rp 0)
+                            </span>
+                        @elseif($invData->sisa_tagihan > 0)
+                            @if($invData->total_terbayar > 0)
+                                <span class="text-success ms-2">(DP: Rp {{ number_format($invData->total_terbayar, 0, ',', '.') }})</span>
+                            @endif
                             <span class="text-danger ms-2">Sisa: Rp {{ number_format($invData->sisa_tagihan, 0, ',', '.') }}</span>
+                        @else
+                            <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 px-2 py-1">
+                                <i class="cil-check-circle me-1"></i> Lunas
+                            </span>
                         @endif
                     </div>
                 </div>
@@ -265,7 +277,13 @@
                                     <td class="text-end text-dark">{{ number_format($invData->total_berat, 2, ',', '.') }} kg</td>
                                     <td></td>
                                     <td class="text-end text-primary">Rp {{ number_format($invData->total_nominal, 0, ',', '.') }}</td>
-                                    <td class="text-end pe-3 text-success">Rp {{ number_format($invData->total_uang_muka, 0, ',', '.') }}</td>
+                                    <td class="text-end pe-3 text-success">
+                                        @if($invData->total_terbayar > 0)
+                                            Rp {{ number_format($invData->total_terbayar, 0, ',', '.') }}{{ $invData->is_paid ? ' (Lunas)' : ' (DP)' }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -281,8 +299,8 @@
             <div class="d-flex gap-4 fw-bold small">
                 <span>Berat: <span class="text-dark">{{ number_format($report->total_berat, 2, ',', '.') }} kg</span></span>
                 <span>Omzet: <span class="text-primary">Rp {{ number_format($report->total_nominal, 0, ',', '.') }}</span></span>
-                <span>Terbayar: <span class="text-success">Rp {{ number_format($report->total_uang_muka, 0, ',', '.') }}</span></span>
-                <span>Sisa: <span class="text-danger">Rp {{ number_format($report->total_sisa, 0, ',', '.') }}</span></span>
+                <span>Terbayar: <span class="text-success">Rp {{ number_format($report->total_terbayar, 0, ',', '.') }}</span></span>
+                <span>Sisa: <span class="{{ $report->total_sisa > 0 ? 'text-danger' : 'text-success' }}">Rp {{ number_format($report->total_sisa, 0, ',', '.') }}</span></span>
             </div>
         </div>
     </div>
@@ -354,7 +372,7 @@
                                             @endif
                                         </td>
                                         <td class="text-end text-primary">Rp {{ number_format($inv->total_nominal, 0, ',', '.') }}</td>
-                                        <td class="text-end text-success">Rp {{ number_format($inv->total_uang_muka, 0, ',', '.') }}</td>
+                                        <td class="text-end text-success">Rp {{ number_format($inv->total_terbayar, 0, ',', '.') }}</td>
                                         <td class="text-center">
                                             @if($inv->is_uninvoiced)
                                                 <span class="badge bg-warning text-dark">Pending</span>
@@ -383,8 +401,8 @@
                                     <td class="text-end">{{ number_format($rep->total_berat, 2, ',', '.') }} kg</td>
                                     <td></td>
                                     <td class="text-end text-primary">Rp {{ number_format($rep->total_nominal, 0, ',', '.') }}</td>
-                                    <td class="text-end text-success">Rp {{ number_format($rep->total_uang_muka, 0, ',', '.') }}</td>
-                                    <td></td>
+                                    <td class="text-end text-success">Rp {{ number_format($rep->total_terbayar, 0, ',', '.') }}</td>
+                                    <td class="text-center text-{{ $rep->total_sisa > 0 ? 'danger' : 'success' }} small">Sisa: Rp {{ number_format($rep->total_sisa, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -394,7 +412,7 @@
                                 <td class="text-end">{{ number_format($summary->total_berat_kg, 2, ',', '.') }} kg</td>
                                 <td></td>
                                 <td class="text-end">Rp {{ number_format($summary->total_omzet, 0, ',', '.') }}</td>
-                                <td class="text-end">Rp {{ number_format($summary->total_uang_muka, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format($summary->total_terbayar, 0, ',', '.') }}</td>
                                 <td class="text-center">Sisa: Rp {{ number_format($summary->total_sisa, 0, ',', '.') }}</td>
                             </tr>
                         </tfoot>
