@@ -703,7 +703,7 @@ class InvoiceAdminController extends Controller
             'periode_tahun' => 'required|integer|min:2020|max:2099',
             'tanggal_invoice' => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_invoice',
-            'klien_id' => 'nullable|exists:kliens,id',
+            'klien_id' => 'nullable|exists:klien,id',
             'keterangan' => 'nullable|string|max:500',
         ]);
 
@@ -745,49 +745,61 @@ class InvoiceAdminController extends Controller
         $invoice = null;
         $isNew = false;
 
-        DB::transaction(function () use ($request, $masterDLH, $month, $year, $ritases, &$invoice, &$isNew) {
-            $existing = Invoice::where('klien_id', $masterDLH->id)
-                ->where('periode_bulan', $month)
-                ->where('periode_tahun', $year)
-                ->first();
+        try {
+            DB::transaction(function () use ($request, $masterDLH, $month, $year, $ritases, &$invoice, &$isNew) {
+                $existing = Invoice::where('klien_id', $masterDLH->id)
+                    ->where('periode_bulan', $month)
+                    ->where('periode_tahun', $year)
+                    ->first();
 
-            if ($existing) {
-                if ($existing->status === 'Paid') {
-                    throw new \Exception("Invoice DLH untuk periode " . \App\Helpers\DateHelper::indonesianMonthName($month) . " {$year} sudah berstatus Lunas (Paid) dan tidak dapat dimodifikasi.");
+                if ($existing) {
+                    if ($existing->status === 'Paid') {
+                        throw new \Exception("Invoice DLH untuk periode " . \App\Helpers\DateHelper::indonesianMonthName($month) . " {$year} sudah berstatus Lunas (Paid) dan tidak dapat dimodifikasi.");
+                    }
+
+                    $existing->update([
+                        'tanggal_invoice' => $request->tanggal_invoice,
+                        'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
+                        'keterangan' => $request->keterangan ?? $existing->keterangan,
+                    ]);
+                    $invoice = $existing;
+                } else {
+                    $tenantId = $masterDLH->tenant_id 
+                        ?? (auth()->check() ? auth()->user()->getEffectiveTenantId() : null)
+                        ?? \App\Models\Tenant::first()?->id;
+
+                    $invoice = Invoice::create([
+                        'tenant_id' => $tenantId,
+                        'klien_id' => $masterDLH->id,
+                        'periode_bulan' => $month,
+                        'periode_tahun' => $year,
+                        'tanggal_invoice' => $request->tanggal_invoice,
+                        'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
+                        'total_tagihan' => 0,
+                        'status' => 'Draft',
+                        'keterangan' => $request->keterangan ?? ('Tagihan Rekapitulasi Jasa Pengelolaan Sampah (Tipping Fee) Periode ' . \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year),
+                    ]);
+                    $isNew = true;
                 }
 
-                $existing->update([
-                    'tanggal_invoice' => $request->tanggal_invoice,
-                    'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
-                    'keterangan' => $request->keterangan ?? $existing->keterangan,
-                ]);
-                $invoice = $existing;
-            } else {
-                $invoice = Invoice::create([
-                    'tenant_id' => auth()->user()->tenant_id ?? null,
-                    'klien_id' => $masterDLH->id,
-                    'periode_bulan' => $month,
-                    'periode_tahun' => $year,
-                    'tanggal_invoice' => $request->tanggal_invoice,
-                    'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
-                    'total_tagihan' => 0,
-                    'status' => 'Draft',
-                    'keterangan' => $request->keterangan ?? ('Tagihan Rekapitulasi Jasa Pengelolaan Sampah (Tipping Fee) Periode ' . \App\Helpers\DateHelper::indonesianMonthName($month) . ' ' . $year),
-                ]);
-                $isNew = true;
-            }
+                // Link all ritase
+                foreach ($ritases as $r) {
+                    $r->update([
+                        'invoice_id' => $invoice->id,
+                        'status_invoice' => $invoice->status,
+                        'status' => 'selesai',
+                    ]);
+                }
 
-            // Link all ritase
-            foreach ($ritases as $r) {
-                $r->update([
-                    'invoice_id' => $invoice->id,
-                    'status_invoice' => $invoice->status,
-                    'status' => 'selesai',
-                ]);
-            }
-
-            $invoice->recalculateTotals();
-        });
+                $invoice->recalculateTotals();
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error generating monthly DLH invoice: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+            return back()->withInput()->with('error', 'Gagal memproses Invoice DLH: ' . $e->getMessage());
+        }
 
         $actionText = $isNew ? 'dibuat' : 'diperbarui';
         $monthName = \App\Helpers\DateHelper::indonesianMonthName($month);
