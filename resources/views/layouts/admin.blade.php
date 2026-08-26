@@ -245,6 +245,44 @@
             color: #64748b;
         }
 
+        /* Header Quick Action Nav */
+        .quick-header-nav {
+            flex-wrap: nowrap;
+        }
+        .quick-header-nav .btn-group {
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .quick-header-nav .btn {
+            font-size: 0.8125rem;
+            transition: all 0.15s ease-in-out;
+        }
+        [data-coreui-theme="dark"] .quick-header-nav .btn-outline-primary {
+            color: #60a5fa !important;
+            border-color: rgba(96, 165, 250, 0.4);
+            background-color: rgba(96, 165, 250, 0.05);
+        }
+        [data-coreui-theme="dark"] .quick-header-nav .btn-outline-primary:hover,
+        [data-coreui-theme="dark"] .quick-header-nav .btn-outline-primary:focus,
+        [data-coreui-theme="dark"] .quick-header-nav .btn-outline-primary.active,
+        [data-coreui-theme="dark"] .quick-header-nav .btn-outline-primary[aria-expanded="true"] {
+            color: #ffffff !important;
+            background-color: #2563eb !important;
+            border-color: #2563eb !important;
+        }
+        [data-coreui-theme="dark"] .quick-header-nav .btn-primary {
+            background-color: #2563eb !important;
+            border-color: #2563eb !important;
+            color: #ffffff !important;
+        }
+        @media (max-width: 480px) {
+            .quick-header-nav .btn-group .btn span {
+                display: none;
+            }
+            .quick-header-nav .btn-group .btn i {
+                margin-right: 0 !important;
+            }
+        }
+
         /* Print Styles */
         @media print {
             .sidebar, .header, .mobile-bottom-nav, .btn, .breadcrumb {
@@ -972,6 +1010,74 @@
                     style="margin-inline-start: -14px;">
                     <i class="cil-menu" style="font-size: 1.25rem;"></i>
                 </button>
+
+                @php
+                    $isSuperAdmin = auth()->check() && (auth()->user()->is_super_admin || auth()->user()->hasRole('super_admin'));
+                @endphp
+                <div class="d-flex align-items-center gap-2 ms-2 quick-header-nav">
+                    @if($isSuperAdmin || (auth()->check() && auth()->user()->can('view_jurnal')))
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{{ route('admin.jurnal.index') }}" 
+                           class="btn btn-sm {{ request()->routeIs('admin.jurnal.*') || request()->routeIs('admin.jurnal-kas.*') || request()->routeIs('admin.rekonsiliasi-bank.*') ? 'btn-primary text-white shadow-sm' : 'btn-outline-primary' }} d-inline-flex align-items-center fw-semibold px-2 py-1"
+                           title="Menu Jurnal">
+                            <i class="cil-file me-1"></i>
+                            <span>Jurnal</span>
+                        </a>
+                        <button type="button" 
+                                class="btn btn-sm {{ request()->routeIs('admin.jurnal.*') || request()->routeIs('admin.jurnal-kas.*') || request()->routeIs('admin.rekonsiliasi-bank.*') ? 'btn-primary text-white' : 'btn-outline-primary' }} dropdown-toggle dropdown-toggle-split px-1 py-1" 
+                                data-coreui-toggle="dropdown" 
+                                aria-expanded="false"
+                                title="Pilihan Cepat Jurnal">
+                            <span class="visually-hidden">Toggle Dropdown Jurnal</span>
+                        </button>
+                        <ul class="dropdown-menu shadow-sm">
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.jurnal.index') }}"><i class="cil-file me-2 text-primary"></i> Jurnal Umum</a></li>
+                            @if($isSuperAdmin || (auth()->check() && auth()->user()->can('create_jurnal')))
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.jurnal.create') }}"><i class="cil-plus me-2 text-success"></i> Tambah Jurnal Baru</a></li>
+                            @endif
+                            @if($isSuperAdmin || (auth()->check() && auth()->user()->can('view_jurnal_kas')))
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.jurnal-kas.index') }}"><i class="cil-money me-2 text-info"></i> Jurnal Kas</a></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.rekonsiliasi-bank.index') }}"><i class="cil-swap-horizontal me-2 text-warning"></i> Rekonsiliasi Bank</a></li>
+                            @endif
+                        </ul>
+                    </div>
+                    @endif
+
+                    @if($isSuperAdmin || (auth()->check() && auth()->user()->can('view_invoice')))
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{{ route('admin.invoice.index') }}" 
+                           class="btn btn-sm {{ request()->routeIs('admin.invoice.*') || request()->routeIs('admin.invoice-items.*') || request()->routeIs('admin.laporan-operasional.invoice.*') ? 'btn-primary text-white shadow-sm' : 'btn-outline-primary' }} d-inline-flex align-items-center fw-semibold px-2 py-1"
+                           title="Menu Invoice">
+                            <i class="cil-description me-1"></i>
+                            <span>Invoice</span>
+                        </a>
+                        <button type="button" 
+                                class="btn btn-sm {{ request()->routeIs('admin.invoice.*') || request()->routeIs('admin.invoice-items.*') || request()->routeIs('admin.laporan-operasional.invoice.*') ? 'btn-primary text-white' : 'btn-outline-primary' }} dropdown-toggle dropdown-toggle-split px-1 py-1" 
+                                data-coreui-toggle="dropdown" 
+                                aria-expanded="false"
+                                title="Pilihan Cepat Invoice">
+                            <span class="visually-hidden">Toggle Dropdown Invoice</span>
+                        </button>
+                        <ul class="dropdown-menu shadow-sm">
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.invoice.index') }}"><i class="cil-description me-2 text-primary"></i> Semua Invoice</a></li>
+                            @if($isSuperAdmin || (auth()->check() && auth()->user()->can('create_invoice')))
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.invoice.create') }}"><i class="cil-plus me-2 text-success"></i> Buat Invoice Baru</a></li>
+                            @endif
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.invoice.swasta-lunas') }}"><i class="cil-check-circle me-2 text-success"></i> Klien Swasta Lunas</a></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.invoice-items.pending') }}"><i class="cil-clock me-2 text-warning"></i> Item Belum Terinvoice</a></li>
+                            @if($isSuperAdmin || (auth()->check() && auth()->user()->can('view_laporan_operasional')))
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header text-uppercase fs-7 text-muted">Rekap Laporan</h6></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.invoice.per-klien') }}"><i class="cil-chart-pie me-2 text-secondary"></i> Rekap Per Klien</a></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.invoice.per-status') }}"><i class="cil-list-numbered me-2 text-secondary"></i> Rekap Per Status</a></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.invoice.per-jenis') }}"><i class="cil-tags me-2 text-secondary"></i> Rekap Per Jenis</a></li>
+                            @endif
+                        </ul>
+                    </div>
+                    @endif
+                </div>
 
                 <ul class="header-nav ms-auto flex-row align-items-center">
                     {{-- RTL Toggle --}}
