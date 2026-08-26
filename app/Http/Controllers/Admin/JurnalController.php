@@ -37,6 +37,28 @@ class JurnalController extends Controller
                 $query->where('status', $request->status);
             }
         }
+        if ($request->filled('nominal')) {
+            $nominal = $this->parseNominal($request->nominal);
+            if ($nominal !== null) {
+                $posisi = strtolower($request->input('posisi', $request->input('sisi', '')));
+                $query->where(function ($q) use ($nominal, $posisi) {
+                    if ($posisi === 'debit' || $posisi === 'debet') {
+                        $q->whereHas('jurnalDetails', function ($d) use ($nominal) {
+                            $d->where('debit', $nominal);
+                        });
+                    } elseif ($posisi === 'kredit') {
+                        $q->whereHas('jurnalDetails', function ($d) use ($nominal) {
+                            $d->where('kredit', $nominal);
+                        });
+                    } else {
+                        $q->whereHas('jurnalDetails', function ($d) use ($nominal) {
+                            $d->where('debit', $nominal)
+                              ->orWhere('kredit', $nominal);
+                        });
+                    }
+                });
+            }
+        }
         if ($request->filled('start_date')) {
             $query->where('tanggal', '>=', $request->start_date);
         }
@@ -547,5 +569,33 @@ class JurnalController extends Controller
 
         return redirect()->route('admin.jurnal.index')
             ->with('success', "{$count} jurnal berhasil di-purge.");
+    }
+
+    /**
+     * Parse nominal input from string or number into float.
+     * Supports formats like "50000", "50.000", "1.500.000", "Rp 50.000", "100.000,50".
+     */
+    private function parseNominal($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $raw = trim((string) $value);
+        $raw = preg_replace('/[^\d.,]/', '', $raw);
+        if ($raw === '') {
+            return null;
+        }
+
+        if (preg_match('/^[\d.]+,\d{1,2}$/', $raw)) {
+            $raw = str_replace('.', '', $raw);
+            $raw = str_replace(',', '.', $raw);
+        } else {
+            $raw = str_replace(',', '', $raw);
+            if (substr_count($raw, '.') > 1 || preg_match('/^\d{1,3}(\.\d{3})+$/', $raw)) {
+                $raw = str_replace('.', '', $raw);
+            }
+        }
+
+        return is_numeric($raw) ? (float) $raw : null;
     }
 }

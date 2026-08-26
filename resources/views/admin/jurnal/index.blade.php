@@ -26,6 +26,16 @@
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Cari referensi/deskripsi..." value="{{ request('search') }}"></div>
             <div class="col-auto">
+                <input type="text" name="nominal" class="form-control" placeholder="Cari nominal..." value="{{ request('nominal') }}">
+            </div>
+            <div class="col-auto">
+                <select name="posisi" class="form-select">
+                    <option value="">Semua Sisi (Debet/Kredit)</option>
+                    <option value="debit" {{ in_array(request('posisi', request('sisi')), ['debit', 'debet']) ? 'selected' : '' }}>Sisi Debet</option>
+                    <option value="kredit" {{ request('posisi', request('sisi')) == 'kredit' ? 'selected' : '' }}>Sisi Kredit</option>
+                </select>
+            </div>
+            <div class="col-auto">
                 <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}" placeholder="Mulai">
             </div>
             <div class="col-auto">
@@ -39,7 +49,7 @@
                 </select>
             </div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
-            @if(request()->hasAny(['search','status','start_date','end_date']))<div class="col-auto"><a href="{{ route('admin.jurnal.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','nominal','posisi','sisi','status','start_date','end_date']))<div class="col-auto"><a href="{{ route('admin.jurnal.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
@@ -53,7 +63,49 @@
                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                         <td><strong>{{ $item->nomor_referensi ?? '-' }}</strong></td>
                         <td style="max-width:380px; white-space:normal; word-break:break-word;">{{ $item->deskripsi ?? '-' }}</td>
-                        <td class="text-end fw-bold text-nowrap">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
+                        <td class="text-end text-nowrap">
+                            <div class="fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</div>
+                            @if(request()->filled('nominal'))
+                                @php
+                                    $rawNom = preg_replace('/[^\d.,]/', '', request('nominal'));
+                                    if (preg_match('/^[\d.]+,\d{1,2}$/', $rawNom)) {
+                                        $rawNom = str_replace('.', '', $rawNom);
+                                        $rawNom = str_replace(',', '.', $rawNom);
+                                    } else {
+                                        $rawNom = str_replace(',', '', $rawNom);
+                                        if (substr_count($rawNom, '.') > 1 || preg_match('/^\d{1,3}(\.\d{3})+$/', $rawNom)) {
+                                            $rawNom = str_replace('.', '', $rawNom);
+                                        }
+                                    }
+                                    $parsedSearchNominal = is_numeric($rawNom) ? (float) $rawNom : null;
+                                    $posFilter = strtolower(request('posisi', request('sisi', '')));
+                                @endphp
+                                @if($parsedSearchNominal !== null)
+                                    @foreach($item->jurnalDetails as $detail)
+                                        @php
+                                            $isDebitMatch = abs((float)$detail->debit - $parsedSearchNominal) < 0.01;
+                                            $isKreditMatch = abs((float)$detail->kredit - $parsedSearchNominal) < 0.01;
+                                            $showBadge = false;
+                                            $badgeType = '';
+                                            if (($posFilter === 'debit' || $posFilter === 'debet' || empty($posFilter)) && $isDebitMatch) {
+                                                $showBadge = true;
+                                                $badgeType = 'Debet';
+                                            } elseif (($posFilter === 'kredit' || empty($posFilter)) && $isKreditMatch) {
+                                                $showBadge = true;
+                                                $badgeType = 'Kredit';
+                                            }
+                                        @endphp
+                                        @if($showBadge)
+                                            <div class="small mt-1" style="font-size: 0.72rem;">
+                                                <span class="badge {{ $badgeType === 'Debet' ? 'bg-info bg-opacity-10 text-info border border-info' : 'bg-primary bg-opacity-10 text-primary border border-primary' }}">
+                                                    {{ $badgeType }}: {{ $detail->coa->kode_akun ?? '' }} Rp {{ number_format($badgeType === 'Debet' ? $detail->debit : $detail->kredit, 0, ',', '.') }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            @endif
+                        </td>
                         <td><span class="badge bg-{{ $item->status === 'posted' ? 'success' : 'warning' }}">{{ ucfirst($item->status) }}</span></td>
                         <td>
                             @if($item->bukti_transaksi)
