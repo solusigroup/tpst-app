@@ -191,9 +191,9 @@ class JurnalPelunasanInvoiceTest extends TestCase
         $this->assertEquals($pelunasanJournal->id, $bp->settled_by_jurnal_header_id);
     }
 
-    public function test_double_pelunasan_for_same_invoice_is_prevented(): void
+    public function test_subsequent_pelunasan_for_same_invoice_creates_new_journal_reference(): void
     {
-        $postData = [
+        $postData1 = [
             'tanggal' => '2026-08-26',
             'deskripsi' => "Penerimaan Pembayaran Pelunasan Invoice {$this->invoice->nomor_invoice} - {$this->klien->nama_klien}",
             'referensi_type' => Invoice::class,
@@ -201,25 +201,57 @@ class JurnalPelunasanInvoiceTest extends TestCase
             'details' => [
                 [
                     'coa_id' => $this->bankCoa->id,
-                    'debit' => 5000000,
+                    'debit' => 2500000,
                     'kredit' => 0,
                     'contactable_type_id' => null,
                 ],
                 [
                     'coa_id' => $this->piutangCoa->id,
                     'debit' => 0,
-                    'kredit' => 5000000,
+                    'kredit' => 2500000,
                     'contactable_type_id' => "App\\Models\\Klien:{$this->klien->id}",
                 ],
             ],
         ];
 
         // First payment succeeds
-        $this->actingAs($this->user)->post(route('admin.jurnal.store'), $postData);
+        $this->actingAs($this->user)->post(route('admin.jurnal.store'), $postData1);
 
-        // Second payment attempt for the same invoice is rejected
-        $response = $this->actingAs($this->user)->post(route('admin.jurnal.store'), $postData);
-        $response->assertSessionHasErrors('referensi_id');
+        $postData2 = [
+            'tanggal' => '2026-08-27',
+            'deskripsi' => "Penerimaan Pembayaran Pelunasan Tahap 2 Invoice {$this->invoice->nomor_invoice} - {$this->klien->nama_klien}",
+            'referensi_type' => Invoice::class,
+            'referensi_id' => $this->invoice->id,
+            'details' => [
+                [
+                    'coa_id' => $this->bankCoa->id,
+                    'debit' => 2500000,
+                    'kredit' => 0,
+                    'contactable_type_id' => null,
+                ],
+                [
+                    'coa_id' => $this->piutangCoa->id,
+                    'debit' => 0,
+                    'kredit' => 2500000,
+                    'contactable_type_id' => "App\\Models\\Klien:{$this->klien->id}",
+                ],
+            ],
+        ];
+
+        // Second payment attempt for the same invoice also succeeds and generates its own unique reference number
+        $response = $this->actingAs($this->user)->post(route('admin.jurnal.store'), $postData2);
+        $response->assertRedirect(route('admin.jurnal.index'));
+        $response->assertSessionHasNoErrors();
+
+        $journals = JurnalHeader::where('referensi_type', Invoice::class)
+            ->where('referensi_id', $this->invoice->id)
+            ->get();
+
+        // 1 Piutang journal + 2 Payment journals = 3 journals total
+        $this->assertCount(3, $journals);
+
+        $noRefs = $journals->pluck('nomor_referensi')->unique();
+        $this->assertCount(3, $noRefs);
     }
 
     public function test_purging_pelunasan_journal_reverts_invoice_status_to_sent(): void

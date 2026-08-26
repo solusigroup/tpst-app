@@ -190,9 +190,6 @@ class InvoiceObserver
                     ->get();
 
                 $revenueJurnal = $revenueJournals->first();
-                if ($revenueJournals->count() > 1) {
-                    $revenueJournals->slice(1)->each->delete();
-                }
 
                 if (!$revenueJurnal) {
                     $revenueJurnal = JurnalHeader::create([
@@ -286,9 +283,6 @@ class InvoiceObserver
 
                 if ($invoice->status === 'Paid') {
                     $paymentJurnal = $paymentJournals->first();
-                    if ($paymentJournals->count() > 1) {
-                        $paymentJournals->slice(1)->each->delete();
-                    }
 
                     $paymentDate = ($paymentJurnal && $paymentJurnal->tanggal)
                         ? $paymentJurnal->tanggal->toDateString()

@@ -262,41 +262,11 @@ class JurnalController extends Controller
             $buktiPath = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'jurnal-bukti');
         }
 
-        // Memeriksa apakah jurnal untuk referensi transaksi ini sudah ada (mencegah double jurnal)
+        // Memeriksa apakah jurnal untuk referensi transaksi ini sudah ada (mencegah double jurnal untuk transaksi tunggal seperti gaji/kas)
+        // Catatan: Invoice dikecualikan karena transaksi invoice memiliki siklus akuntansi bertahap (Piutang, Pelunasan, Cicilan)
+        // dan setiap form pelunasan disimpan harus membentuk Nomor Referensi Jurnal Baru (JV-YYYYMM-XXXX).
         if (!empty($validated['referensi_type']) && !empty($validated['referensi_id'])) {
-            if ($validated['referensi_type'] === Invoice::class) {
-                // Untuk Invoice, siklus akuntansi memiliki 2 tahap jurnal:
-                // 1. Jurnal Pembentukan Piutang (Pengakuan Pendapatan: Dr Piutang / Cr Pendapatan)
-                // 2. Jurnal Pelunasan (Penerimaan Kas/Bank: Dr Kas/Bank / Cr Piutang)
-                $deskripsi = strtolower($validated['deskripsi'] ?? '');
-                $isPelunasan = str_contains($deskripsi, 'pelunasan') || str_contains($deskripsi, 'penerimaan pembayaran');
-
-                $existingQuery = JurnalHeader::where('referensi_type', Invoice::class)
-                    ->where('referensi_id', $validated['referensi_id']);
-
-                if ($isPelunasan) {
-                    $existingJurnal = $existingQuery->where(function ($q) {
-                        $q->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
-                          ->orWhere('deskripsi', 'like', '%Pelunasan%');
-                    })->first();
-
-                    if ($existingJurnal) {
-                        return back()->withInput()->withErrors([
-                            'referensi_id' => 'Jurnal Pelunasan untuk invoice ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal pelunasan ganda untuk invoice yang sama.'
-                        ]);
-                    }
-                } else {
-                    $existingJurnal = $existingQuery->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
-                        ->where('deskripsi', 'not like', '%Pelunasan%')
-                        ->first();
-
-                    if ($existingJurnal) {
-                        return back()->withInput()->withErrors([
-                            'referensi_id' => 'Jurnal Pembentukan Piutang untuk invoice ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal piutang ganda untuk invoice yang sama.'
-                        ]);
-                    }
-                }
-            } else {
+            if ($validated['referensi_type'] !== Invoice::class) {
                 $existingJurnal = JurnalHeader::where('referensi_type', $validated['referensi_type'])
                     ->where('referensi_id', $validated['referensi_id'])
                     ->first();
