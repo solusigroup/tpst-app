@@ -186,6 +186,7 @@ class InvoiceObserver
                     ->where('referensi_type', Invoice::class)
                     ->where('referensi_id', $invoice->id)
                     ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
+                    ->where('deskripsi', 'not like', '%Pelunasan%')
                     ->get();
 
                 $revenueJurnal = $revenueJournals->first();
@@ -277,7 +278,10 @@ class InvoiceObserver
                 $paymentJournals = JurnalHeader::where('tenant_id', $invoice->tenant_id)
                     ->where('referensi_type', Invoice::class)
                     ->where('referensi_id', $invoice->id)
-                    ->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                    ->where(function ($q) {
+                        $q->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                          ->orWhere('deskripsi', 'like', '%Pelunasan%');
+                    })
                     ->get();
 
                 if ($invoice->status === 'Paid') {
@@ -301,34 +305,34 @@ class InvoiceObserver
                     } else {
                         $paymentJurnal->update([
                             'tanggal'   => $paymentDate,
-                            'deskripsi' => "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$klienNama}",
+                            'deskripsi' => $paymentJurnal->deskripsi ?: "Penerimaan Pembayaran Invoice {$invoice->nomor_invoice} - {$klienNama}",
                         ]);
                     }
 
-                    // Always refresh details for Journal 2
-                    $paymentJurnal->jurnalDetails()->get()->each->delete();
+                    // Only populate details if Journal 2 has no details yet (prevent wiping manually created details)
+                    if ($paymentJurnal->wasRecentlyCreated || $paymentJurnal->jurnalDetails()->count() === 0) {
+                        $paymentAmount = $netPiutang > 0 ? $netPiutang : (float) $invoice->total_tagihan;
+                        if ($bankCoa && $paymentAmount > 0) {
+                            // DEBIT: Bank Jatim (amount = net piutang / total tagihan)
+                            $paymentJurnal->jurnalDetails()->create([
+                                'tenant_id'        => $invoice->tenant_id,
+                                'coa_id'           => $bankCoa->id,
+                                'debit'            => $paymentAmount,
+                                'kredit'           => 0,
+                                'contactable_type' => \App\Models\Klien::class,
+                                'contactable_id'   => $invoice->klien_id,
+                            ]);
 
-                    $paymentAmount = $netPiutang > 0 ? $netPiutang : (float) $invoice->total_tagihan;
-                    if ($bankCoa && $paymentAmount > 0) {
-                        // DEBIT: Bank Jatim (amount = net piutang / total tagihan)
-                        $paymentJurnal->jurnalDetails()->create([
-                            'tenant_id'        => $invoice->tenant_id,
-                            'coa_id'           => $bankCoa->id,
-                            'debit'            => $paymentAmount,
-                            'kredit'           => 0,
-                            'contactable_type' => \App\Models\Klien::class,
-                            'contactable_id'   => $invoice->klien_id,
-                        ]);
-
-                        // CREDIT: Piutang relevan (triggers JurnalDetailObserver settlement)
-                        $paymentJurnal->jurnalDetails()->create([
-                            'tenant_id'        => $invoice->tenant_id,
-                            'coa_id'           => $piutangCoa->id,
-                            'debit'            => 0,
-                            'kredit'           => $paymentAmount,
-                            'contactable_type' => \App\Models\Klien::class,
-                            'contactable_id'   => $invoice->klien_id,
-                        ]);
+                            // CREDIT: Piutang relevan (triggers JurnalDetailObserver settlement)
+                            $paymentJurnal->jurnalDetails()->create([
+                                'tenant_id'        => $invoice->tenant_id,
+                                'coa_id'           => $piutangCoa->id,
+                                'debit'            => 0,
+                                'kredit'           => $paymentAmount,
+                                'contactable_type' => \App\Models\Klien::class,
+                                'contactable_id'   => $invoice->klien_id,
+                            ]);
+                        }
                     }
                 } else {
                     // Status is 'Sent' — delete payment journals if exist (Paid→Sent reversal)

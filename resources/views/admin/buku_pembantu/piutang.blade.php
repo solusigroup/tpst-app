@@ -105,7 +105,7 @@
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 @if($item->status == 'pending' && $item->jurnalHeader && $item->jurnalHeader->referensi_type === 'App\Models\Invoice')
-                                    <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->jurnalHeader->referensi_id]) }}" class="btn btn-success text-white fw-bold" title="Pelunasan via Bank Jatim"><i class="cil-money me-1"></i> Pelunasan</a>
+                                    <a href="{{ route('admin.jurnal.create', ['ref_type' => 'App\Models\Invoice', 'ref_id' => $item->jurnalHeader->referensi_id]) }}" class="btn btn-success text-white fw-bold" title="Pelunasan via Bank Jatim"><i class="cil-money me-1"></i> Pelunasan</a>
                                 @endif
                                 <a href="{{ route('admin.tracing.show', ['type' => 'buku-pembantu', 'id' => $item->id]) }}" class="btn btn-outline-secondary" title="Lacak Alur">
                                     <i class="cil-find-in-page"></i>

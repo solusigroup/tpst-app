@@ -77,9 +77,9 @@
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ route('invoices.print', $item) }}" target="_blank" class="btn btn-outline-success" title="Cetak"><i class="cil-print"></i></a>
                                 @if($item->status !== 'Paid')
-                                    <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->id]) }}" class="btn btn-success text-white fw-bold" title="Pelunasan via Bank Jatim"><i class="cil-money me-1"></i> Pelunasan</a>
+                                    <a href="{{ route('admin.jurnal.create', ['ref_type' => 'App\Models\Invoice', 'ref_id' => $item->id]) }}" class="btn btn-success text-white fw-bold" title="Pelunasan via Bank Jatim"><i class="cil-money me-1"></i> Pelunasan</a>
                                 @else
-                                    <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $item->id]) }}" class="btn btn-outline-info" title="Buat Jurnal Ledger"><i class="cil-book"></i></a>
+                                    <a href="{{ route('admin.jurnal.create', ['ref_type' => 'App\Models\Invoice', 'ref_id' => $item->id]) }}" class="btn btn-outline-info" title="Buat Jurnal Ledger"><i class="cil-book"></i></a>
                                 @endif
                                 @if(in_array($item->klien?->jenis ?? '', ['Swasta', 'Offtaker']) && !in_array($item->status, ['Paid', 'Canceled']))
                                     <form method="POST" action="{{ route('admin.invoice.send-wa', $item) }}" class="d-inline" target="_blank">

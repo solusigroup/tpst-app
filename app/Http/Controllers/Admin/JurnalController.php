@@ -86,7 +86,15 @@ class JurnalController extends Controller
         $defaultTanggal = $request->filled('tanggal') ? $request->tanggal : '';
         $defaultDeskripsi = $request->input('deskripsi', '');
         $defaultNominal = (float) $request->input('nominal', 0);
-        $refType = is_string($request->ref_type) ? urldecode($request->ref_type) : null;
+        $refType = $request->input('ref_type');
+        if (is_string($refType)) {
+            $refType = urldecode($refType);
+            if (str_contains($refType, '%')) {
+                $refType = urldecode($refType);
+            }
+        } else {
+            $refType = null;
+        }
         $refId = $request->ref_id;
 
         // Auto-lookup Bank Jatim COA or target COA from reconciliation
@@ -256,18 +264,52 @@ class JurnalController extends Controller
 
         // Memeriksa apakah jurnal untuk referensi transaksi ini sudah ada (mencegah double jurnal)
         if (!empty($validated['referensi_type']) && !empty($validated['referensi_id'])) {
-            $existingJurnal = JurnalHeader::where('referensi_type', $validated['referensi_type'])
-                ->where('referensi_id', $validated['referensi_id'])
-                ->first();
-                
-            if ($existingJurnal) {
-                return back()->withInput()->withErrors([
-                    'referensi_id' => 'Jurnal untuk transaksi ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal ganda untuk satu transaksi.'
-                ]);
+            if ($validated['referensi_type'] === Invoice::class) {
+                // Untuk Invoice, siklus akuntansi memiliki 2 tahap jurnal:
+                // 1. Jurnal Pembentukan Piutang (Pengakuan Pendapatan: Dr Piutang / Cr Pendapatan)
+                // 2. Jurnal Pelunasan (Penerimaan Kas/Bank: Dr Kas/Bank / Cr Piutang)
+                $deskripsi = strtolower($validated['deskripsi'] ?? '');
+                $isPelunasan = str_contains($deskripsi, 'pelunasan') || str_contains($deskripsi, 'penerimaan pembayaran');
+
+                $existingQuery = JurnalHeader::where('referensi_type', Invoice::class)
+                    ->where('referensi_id', $validated['referensi_id']);
+
+                if ($isPelunasan) {
+                    $existingJurnal = $existingQuery->where(function ($q) {
+                        $q->where('deskripsi', 'like', '%Penerimaan Pembayaran%')
+                          ->orWhere('deskripsi', 'like', '%Pelunasan%');
+                    })->first();
+
+                    if ($existingJurnal) {
+                        return back()->withInput()->withErrors([
+                            'referensi_id' => 'Jurnal Pelunasan untuk invoice ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal pelunasan ganda untuk invoice yang sama.'
+                        ]);
+                    }
+                } else {
+                    $existingJurnal = $existingQuery->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
+                        ->where('deskripsi', 'not like', '%Pelunasan%')
+                        ->first();
+
+                    if ($existingJurnal) {
+                        return back()->withInput()->withErrors([
+                            'referensi_id' => 'Jurnal Pembentukan Piutang untuk invoice ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal piutang ganda untuk invoice yang sama.'
+                        ]);
+                    }
+                }
+            } else {
+                $existingJurnal = JurnalHeader::where('referensi_type', $validated['referensi_type'])
+                    ->where('referensi_id', $validated['referensi_id'])
+                    ->first();
+                    
+                if ($existingJurnal) {
+                    return back()->withInput()->withErrors([
+                        'referensi_id' => 'Jurnal untuk transaksi ini sudah ada (Nomor Jurnal: ' . $existingJurnal->nomor_referensi . '). Tidak dapat membuat jurnal ganda untuk satu transaksi.'
+                    ]);
+                }
             }
         }
 
-        // Validasi ketersediaan saldo untuk akun Kas & Bank (awalan '11') di sisi Kredit
+        // Validasi ketersediaan saldo untuk akun Kas & Bank di sisi Kredit
         $kasCredits = collect($validated['details'])
             ->filter(fn($d) => isset($d['kredit']) && $d['kredit'] > 0)
             ->groupBy('coa_id')
@@ -275,7 +317,13 @@ class JurnalController extends Controller
 
         foreach ($kasCredits as $coaId => $kreditInput) {
             $coa = Coa::find($coaId);
-            if ($coa && str_starts_with($coa->kode_akun, '11')) { // 11 adalah Kas & Bank
+            $namaLower = strtolower($coa->nama_akun ?? '');
+            $isKasBank = $coa && $coa->tipe === 'Asset' && (
+                str_starts_with($coa->kode_akun, '110') ||
+                (str_starts_with($coa->kode_akun, '11') && (str_contains($namaLower, 'kas') || str_contains($namaLower, 'bank')))
+            ) && !str_contains($namaLower, 'piutang') && empty($coa->kategori_buku_pembantu);
+
+            if ($isKasBank) {
                 $saldoAwal = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
                     ->where('jurnal_header.status', 'posted')
                     ->where('jurnal_detail.coa_id', $coaId)
@@ -316,10 +364,27 @@ class JurnalController extends Controller
                 ]);
             }
 
+            // Jika jurnal ini adalah Pelunasan Invoice, sinkronkan status Invoice menjadi Paid
+            if (!empty($validated['referensi_type']) && $validated['referensi_type'] === Invoice::class && !empty($validated['referensi_id'])) {
+                $deskripsi = strtolower($validated['deskripsi'] ?? '');
+                $isPelunasan = str_contains($deskripsi, 'pelunasan') || str_contains($deskripsi, 'penerimaan pembayaran');
+
+                if ($isPelunasan) {
+                    $invoice = Invoice::find($validated['referensi_id']);
+                    if ($invoice && $invoice->status !== 'Paid') {
+                        $invoice->withoutEvents(function () use ($invoice) {
+                            $invoice->update(['status' => 'Paid']);
+                            $invoice->ritase()->update(['status_invoice' => 'Paid']);
+                            $invoice->penjualan()->update(['status_invoice' => 'Paid']);
+                        });
+                    }
+                }
+            }
+
             return $jurnal;
         });
 
-        return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil dibuat.');
+        return redirect()->route('admin.jurnal.index')->with('success', "Jurnal {$jurnal->nomor_referensi} berhasil dibuat.");
     }
 
     public function edit(JurnalHeader $jurnal)
@@ -527,6 +592,21 @@ class JurnalController extends Controller
                     'status' => 'pending',
                 ]);
 
+            // Revert status Invoice jika jurnal ini adalah jurnal pelunasan
+            if ($jurnal->referensi_type === Invoice::class && $jurnal->referensi_id) {
+                $deskripsi = strtolower($jurnal->deskripsi ?? '');
+                if (str_contains($deskripsi, 'pelunasan') || str_contains($deskripsi, 'penerimaan pembayaran')) {
+                    $invoice = Invoice::find($jurnal->referensi_id);
+                    if ($invoice && $invoice->status === 'Paid') {
+                        $invoice->withoutEvents(function () use ($invoice) {
+                            $invoice->update(['status' => 'Sent']);
+                            $invoice->ritase()->update(['status_invoice' => 'Sent']);
+                            $invoice->penjualan()->update(['status_invoice' => 'Sent']);
+                        });
+                    }
+                }
+            }
+
             // 2. Delete the jurnal (model's deleting hook handles:
             //    - jurnalDetails cascade delete (triggers JurnalDetailObserver@deleted)
             //    - bukti_transaksi file deletion
@@ -561,6 +641,21 @@ class JurnalController extends Controller
                         'terbayar' => 0,
                         'status' => 'pending',
                     ]);
+
+                // Revert status Invoice jika jurnal ini adalah jurnal pelunasan
+                if ($jurnal->referensi_type === Invoice::class && $jurnal->referensi_id) {
+                    $deskripsi = strtolower($jurnal->deskripsi ?? '');
+                    if (str_contains($deskripsi, 'pelunasan') || str_contains($deskripsi, 'penerimaan pembayaran')) {
+                        $invoice = Invoice::find($jurnal->referensi_id);
+                        if ($invoice && $invoice->status === 'Paid') {
+                            $invoice->withoutEvents(function () use ($invoice) {
+                                $invoice->update(['status' => 'Sent']);
+                                $invoice->ritase()->update(['status_invoice' => 'Sent']);
+                                $invoice->penjualan()->update(['status_invoice' => 'Sent']);
+                            });
+                        }
+                    }
+                }
 
                 $jurnal->delete();
                 $count++;

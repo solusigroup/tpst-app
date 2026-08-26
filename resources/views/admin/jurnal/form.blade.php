@@ -58,7 +58,10 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">No. Referensi</label>
-                            <input type="text" class="form-control bg-light" value="{{ $jurnal->nomor_referensi ?? 'Otomatis' }}" readonly>
+                            <input type="text" class="form-control bg-light" value="{{ $jurnal->nomor_referensi ?? 'Otomatis (Nomor Baru)' }}" readonly>
+                            @if(!isset($jurnal))
+                                <small class="text-muted">Nomor referensi baru (JV) akan otomatis dibentuk setelah jurnal disimpan.</small>
+                            @endif
                         </div>
                         <div class="col-12">
                             <label class="form-label">Deskripsi</label>

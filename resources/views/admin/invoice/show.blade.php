@@ -29,7 +29,7 @@
             </button>
         </form>
         @if($invoice->status !== 'Paid')
-            <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $invoice->id]) }}" class="btn btn-success fw-bold text-white">
+            <a href="{{ route('admin.jurnal.create', ['ref_type' => 'App\Models\Invoice', 'ref_id' => $invoice->id]) }}" class="btn btn-success fw-bold text-white">
                 <i class="cil-money me-1"></i> PELUNASAN (BANK JATIM)
             </a>
         @endif
@@ -212,7 +212,7 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     @if($invoice->status !== 'Paid')
-                    <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $invoice->id]) }}" class="btn btn-success text-white text-start border d-flex justify-content-between align-items-center py-2 fw-bold shadow-sm">
+                    <a href="{{ route('admin.jurnal.create', ['ref_type' => 'App\Models\Invoice', 'ref_id' => $invoice->id]) }}" class="btn btn-success text-white text-start border d-flex justify-content-between align-items-center py-2 fw-bold shadow-sm">
                         <span><i class="cil-money me-2"></i>PELUNASAN VIA BANK JATIM</span>
                         <i class="cil-chevron-right small"></i>
                     </a>
@@ -226,7 +226,7 @@
                         </button>
                     </form>
                     @endif
-                    <a href="{{ route('admin.jurnal.create', ['ref_type' => urlencode('App\Models\Invoice'), 'ref_id' => $invoice->id]) }}" class="btn btn-light text-start border d-flex justify-content-between align-items-center">
+                    <a href="{{ route('admin.jurnal.create', ['ref_type' => 'App\Models\Invoice', 'ref_id' => $invoice->id]) }}" class="btn btn-light text-start border d-flex justify-content-between align-items-center">
                         <span><i class="cil-book me-2"></i>Buat Jurnal Ledger</span>
                         <i class="cil-chevron-right small text-muted"></i>
                     </a>
