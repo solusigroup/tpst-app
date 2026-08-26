@@ -150,6 +150,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('rekap-ritase-2', [LaporanController::class, 'rekapRitase2'])->name('rekap-ritase-2');
         Route::get('penjualan', [LaporanController::class, 'laporanPenjualan'])->name('penjualan');
         Route::get('penjualan-per-klien', [LaporanController::class, 'penjualanPerKlien'])->name('penjualan-per-klien');
+        Route::get('penjualan-hasil-pilahan-per-offtaker-per-invoice', [LaporanController::class, 'penjualanPerOfftakerPerInvoice'])->name('penjualan.per-offtaker-per-invoice');
         Route::get('hasil-pilahan', [LaporanController::class, 'laporanHasilPilahan'])->name('hasil-pilahan');
         Route::get('kartu-stok-item', [LaporanController::class, 'kartuStokItem'])->name('kartu-stok-item');
         Route::get('residu', [LaporanController::class, 'laporanResidu'])->name('residu');

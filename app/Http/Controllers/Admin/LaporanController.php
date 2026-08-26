@@ -862,6 +862,155 @@ class LaporanController extends Controller
         return view('admin.laporan.penjualan-per-klien', $data);
     }
 
+    /**
+     * Laporan Operasional Penjualan Hasil Pilahan Per Offtaker Per Invoice
+     */
+    public function penjualanPerOfftakerPerInvoice(Request $request)
+    {
+        if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_penjualan_op') && !auth()->user()->isSuperAdmin()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $klienId = $request->get('klien_id');
+        $statusInvoice = $request->get('status_invoice');
+        $jenisProduk = $request->get('jenis_produk');
+
+        // Query penjualan untuk klien bertipe Offtaker
+        $query = Penjualan::with(['klien', 'invoice', 'wasteCategory'])
+            ->whereHas('klien', fn ($q) => $q->where('jenis', 'Offtaker'))
+            ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->when($klienId, fn ($q) => $q->where('klien_id', $klienId))
+            ->when($jenisProduk, fn ($q) => $q->where('jenis_produk', $jenisProduk));
+
+        if ($statusInvoice) {
+            if ($statusInvoice === 'uninvoiced') {
+                $query->whereNull('invoice_id');
+            } else {
+                $query->whereHas('invoice', fn ($q) => $q->where('status', $statusInvoice));
+            }
+        }
+
+        $penjualans = $query->orderBy('klien_id')
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        // Group by Offtaker
+        $groupedByOfftaker = $penjualans->groupBy('klien_id');
+
+        $reports = [];
+        $grandTotalBerat = 0;
+        $grandTotalNominal = 0;
+        $grandTotalUangMuka = 0;
+        $invoiceIdsSeen = [];
+        $totalInvoicePaid = 0;
+        $totalInvoiceUnpaid = 0;
+        $grandTotalInvoiceTagihan = 0;
+
+        foreach ($groupedByOfftaker as $kId => $pItems) {
+            $klien = $pItems->first()->klien;
+
+            // Group by Invoice inside Offtaker
+            // If invoice_id is null, group key is 0 (Uninvoiced)
+            $groupedByInvoice = $pItems->groupBy(fn ($item) => $item->invoice_id ?? 0);
+
+            $invoicesData = [];
+            $offtakerBerat = 0;
+            $offtakerNominal = 0;
+            $offtakerUangMuka = 0;
+
+            foreach ($groupedByInvoice as $invId => $items) {
+                $invoice = $invId > 0 ? $items->first()->invoice : null;
+                $invBerat = $items->sum('berat_kg');
+                $invNominal = $items->sum('total_harga');
+                $invUangMuka = $items->sum('jumlah_bayar');
+
+                $offtakerBerat += $invBerat;
+                $offtakerNominal += $invNominal;
+                $offtakerUangMuka += $invUangMuka;
+
+                if ($invoice && !in_array($invoice->id, $invoiceIdsSeen)) {
+                    $invoiceIdsSeen[] = $invoice->id;
+                    $grandTotalInvoiceTagihan += $invoice->total_tagihan;
+                    if ($invoice->status === 'Paid') {
+                        $totalInvoicePaid++;
+                    } else {
+                        $totalInvoiceUnpaid++;
+                    }
+                }
+
+                $invoicesData[] = (object)[
+                    'invoice_id' => $invId > 0 ? $invId : null,
+                    'invoice' => $invoice,
+                    'is_uninvoiced' => $invId === 0,
+                    'items' => $items,
+                    'total_berat' => $invBerat,
+                    'total_nominal' => $invNominal,
+                    'total_uang_muka' => $invUangMuka,
+                    'sisa_tagihan' => max(0, $invNominal - $invUangMuka),
+                ];
+            }
+
+            $grandTotalBerat += $offtakerBerat;
+            $grandTotalNominal += $offtakerNominal;
+            $grandTotalUangMuka += $offtakerUangMuka;
+
+            $reports[] = (object)[
+                'klien' => $klien,
+                'invoices' => $invoicesData,
+                'total_items' => $pItems->count(),
+                'total_berat' => $offtakerBerat,
+                'total_nominal' => $offtakerNominal,
+                'total_uang_muka' => $offtakerUangMuka,
+                'total_sisa' => max(0, $offtakerNominal - $offtakerUangMuka),
+            ];
+        }
+
+        $grandTotalSisa = max(0, $grandTotalNominal - $grandTotalUangMuka);
+
+        $summary = (object)[
+            'total_berat_kg' => $grandTotalBerat,
+            'total_berat_ton' => $grandTotalBerat / 1000,
+            'total_omzet' => $grandTotalNominal,
+            'total_uang_muka' => $grandTotalUangMuka,
+            'total_sisa' => $grandTotalSisa,
+            'total_invoice_count' => count($invoiceIdsSeen),
+            'total_invoice_paid' => $totalInvoicePaid,
+            'total_invoice_unpaid' => $totalInvoiceUnpaid,
+        ];
+
+        $kliens = Klien::where('jenis', 'Offtaker')->orderBy('nama_klien')->get();
+        $produkList = Penjualan::distinct()->pluck('jenis_produk')->filter()->sort()->values();
+
+        $data = compact(
+            'reports',
+            'summary',
+            'dari',
+            'sampai',
+            'klienId',
+            'statusInvoice',
+            'jenisProduk',
+            'kliens',
+            'produkList'
+        );
+
+        if ($request->export === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.penjualan-per-offtaker-per-invoice-export', $data)->setPaper('a4', 'landscape');
+            return $pdf->download('Laporan_Penjualan_Offtaker_Per_Invoice_' . $dari . '_' . $sampai . '.pdf');
+        }
+
+        if ($request->export === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LaporanExcelExport('admin.laporan.exports.penjualan-per-offtaker-per-invoice-export', $data),
+                'Laporan_Penjualan_Offtaker_Per_Invoice_' . $dari . '_' . $sampai . '.xlsx'
+            );
+        }
+
+        return view('admin.laporan.penjualan-per-offtaker-per-invoice', $data);
+    }
+
     public function laporanHasilPilahan(Request $request)
     {
         if (!auth()->user()->can('view_laporan_operasional') && !auth()->user()->can('view_laporan_hasil_pilahan')) {

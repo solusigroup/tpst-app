@@ -711,6 +711,9 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan-per-klien') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan-per-klien') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Penjualan Per Klien</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.penjualan.per-offtaker-per-invoice') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.penjualan.per-offtaker-per-invoice') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Penjualan Offtaker / Inv</a>
+                    </li>
                     @endcanany
                     @canany(['view_laporan_operasional', 'view_laporan_hasil_pilahan'])
                     <li class="nav-item">
@@ -1073,6 +1076,7 @@
                             <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.invoice.per-klien') }}"><i class="cil-chart-pie me-2 text-secondary"></i> Rekap Per Klien</a></li>
                             <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.invoice.per-status') }}"><i class="cil-list-numbered me-2 text-secondary"></i> Rekap Per Status</a></li>
                             <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.invoice.per-jenis') }}"><i class="cil-tags me-2 text-secondary"></i> Rekap Per Jenis</a></li>
+                            <li><a class="dropdown-item d-flex align-items-center" href="{{ route('admin.laporan-operasional.penjualan.per-offtaker-per-invoice') }}"><i class="cil-cart me-2 text-secondary"></i> Penjualan Offtaker / Inv</a></li>
                             @endif
                         </ul>
                     </div>
