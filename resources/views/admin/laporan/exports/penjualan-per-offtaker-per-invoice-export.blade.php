@@ -63,7 +63,7 @@
                             @if($inv->is_uninvoiced)
                                 [Pending] Item Belum Di-invoice (Draft)
                             @else
-                                [Invoice] {{ $inv->invoice->nomor_invoice }} (Tgl: {{ \Carbon\Carbon::parse($inv->invoice->tanggal_invoice)->format('d/m/Y') }})
+                                [Invoice] {{ $inv->invoice->nomor_invoice }} (Tgl: {{ \Carbon\Carbon::parse($inv->invoice->tanggal_invoice)->format('d/m/Y') }}){{ $inv->total_uang_muka > 0 ? ' - DP: Rp ' . number_format($inv->total_uang_muka, 0, ',', '.') : '' }}
                             @endif
                         </td>
                         <td class="text-end fw-bold">

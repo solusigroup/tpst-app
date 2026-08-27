@@ -79,7 +79,15 @@
                         <td>{{ !empty($item->periode_bulan) ? \App\Helpers\DateHelper::indonesianMonthName($item->periode_bulan) : '-' }} {{ $item->periode_tahun ?? '' }}</td>
                         <td>Rp {{ number_format((float)($item->total_tagihan ?? 0), 0, ',', '.') }}</td>
                         <td class="text-danger">Rp {{ number_format((float)($item->uang_muka ?? 0), 0, ',', '.') }}</td>
-                        <td class="fw-bold">Rp {{ number_format((float)(($item->total_tagihan ?? 0) - ($item->uang_muka ?? 0)), 0, ',', '.') }}</td>
+                        <td class="fw-bold {{ $item->status === 'Paid' ? 'text-success' : ($item->status === 'Canceled' ? 'text-muted' : '') }}">
+                            @if($item->status === 'Paid')
+                                Rp 0
+                            @elseif($item->status === 'Canceled')
+                                Rp 0
+                            @else
+                                Rp {{ number_format((float)(($item->total_tagihan ?? 0) - ($item->uang_muka ?? 0)), 0, ',', '.') }}
+                            @endif
+                        </td>
                         <td>
                             @php $invColors = ['Paid'=>'success','Sent'=>'info','Draft'=>'warning','Canceled'=>'danger']; @endphp
                             <span class="badge bg-{{ $invColors[$item->status] ?? 'secondary' }}">{{ $item->status ?? 'Draft' }}</span>

@@ -929,7 +929,7 @@ class LaporanController extends Controller
                 $invoice = $invId > 0 ? $items->first()->invoice : null;
                 $invBerat = $items->sum('berat_kg');
                 $invNominal = $items->sum('total_harga');
-                $invUangMuka = $items->sum('jumlah_bayar');
+                $invUangMuka = $invoice ? max((float)($invoice->uang_muka ?? 0), (float)$items->sum('jumlah_bayar')) : (float)$items->sum('jumlah_bayar');
 
                 $isPaid = ($invoice && $invoice->status === 'Paid');
                 $isCanceled = ($invoice && $invoice->status === 'Canceled');
@@ -944,7 +944,7 @@ class LaporanController extends Controller
                     $invSisa = 0;
                 } else {
                     // Invoice Sent / Draft / Belum Di-invoice: terbayar sesuai DP yang masuk
-                    $invTerbayar = max($invUangMuka, (float)($invoice->uang_muka ?? 0));
+                    $invTerbayar = $invUangMuka;
                     $invSisa = max(0, $invNominal - $invTerbayar);
                 }
 
