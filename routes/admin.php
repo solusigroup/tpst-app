@@ -55,10 +55,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Operasional
     Route::get('ritase/export-rekap', [RitaseController::class, 'exportRekap'])->name('ritase.export-rekap');
     Route::get('ritase/asal-sampah', [RitaseController::class, 'asalSampahByKlien'])->name('ritase.asal-sampah');
-    Route::resource('ritase', RitaseController::class);
+    Route::get('ritase/bulk-approve', fn() => redirect()->route('admin.ritase.index'));
     Route::post('ritase/bulk-approve', [RitaseController::class, 'bulkApprove'])->name('ritase.bulk-approve');
     Route::post('ritase/{ritase}/approve', [RitaseController::class, 'approve'])->name('ritase.approve');
-    Route::post('ritase/{ritase}/post', [RitaseController::class, 'post'])->name('ritase.post');
+    Route::resource('ritase', RitaseController::class);
 
     // Ritase DLH (Disetujui & Dibayar)
     Route::get('ritase-dlh/approved', [RitaseDlhController::class, 'approved'])->name('ritase-dlh.approved');

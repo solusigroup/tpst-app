@@ -48,7 +48,6 @@ class Invoice extends Model
                 $prefix = "INV/TPST/{$year}/" . str_pad($month, 2, '0', STR_PAD_LEFT) . "/";
                 
                 $lastInvoice = self::withoutGlobalScope(TenantScope::class)
-                    ->where('tenant_id', $invoice->tenant_id)
                     ->where('nomor_invoice', 'like', $prefix . '%')
                     ->orderBy('nomor_invoice', 'desc')
                     ->first();
@@ -59,7 +58,13 @@ class Invoice extends Model
                     $nextSequence = $lastSequence + 1;
                 }
                 
-                $invoice->nomor_invoice = $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+                $candidate = $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+                while (self::withoutGlobalScope(TenantScope::class)->where('nomor_invoice', $candidate)->exists()) {
+                    $nextSequence++;
+                    $candidate = $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+                }
+
+                $invoice->nomor_invoice = $candidate;
             }
         });
         static::saved(function (Invoice $invoice) {

@@ -9,6 +9,7 @@ use App\Models\Klien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RitaseController extends Controller
 {
@@ -258,29 +259,52 @@ class RitaseController extends Controller
         return redirect()->route('admin.ritase.index')->with('success', 'Ritase berhasil dihapus.');
     }
 
-    private function processApproval(Ritase $ritase)
+    private function processApproval(Ritase $ritase, bool $recalculate = true): ?\App\Models\Invoice
     {
         $isDlh = $ritase->klien && $ritase->klien->jenis === 'DLH';
 
-        $ritase->update([
+        // Check dynamically whether status_invoice column allows NULL in the database.
+        // This ensures compatibility even if the database has not yet run the migration.
+        static $statusInvoiceNullable = null;
+        if ($statusInvoiceNullable === null) {
+            try {
+                $col = DB::select("SHOW COLUMNS FROM ritase LIKE 'status_invoice'");
+                $statusInvoiceNullable = !empty($col) && strtoupper($col[0]->Null ?? '') === 'YES';
+            } catch (\Throwable $e) {
+                $statusInvoiceNullable = false;
+            }
+        }
+
+        $ritaseData = [
             'is_approved' => true,
             'approved_at' => now(),
             'status' => 'selesai',
-            'status_invoice' => $isDlh ? null : 'Draft'
-        ]);
+        ];
+
+        if ($isDlh) {
+            $ritaseData['status_invoice'] = $statusInvoiceNullable ? null : 'Draft';
+        } else {
+            $ritaseData['status_invoice'] = 'Draft';
+        }
+
+        $ritase->update($ritaseData);
 
         // Khusus DLH: Tidak membuat invoice eceran harian.
         // Rekapitulasi dilakukan di akhir bulan dalam 1 invoice resmi.
         if ($isDlh) {
-            return;
+            return null;
         }
 
         // Auto-Invoice Logic untuk Klien Non-DLH
-        $month = $ritase->waktu_masuk->format('n');
-        $year = $ritase->waktu_masuk->format('Y');
+        $waktuMasuk = $ritase->waktu_masuk ? \Carbon\Carbon::parse($ritase->waktu_masuk) : now();
+        $month = $waktuMasuk->format('n');
+        $year = $waktuMasuk->format('Y');
         $klienId = $ritase->klien_id;
+        $tenantId = $ritase->tenant_id 
+            ?? (auth()->check() ? auth()->user()->getEffectiveTenantId() : null)
+            ?? \App\Models\Tenant::first()?->id;
 
-        $invoice = \App\Models\Invoice::where('tenant_id', $ritase->tenant_id)
+        $invoice = \App\Models\Invoice::where('tenant_id', $tenantId)
             ->where('klien_id', $klienId)
             ->where('periode_bulan', $month)
             ->where('periode_tahun', $year)
@@ -289,7 +313,7 @@ class RitaseController extends Controller
 
         if (!$invoice) {
             $invoice = \App\Models\Invoice::create([
-                'tenant_id' => $ritase->tenant_id,
+                'tenant_id' => $tenantId,
                 'klien_id' => $klienId,
                 'periode_bulan' => $month,
                 'periode_tahun' => $year,
@@ -307,17 +331,30 @@ class RitaseController extends Controller
             'status_invoice' => $invoice->status,
         ]);
 
-        // Recalculate Invoice total
-        $invoice->recalculateTotals();
+        // Recalculate Invoice total if requested
+        if ($recalculate) {
+            $invoice->recalculateTotals();
+        }
+
+        return $invoice;
     }
 
     public function approve(Ritase $ritase)
     {
         Gate::authorize('update_ritase');
         
-        DB::transaction(function () use ($ritase) {
-            $this->processApproval($ritase);
-        });
+        try {
+            DB::transaction(function () use ($ritase) {
+                $this->processApproval($ritase);
+            });
+        } catch (\Throwable $e) {
+            Log::error('Error in approve ritase: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'ritase_id' => $ritase->id,
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal meng-approve ritase: ' . $e->getMessage());
+        }
 
         $msg = ($ritase->klien && $ritase->klien->jenis === 'DLH')
             ? 'Ritase DLH berhasil di-approve (siap direkap pada Invoice Bulanan DLH).'
@@ -334,18 +371,40 @@ class RitaseController extends Controller
             'ritase_ids' => 'required|string',
         ]);
 
-        $ids = explode(',', $request->ritase_ids);
-        $ritases = Ritase::whereIn('id', $ids)->where('is_approved', false)->get();
+        $ids = array_filter(array_map('trim', explode(',', $request->ritase_ids)));
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Tidak ada ritase yang dipilih.');
+        }
+
+        $ritases = Ritase::with(['klien'])->whereIn('id', $ids)->where('is_approved', false)->get();
 
         if ($ritases->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada ritase yang dipilih atau sudah di-approve.');
         }
 
-        DB::transaction(function () use ($ritases) {
-            foreach ($ritases as $ritase) {
-                $this->processApproval($ritase);
-            }
-        });
+        try {
+            DB::transaction(function () use ($ritases) {
+                $affectedInvoices = [];
+                foreach ($ritases as $ritase) {
+                    $invoice = $this->processApproval($ritase, false);
+                    if ($invoice) {
+                        $affectedInvoices[$invoice->id] = $invoice;
+                    }
+                }
+
+                // Recalculate totals once per affected invoice
+                foreach ($affectedInvoices as $invoice) {
+                    $invoice->recalculateTotals();
+                }
+            });
+        } catch (\Throwable $e) {
+            Log::error('Error in bulkApprove ritase: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'ritase_ids' => $request->ritase_ids,
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal memproses approve kolektif: ' . $e->getMessage());
+        }
 
         return redirect()->back()->with('success', count($ritases) . ' ritase berhasil di-approve secara kolektif.');
     }
