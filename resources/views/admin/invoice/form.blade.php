@@ -90,6 +90,15 @@
             </div>
             <div class="col-12 mt-4">
                 <h5 class="border-bottom pb-2">Item Tertagih</h5>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="show-all-unbilled" role="switch">
+                        <label class="form-check-label text-muted" for="show-all-unbilled">
+                            <small>Tampilkan semua item unbilled (semua periode)</small>
+                        </label>
+                    </div>
+                </div>
+                <div id="period-filter-info" class="mb-2" style="font-size: 0.8rem;"></div>
                 <div id="loading-items" class="text-muted" style="display: none;">Memuat data...</div>
                 <div id="no-items" class="text-muted" style="display: none;">Pilih Klien untuk melihat item yang belum ditagihkan.</div>
                 
@@ -225,14 +234,43 @@ document.addEventListener('DOMContentLoaded', function() {
     uangMukaInput.addEventListener('input', calculateBalance);
     totalTagihanInput.addEventListener('input', calculateBalance);
 
+    const periodeBulanSelect = document.querySelector('select[name="periode_bulan"]');
+    const periodeTahunSelect = document.querySelector('select[name="periode_tahun"]');
+    const showAllToggle = document.getElementById('show-all-unbilled');
+    const periodFilterInfo = document.getElementById('period-filter-info');
+
+    const bulanNames = {
+        '01':'Januari','02':'Februari','03':'Maret','04':'April','05':'Mei','06':'Juni',
+        '07':'Juli','08':'Agustus','09':'September','10':'Oktober','11':'November','12':'Desember'
+    };
+
+    function updatePeriodInfo() {
+        const bulan = periodeBulanSelect.value;
+        const tahun = periodeTahunSelect.value;
+        const showAll = showAllToggle.checked;
+
+        if (showAll) {
+            periodFilterInfo.innerHTML = '<span class="badge bg-info text-dark"><i class="cil-layers me-1"></i> Menampilkan semua item unbilled dari semua periode</span>';
+        } else if (bulan && tahun) {
+            periodFilterInfo.innerHTML = `<span class="badge bg-primary"><i class="cil-calendar me-1"></i> Filter aktif: ${bulanNames[bulan] || bulan} ${tahun}</span>`;
+        } else {
+            periodFilterInfo.innerHTML = '';
+        }
+    }
+
     function fetchItems() {
         const klienId = klienSelect.value;
         if (!klienId) {
             ritaseContainer.style.display = 'none';
             penjualanContainer.style.display = 'none';
             noItemsDiv.style.display = 'block';
+            periodFilterInfo.innerHTML = '';
             return;
         }
+
+        const periodeBulan = periodeBulanSelect.value;
+        const periodeTahun = periodeTahunSelect.value;
+        const showAll = showAllToggle.checked;
 
         loadingDiv.style.display = 'block';
         noItemsDiv.style.display = 'none';
@@ -249,6 +287,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let url = `{{ route('admin.invoice-items.pending') }}?klien_id=${klienId}`;
         if (invoiceId) url += `&invoice_id=${invoiceId}`;
+        url += `&periode_bulan=${periodeBulan}&periode_tahun=${periodeTahun}`;
+        if (showAll) url += `&show_all=1`;
+
+        updatePeriodInfo();
 
         fetch(url)
             .then(res => res.json())
@@ -263,11 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     ritaseContainer.style.display = 'block';
                     data.ritase.forEach(item => {
                         const checked = item.selected ? 'checked' : '';
+                        const outOfPeriod = (!item.in_period && showAll) ? '<span class="badge bg-warning text-dark ms-1" style="font-size:0.65rem;">Beda Periode</span>' : '';
                         ritaseList.innerHTML += `
                             <div class="form-check">
                                 <input class="form-check-input item-checkbox" type="checkbox" name="selected_ritase[]" value="${item.id}" id="ritase_${item.id}" data-price="${item.price}" ${checked}>
                                 <label class="form-check-label" for="ritase_${item.id}">
-                                    ${item.label}
+                                    ${item.label} ${outOfPeriod}
                                 </label>
                             </div>
                         `;
@@ -282,11 +325,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     penjualanContainer.style.display = 'block';
                     data.penjualan.forEach(item => {
                         const checked = item.selected ? 'checked' : '';
+                        const outOfPeriod = (!item.in_period && showAll) ? '<span class="badge bg-warning text-dark ms-1" style="font-size:0.65rem;">Beda Periode</span>' : '';
                         penjualanList.innerHTML += `
                             <div class="form-check">
                                 <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" data-dp="${item.dp}" ${checked}>
                                 <label class="form-check-label" for="penjualan_${item.id}">
-                                    ${item.label}
+                                    ${item.label} ${outOfPeriod}
                                 </label>
                             </div>
                         `;
@@ -297,7 +341,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!hasItems) {
                     noItemsDiv.style.display = 'block';
-                    noItemsDiv.textContent = 'Tidak ada tagihan tertunda untuk klien ini.';
+                    if (showAll) {
+                        noItemsDiv.textContent = 'Tidak ada tagihan tertunda untuk klien ini.';
+                    } else {
+                        noItemsDiv.innerHTML = 'Tidak ada item pada periode <strong>' + (bulanNames[periodeBulan] || periodeBulan) + ' ' + periodeTahun + '</strong>. Coba aktifkan toggle "Tampilkan semua item unbilled" untuk melihat item dari periode lain.';
+                    }
                 } else {
                     // Attach change event listeners to checkboxes for live re-calculation
                     document.querySelectorAll('.item-checkbox').forEach(cb => {
@@ -323,6 +371,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     klienSelect.addEventListener('change', fetchItems);
+    periodeBulanSelect.addEventListener('change', fetchItems);
+    periodeTahunSelect.addEventListener('change', fetchItems);
+    showAllToggle.addEventListener('change', fetchItems);
     
     // Trigger automatically on page load to fetch existing items if Klien is pre-filled
     if (klienSelect.value) {
