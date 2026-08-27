@@ -21,12 +21,18 @@ class InvoiceAdminController extends Controller
             $query = Invoice::with('klien');
 
             if ($request->filled('search')) {
-                $search = $request->search;
+                $search = trim($request->search);
                 $query->where(function($q) use ($search) {
                     $q->where('nomor_invoice', 'like', '%' . $search . '%')
+                      ->orWhere('tanggal_invoice', 'like', '%' . $search . '%')
                       ->orWhereHas('klien', function($qKlien) use ($search) {
                           $qKlien->where('nama_klien', 'like', '%' . $search . '%');
                       });
+
+                    if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $search, $matches)) {
+                        $formattedDate = sprintf('%04d-%02d-%02d', $matches[3], $matches[2], $matches[1]);
+                        $q->orWhereDate('tanggal_invoice', $formattedDate);
+                    }
                 });
             }
             if ($request->filled('status')) {
@@ -36,6 +42,16 @@ class InvoiceAdminController extends Controller
                 $query->whereHas('klien', function($q) use ($request) {
                     $q->where('jenis', $request->jenis);
                 });
+            }
+
+            $dari = $request->input('dari', $request->input('start_date'));
+            $sampai = $request->input('sampai', $request->input('end_date'));
+
+            if (!empty($dari)) {
+                $query->whereDate('tanggal_invoice', '>=', $dari);
+            }
+            if (!empty($sampai)) {
+                $query->whereDate('tanggal_invoice', '<=', $sampai);
             }
 
             $invoices = $query->orderByDesc('tanggal_invoice')->paginate(15)->withQueryString();
