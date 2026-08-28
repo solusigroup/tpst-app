@@ -69,6 +69,8 @@
                         <th class="text-end">Terjual</th>
                         <th class="text-end">Terbayar Upah</th>
                         <th class="text-end">Sisa Stok</th>
+                        <th class="text-end">Harga Jual/Kg</th>
+                        <th class="text-end">Potensi Penjualan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,9 +86,11 @@
                         <td class="text-end text-danger">{{ number_format($stok->total_terjual, 2, ',', '.') }} kg</td>
                         <td class="text-end text-success">{{ number_format($stok->total_paid_wage, 2, ',', '.') }} kg</td>
                         <td class="text-end fw-bold {{ $stok->sisa_stok > 0 ? 'text-success' : 'text-body-secondary' }}">{{ number_format($stok->sisa_stok, 2, ',', '.') }} kg</td>
+                        <td class="text-end text-body-secondary">Rp {{ number_format($stok->selling_price, 0, ',', '.') }}</td>
+                        <td class="text-end fw-bold text-primary">Rp {{ number_format($stok->potensi_penjualan, 0, ',', '.') }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Data ringkasan stok belum tersedia untuk filter ini.</td></tr>
+                    <tr><td colspan="9" class="text-center py-4 text-body-secondary">Data ringkasan stok belum tersedia untuk filter ini.</td></tr>
                     @endforelse
                 </tbody>
                 @if(count($stokSummary) > 0)
@@ -98,6 +102,8 @@
                         <td class="text-end text-danger">{{ number_format($summaryTotals->total_terjual, 2, ',', '.') }} kg</td>
                         <td class="text-end text-success">{{ number_format($summaryTotals->total_paid_wage, 2, ',', '.') }} kg</td>
                         <td class="text-end text-success">{{ number_format($summaryTotals->sisa_stok, 2, ',', '.') }} kg</td>
+                        <td></td>
+                        <td class="text-end text-primary">Rp {{ number_format($summaryTotals->potensi_penjualan, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>
                 @endif
@@ -183,6 +189,8 @@
                                 <th class="text-end">Terjual</th>
                                 <th class="text-end">Terbayar Upah</th>
                                 <th class="text-end">Sisa Stok</th>
+                                <th class="text-end">Harga Jual/Kg</th>
+                                <th class="text-end">Potensi Penjualan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -195,6 +203,8 @@
                                 <td class="text-end">{{ number_format($stok->total_terjual, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($stok->total_paid_wage, 2, ',', '.') }} kg</td>
                                 <td class="text-end fw-bold">{{ number_format($stok->sisa_stok, 2, ',', '.') }} kg</td>
+                                <td class="text-end">Rp {{ number_format($stok->selling_price, 0, ',', '.') }}</td>
+                                <td class="text-end fw-bold">Rp {{ number_format($stok->potensi_penjualan, 0, ',', '.') }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -206,6 +216,8 @@
                                 <td class="text-end">{{ number_format($summaryTotals->total_terjual, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($summaryTotals->total_paid_wage, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($summaryTotals->sisa_stok, 2, ',', '.') }} kg</td>
+                                <td></td>
+                                <td class="text-end">Rp {{ number_format($summaryTotals->potensi_penjualan, 0, ',', '.') }}</td>
                             </tr>
                         </tfoot>
                     </table>

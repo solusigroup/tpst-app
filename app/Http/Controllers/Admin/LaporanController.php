@@ -1102,12 +1102,16 @@ class LaporanController extends Controller
             ->get()
             ->keyBy('jenis');
 
+        // Lookup selling_price from WasteCategory by name
+        $sellingPrices = \App\Models\WasteCategory::pluck('selling_price', 'name');
+
         $stokSummary = [];
         $totalStokAwalAll = 0;
         $totalPilahanAll = 0;
         $totalTerjualAll = 0;
         $totalPaidAll = 0;
         $totalSisaAll = 0;
+        $totalPotensiAll = 0;
 
         $allJenisData = [];
         foreach ($masukSebelum as $item) {
@@ -1137,6 +1141,9 @@ class LaporanController extends Controller
                 continue;
             }
 
+            $hargaJual = isset($sellingPrices[$jenis]) ? (float) $sellingPrices[$jenis] : 0;
+            $potensiPenjualan = $sisa * $hargaJual;
+
             $stokSummary[] = (object)[
                 'kategori' => $item['kategori'],
                 'jenis' => $jenis,
@@ -1144,7 +1151,9 @@ class LaporanController extends Controller
                 'total_pilahan' => $pilahan,
                 'total_terjual' => $jual,
                 'total_paid_wage' => $paid,
-                'sisa_stok' => $sisa
+                'sisa_stok' => $sisa,
+                'selling_price' => $hargaJual,
+                'potensi_penjualan' => $potensiPenjualan,
             ];
 
             $totalStokAwalAll += $stokAwal;
@@ -1152,6 +1161,7 @@ class LaporanController extends Controller
             $totalTerjualAll += $jual;
             $totalPaidAll += $paid;
             $totalSisaAll += $sisa;
+            $totalPotensiAll += $potensiPenjualan;
         }
 
         $summaryTotals = (object)[
@@ -1159,7 +1169,8 @@ class LaporanController extends Controller
             'total_pilahan' => $totalPilahanAll,
             'total_terjual' => $totalTerjualAll,
             'total_paid_wage' => $totalPaidAll,
-            'sisa_stok' => $totalSisaAll
+            'sisa_stok' => $totalSisaAll,
+            'potensi_penjualan' => $totalPotensiAll,
         ];
 
         $employees = User::role('karyawan')

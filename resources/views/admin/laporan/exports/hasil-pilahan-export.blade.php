@@ -20,6 +20,8 @@
             <th class="text-end">Total Pilahan (kg)</th>
             <th class="text-end">Terjual (kg)</th>
             <th class="text-end">Sisa Stok (kg)</th>
+            <th class="text-end">Harga Jual/Kg</th>
+            <th class="text-end">Potensi Penjualan</th>
         </tr>
     </thead>
     <tbody>
@@ -31,6 +33,8 @@
             <td class="text-end">{{ (request('export') == 'excel' ? ($stok->total_pilahan) : number_format($stok->total_pilahan, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($stok->total_terjual) : number_format($stok->total_terjual, 2, ',', '.')) }}</td>
             <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($stok->sisa_stok) : number_format($stok->sisa_stok, 2, ',', '.')) }}</td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($stok->selling_price) : number_format($stok->selling_price, 0, ',', '.')) }}</td>
+            <td class="text-end fw-bold">{{ (request('export') == 'excel' ? ($stok->potensi_penjualan) : number_format($stok->potensi_penjualan, 0, ',', '.')) }}</td>
         </tr>
         @endforeach
     </tbody>
@@ -41,6 +45,8 @@
             <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->total_pilahan) : number_format($summaryTotals->total_pilahan, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->total_terjual) : number_format($summaryTotals->total_terjual, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->sisa_stok) : number_format($summaryTotals->sisa_stok, 2, ',', '.')) }}</td>
+            <td></td>
+            <td class="text-end">{{ (request('export') == 'excel' ? ($summaryTotals->potensi_penjualan) : number_format($summaryTotals->potensi_penjualan, 0, ',', '.')) }}</td>
         </tr>
     </tfoot>
 </table>
