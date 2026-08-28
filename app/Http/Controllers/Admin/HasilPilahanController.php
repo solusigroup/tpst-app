@@ -33,9 +33,23 @@ class HasilPilahanController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai);
         }
 
+        // Clone query before paginate to compute totals across ALL filtered results
+        $totalsQuery = (clone $query)
+            ->join('waste_categories', 'hasil_pilahan.waste_category_id', '=', 'waste_categories.id')
+            ->selectRaw('COALESCE(SUM(hasil_pilahan.tonase), 0) as total_tonase')
+            ->selectRaw('COALESCE(SUM(hasil_pilahan.jml_bal), 0) as total_jml_bal')
+            ->selectRaw('COALESCE(SUM(hasil_pilahan.tonase * waste_categories.selling_price), 0) as total_potensi_penjualan')
+            ->first();
+
+        $totals = [
+            'tonase'            => $totalsQuery->total_tonase ?? 0,
+            'jml_bal'           => $totalsQuery->total_jml_bal ?? 0,
+            'potensi_penjualan' => $totalsQuery->total_potensi_penjualan ?? 0,
+        ];
+
         $hasilPilahans = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
-        return view('admin.hasil-pilahan.index', compact('hasilPilahans'));
+        return view('admin.hasil-pilahan.index', compact('hasilPilahans', 'totals'));
     }
 
     public function create()

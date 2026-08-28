@@ -39,7 +39,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Tonase</th><th>Jml Bal</th><th>Petugas</th><th class="text-end">Aksi</th></tr></thead>
+                <thead class="table-light"><tr><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Tonase</th><th>Jml Bal</th><th class="text-end">Potensi Penjualan</th><th>Petugas</th><th class="text-end">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($hasilPilahans as $item)
                     <tr>
@@ -51,6 +51,7 @@
                         <td>{{ $item->jenis }}</td>
                         <td>{{ number_format($item->tonase, 2, ',', '.') }} kg</td>
                         <td>{{ $item->jml_bal ? $item->jml_bal . ' Bal' : '-' }}</td>
+                        <td class="text-end">Rp {{ number_format(($item->tonase ?? 0) * ($item->wasteCategory->selling_price ?? 0), 0, ',', '.') }}</td>
                         <td>{{ $item->officer }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
@@ -60,9 +61,20 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-body-secondary">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
+                @if($hasilPilahans->isNotEmpty())
+                <tfoot class="table-light">
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-end">Total</td>
+                        <td>{{ number_format($totals['tonase'], 2, ',', '.') }} kg</td>
+                        <td>{{ $totals['jml_bal'] ? number_format($totals['jml_bal'], 0, ',', '.') . ' Bal' : '-' }}</td>
+                        <td class="text-end">Rp {{ number_format($totals['potensi_penjualan'], 0, ',', '.') }}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+                @endif
             </table>
         </div>
     </div>
