@@ -104,14 +104,19 @@
     <div class="row g-4 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="card stat-card stat-success">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stat-icon bg-success-light me-3">
-                        <i class="cil-balance-scale"></i>
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success-light me-3">
+                            <i class="cil-balance-scale"></i>
+                        </div>
+                        <div>
+                            <div class="text-body-secondary text-uppercase fw-semibold small">Tonase Hari Ini</div>
+                            <div class="fs-4 fw-bold">{{ number_format($tonaseHariIni, 2, ',', '.') }} kg</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-body-secondary text-uppercase fw-semibold small">Tonase Hari Ini</div>
-                        <div class="fs-4 fw-bold">{{ number_format($tonaseHariIni, 2, ',', '.') }} kg</div>
-                    </div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1 rounded-pill" style="font-size: 0.75rem;">
+                        {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -130,14 +135,19 @@
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="card stat-card stat-primary">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stat-icon bg-primary-light me-3">
-                        <i class="cil-truck"></i>
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary-light me-3">
+                            <i class="cil-truck"></i>
+                        </div>
+                        <div>
+                            <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Hari Ini</div>
+                            <div class="fs-4 fw-bold">{{ $jumlahRitaseHariIni }} unit</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-body-secondary text-uppercase fw-semibold small">Ritase Hari Ini</div>
-                        <div class="fs-4 fw-bold">{{ $jumlahRitaseHariIni }} unit</div>
-                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-medium px-2 py-1 rounded-pill" style="font-size: 0.75rem;">
+                        {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}
+                    </span>
                 </div>
             </div>
         </div>
