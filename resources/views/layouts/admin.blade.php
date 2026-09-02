@@ -772,6 +772,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.tonase-sumber') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.tonase-sumber') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Tonase per Sumber
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.klien') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.klien') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Kontribusi Klien
                         </a>

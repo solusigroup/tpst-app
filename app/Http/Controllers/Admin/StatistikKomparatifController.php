@@ -338,6 +338,234 @@ class StatistikKomparatifController extends Controller
         ));
     }
 
+    /**
+     * Tonnage per month comparative by source (klien.jenis)
+     */
+    public function tonasePerSumber(Request $request)
+    {
+        $this->checkAccess();
+        $selectedYear = $request->get('year', date('Y'));
+        $compareYear = $request->get('compare_year');
+        $sumber = $request->get('sumber', 'all');
+
+        $sumberLabel = $this->getSumberLabels();
+
+        // Build query for selected year
+        $ritaseQuery = Ritase::where('is_approved', 1)
+            ->whereYear('waktu_masuk', $selectedYear);
+
+        if ($sumber !== 'all') {
+            $ritaseQuery->whereHas('klien', function ($q) use ($sumber) {
+                $q->where('jenis', $sumber);
+            });
+        }
+
+        $ritaseData = $ritaseQuery
+            ->selectRaw('MONTH(waktu_masuk) as month, SUM(berat_netto) as total')
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        // Build query for compare year if selected
+        $compareRitaseData = collect();
+        if ($compareYear && $compareYear != $selectedYear) {
+            $compareQuery = Ritase::where('is_approved', 1)
+                ->whereYear('waktu_masuk', $compareYear);
+
+            if ($sumber !== 'all') {
+                $compareQuery->whereHas('klien', function ($q) use ($sumber) {
+                    $q->where('jenis', $sumber);
+                });
+            }
+
+            $compareRitaseData = $compareQuery
+                ->selectRaw('MONTH(waktu_masuk) as month, SUM(berat_netto) as total')
+                ->groupBy('month')
+                ->pluck('total', 'month');
+        }
+
+        $months = $this->getMonthNames();
+        $chartData = [];
+
+        $totalTonase = 0;
+        $totalCompareTonase = 0;
+
+        for ($m = 1; $m <= 12; $m++) {
+            $tonaseVal = round($ritaseData->get($m, 0), 2);
+            $compareVal = $compareYear ? round($compareRitaseData->get($m, 0), 2) : 0;
+
+            $totalTonase += $tonaseVal;
+            $totalCompareTonase += $compareVal;
+
+            $tonaseTon = round($tonaseVal / 1000, 3);
+            $compareTon = round($compareVal / 1000, 3);
+
+            $diff = $tonaseVal - $compareVal;
+            $diffPercent = $compareVal > 0 ? ($diff / $compareVal) * 100 : 0;
+
+            $chartData[] = [
+                'month_num' => $m,
+                'month_name' => $months[$m],
+                'tonase_kg' => $tonaseVal,
+                'tonase_ton' => $tonaseTon,
+                'compare_kg' => $compareVal,
+                'compare_ton' => $compareTon,
+                'diff' => round($diff, 2),
+                'diff_percent' => round($diffPercent, 1),
+            ];
+        }
+
+        $totalTonaseTon = round($totalTonase / 1000, 3);
+        $totalCompareTon = round($totalCompareTonase / 1000, 3);
+        $totalDiff = $totalTonase - $totalCompareTonase;
+        $totalDiffPercent = $totalCompareTonase > 0 ? ($totalDiff / $totalCompareTonase) * 100 : 0;
+
+        // Monthly average
+        $monthsWithData = collect($chartData)->filter(fn($r) => $r['tonase_kg'] > 0)->count();
+        $avgTonasePerMonth = $monthsWithData > 0 ? $totalTonase / $monthsWithData : 0;
+
+        $years = $this->getYearRange();
+
+        return view('admin.statistik.tonase_sumber', compact(
+            'chartData',
+            'totalTonase',
+            'totalTonaseTon',
+            'totalCompareTonase',
+            'totalCompareTon',
+            'totalDiff',
+            'totalDiffPercent',
+            'avgTonasePerMonth',
+            'selectedYear',
+            'compareYear',
+            'sumber',
+            'sumberLabel',
+            'years'
+        ));
+    }
+
+    /**
+     * Export Tonase per Sumber to PDF
+     */
+    public function exportTonasePdf(Request $request)
+    {
+        $this->checkAccess();
+        $data = $this->getTonaseExportData($request);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.statistik.exports.tonase_sumber_export', $data)
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Tonase_Per_Sumber_' . $data['selectedYear'] . '_' . $data['sumber'] . '.pdf');
+    }
+
+    /**
+     * Export Tonase per Sumber to Excel
+     */
+    public function exportTonaseExcel(Request $request)
+    {
+        $this->checkAccess();
+        $data = $this->getTonaseExportData($request);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LaporanExcelExport('admin.statistik.exports.tonase_sumber_export', $data),
+            'Tonase_Per_Sumber_' . $data['selectedYear'] . '_' . $data['sumber'] . '_' . date('Ymd_His') . '.xlsx'
+        );
+    }
+
+    /**
+     * Get tonase export data (shared between PDF and Excel)
+     */
+    private function getTonaseExportData(Request $request): array
+    {
+        $selectedYear = $request->get('year', date('Y'));
+        $compareYear = $request->get('compare_year');
+        $sumber = $request->get('sumber', 'all');
+
+        $sumberLabel = $this->getSumberLabels();
+
+        $ritaseQuery = Ritase::where('is_approved', 1)
+            ->whereYear('waktu_masuk', $selectedYear);
+
+        if ($sumber !== 'all') {
+            $ritaseQuery->whereHas('klien', function ($q) use ($sumber) {
+                $q->where('jenis', $sumber);
+            });
+        }
+
+        $ritaseData = $ritaseQuery
+            ->selectRaw('MONTH(waktu_masuk) as month, SUM(berat_netto) as total')
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $compareRitaseData = collect();
+        if ($compareYear && $compareYear != $selectedYear) {
+            $compareQuery = Ritase::where('is_approved', 1)
+                ->whereYear('waktu_masuk', $compareYear);
+
+            if ($sumber !== 'all') {
+                $compareQuery->whereHas('klien', function ($q) use ($sumber) {
+                    $q->where('jenis', $sumber);
+                });
+            }
+
+            $compareRitaseData = $compareQuery
+                ->selectRaw('MONTH(waktu_masuk) as month, SUM(berat_netto) as total')
+                ->groupBy('month')
+                ->pluck('total', 'month');
+        }
+
+        $months = $this->getMonthNames();
+        $chartData = [];
+        $totalTonase = 0;
+        $totalCompareTonase = 0;
+
+        for ($m = 1; $m <= 12; $m++) {
+            $tonaseVal = round($ritaseData->get($m, 0), 2);
+            $compareVal = $compareYear ? round($compareRitaseData->get($m, 0), 2) : 0;
+
+            $totalTonase += $tonaseVal;
+            $totalCompareTonase += $compareVal;
+
+            $diff = $tonaseVal - $compareVal;
+            $diffPercent = $compareVal > 0 ? ($diff / $compareVal) * 100 : 0;
+
+            $chartData[] = [
+                'month_num' => $m,
+                'month_name' => $months[$m],
+                'tonase_kg' => $tonaseVal,
+                'tonase_ton' => round($tonaseVal / 1000, 3),
+                'compare_kg' => $compareVal,
+                'compare_ton' => round($compareVal / 1000, 3),
+                'diff' => round($diff, 2),
+                'diff_percent' => round($diffPercent, 1),
+            ];
+        }
+
+        $totalDiff = $totalTonase - $totalCompareTonase;
+        $totalDiffPercent = $totalCompareTonase > 0 ? ($totalDiff / $totalCompareTonase) * 100 : 0;
+
+        return compact(
+            'chartData',
+            'totalTonase',
+            'totalCompareTonase',
+            'totalDiff',
+            'totalDiffPercent',
+            'selectedYear',
+            'compareYear',
+            'sumber',
+            'sumberLabel'
+        );
+    }
+
+    private function getSumberLabels(): array
+    {
+        return [
+            'all' => 'Semua Sumber',
+            'DLH' => 'Dinas Lingkungan Hidup',
+            'Swasta' => 'Swasta',
+            'Offtaker' => 'Offtaker',
+            'Internal' => 'Internal',
+        ];
+    }
+
     private function getMonthNames()
     {
         return [

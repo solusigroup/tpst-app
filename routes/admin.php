@@ -197,6 +197,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('klien', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'klien'])->name('klien');
         Route::get('keuangan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'keuangan'])->name('keuangan');
         Route::get('produksi-penjualan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'produksiPenjualan'])->name('produksi-penjualan');
+        Route::get('tonase-sumber', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'tonasePerSumber'])->name('tonase-sumber');
+        Route::get('tonase-sumber/export-pdf', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'exportTonasePdf'])->name('tonase-sumber.export-pdf');
+        Route::get('tonase-sumber/export-excel', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'exportTonaseExcel'])->name('tonase-sumber.export-excel');
     });
 
     // AI Assistant
