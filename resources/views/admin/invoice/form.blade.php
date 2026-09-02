@@ -299,6 +299,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 let hasItems = false;
 
+                function escapeHtml(text) {
+                    if (!text) return '';
+                    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+                }
+
                 // Handle Ritase
                 if (data.ritase && data.ritase.length > 0) {
                     hasItems = true;
@@ -310,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="form-check">
                                 <input class="form-check-input item-checkbox" type="checkbox" name="selected_ritase[]" value="${item.id}" id="ritase_${item.id}" data-price="${item.price}" ${checked}>
                                 <label class="form-check-label" for="ritase_${item.id}">
-                                    ${item.label} ${outOfPeriod}
+                                    ${escapeHtml(item.label)} ${outOfPeriod}
                                 </label>
                             </div>
                         `;
@@ -330,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="form-check">
                                 <input class="form-check-input item-checkbox" type="checkbox" name="selected_penjualan[]" value="${item.id}" id="penjualan_${item.id}" data-price="${item.price}" data-dp="${item.dp}" ${checked}>
                                 <label class="form-check-label" for="penjualan_${item.id}">
-                                    ${item.label} ${outOfPeriod}
+                                    ${escapeHtml(item.label)} ${outOfPeriod}
                                 </label>
                             </div>
                         `;

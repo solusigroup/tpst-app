@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Scopes\TenantScope;
+use App\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +14,15 @@ use Carbon\Carbon;
 
 class WageCalculation extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
+
+    /**
+     * Boot the model.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope());
+    }
 
     protected $fillable = [
         'tenant_id',

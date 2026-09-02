@@ -539,19 +539,25 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
         let html = '';
         
         html += '<thead class="table-light">';
         html += '<tr>';
-        html += `<th>${labels[rowField]}</th>`;
+        html += `<th>${escapeHtml(labels[rowField])}</th>`;
         if (colField) {
             colKeys.forEach(c => {
-                html += `<th class="text-end">${c}</th>`;
+                html += `<th class="text-end">${escapeHtml(c)}</th>`;
             });
             html += '<th class="text-end fw-bold">Total</th>';
         } else {
             const valHeader = valSelect.options[valSelect.selectedIndex].text;
-            html += `<th class="text-end">${valHeader}</th>`;
+            html += `<th class="text-end">${escapeHtml(valHeader)}</th>`;
         }
         html += '</tr>';
         html += '</thead>';
@@ -559,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '<tbody>';
         rowKeys.forEach(r => {
             html += '<tr>';
-            html += `<td><strong>${r}</strong></td>`;
+            html += `<td><strong>${escapeHtml(r)}</strong></td>`;
             
             if (colField) {
                 let rowSum = 0;

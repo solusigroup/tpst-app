@@ -21,12 +21,14 @@
                 <p class="mb-0">Anda dapat melakukan check-in dan check-out sendiri.</p>
             </div>
             <div class="col-auto">
-                <form method="GET" action="{{ route('attendance.check-in') }}">
+                <form method="POST" action="{{ route('attendance.check-in') }}">
+                    @csrf
                     <button type="submit" class="btn btn-success text-white"><i class="cil-account-login me-1"></i> Check In</button>
                 </form>
             </div>
             <div class="col-auto">
-                <form method="GET" action="{{ route('attendance.check-out') }}">
+                <form method="POST" action="{{ route('attendance.check-out') }}">
+                    @csrf
                     <button type="submit" class="btn btn-warning text-white"><i class="cil-account-logout me-1"></i> Check Out</button>
                 </form>
             </div>

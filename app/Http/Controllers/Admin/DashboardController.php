@@ -78,46 +78,55 @@ class DashboardController extends Controller
         }
 
 
-        // Chart data: Daily tonnage for selected month
+        // Chart data: Daily tonnage for selected month (Single aggregated query)
+        $dailyTonnageData = Ritase::where('is_approved', 1)
+            ->whereBetween('waktu_masuk', [$monthStart->copy()->startOfDay(), $monthEnd->copy()->endOfDay()])
+            ->selectRaw('DATE(waktu_masuk) as date_str, SUM(berat_netto) as total')
+            ->groupByRaw('DATE(waktu_masuk)')
+            ->pluck('total', 'date_str');
+
         $dailyTonnage = collect();
         $daysInMonth = $monthStart->daysInMonth;
         for ($d = 1; $d <= $daysInMonth; $d++) {
             $date = Carbon::createFromDate($selectedYear, $selectedMonth, $d);
-            $tonnage = Ritase::where('is_approved', 1)->whereDate('waktu_masuk', $date)->sum('berat_netto');
+            $dateKey = $date->format('Y-m-d');
             $dailyTonnage->push([
                 'date' => $date->format('d/m'),
-                'tonnage' => round($tonnage, 2),
+                'tonnage' => round($dailyTonnageData->get($dateKey, 0), 2),
             ]);
         }
 
-        // Chart data: Revenue vs Expense for 6 months ending at selected month
+        // Chart data: Revenue vs Expense for 6 months ending at selected month (Aggregated queries)
         $monthlyFinancials = collect();
         if (!auth()->user()->hasRole('ritase_only')) {
+            $sixMonthStart = $monthStart->copy()->subMonths(5)->startOfMonth();
+
+            $revenueData = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('coa.tipe', 'Revenue')
+                ->whereBetween('jurnal_header.tanggal', [$sixMonthStart, $monthEnd])
+                ->selectRaw("DATE_FORMAT(jurnal_header.tanggal, '%Y-%m') as y_m, SUM(jurnal_detail.kredit) - SUM(jurnal_detail.debit) as total")
+                ->groupBy('y_m')
+                ->pluck('total', 'y_m');
+
+            $expenseData = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
+                ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('coa.tipe', 'Expense')
+                ->whereBetween('jurnal_header.tanggal', [$sixMonthStart, $monthEnd])
+                ->selectRaw("DATE_FORMAT(jurnal_header.tanggal, '%Y-%m') as y_m, SUM(jurnal_detail.debit) - SUM(jurnal_detail.kredit) as total")
+                ->groupBy('y_m')
+                ->pluck('total', 'y_m');
+
             for ($i = 5; $i >= 0; $i--) {
                 $month = $monthStart->copy()->subMonths($i);
-                $mStart = $month->copy()->startOfMonth();
-                $mEnd = $month->copy()->endOfMonth();
-
-                $revenue = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
-                    ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
-                    ->where('jurnal_header.status', 'posted')
-                    ->where('coa.tipe', 'Revenue')
-                    ->whereBetween('jurnal_header.tanggal', [$mStart, $mEnd])
-                    ->selectRaw('SUM(jurnal_detail.kredit) - SUM(jurnal_detail.debit) as total')
-                    ->value('total') ?? 0;
-                
-                $expense = \App\Models\JurnalDetail::join('coa', 'jurnal_detail.coa_id', '=', 'coa.id')
-                    ->join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
-                    ->where('jurnal_header.status', 'posted')
-                    ->where('coa.tipe', 'Expense')
-                    ->whereBetween('jurnal_header.tanggal', [$mStart, $mEnd])
-                    ->selectRaw('SUM(jurnal_detail.debit) - SUM(jurnal_detail.kredit) as total')
-                    ->value('total') ?? 0;
+                $ymKey = $month->format('Y-m');
 
                 $monthlyFinancials->push([
                     'month' => $month->format('M Y'),
-                    'revenue' => round($revenue, 0),
-                    'expense' => round($expense, 0),
+                    'revenue' => round($revenueData->get($ymKey, 0), 0),
+                    'expense' => round($expenseData->get($ymKey, 0), 0),
                 ]);
             }
         }

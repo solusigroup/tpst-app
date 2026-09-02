@@ -478,9 +478,9 @@ class LaporanController extends Controller
                     // But we can just use the skip/take logic if we want to be precise.
                 });
             
-            // Simpler way: Calculate sum of all transactions before this page
+            // Calculate sum of all transactions before this page using DB aggregation
             $offset = ($rows->currentPage() - 1) * $rows->perPage();
-            $prePageMutation = JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+            $subQuery = JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
                 ->where('jurnal_header.status', 'posted')
                 ->where('jurnal_detail.coa_id', $coaId)
                 ->whereDate('jurnal_header.tanggal', '>=', $dari)
@@ -489,14 +489,20 @@ class LaporanController extends Controller
                 ->orderBy('jurnal_header.id')
                 ->orderBy('jurnal_detail.id')
                 ->take($offset)
-                ->get();
-            
-            foreach ($prePageMutation as $m) {
-                if ($isDebitNormal) {
-                    $pageSaldoAwal += ($m->debit - $m->kredit);
-                } else {
-                    $pageSaldoAwal += ($m->kredit - $m->debit);
-                }
+                ->select('jurnal_detail.debit', 'jurnal_detail.kredit');
+
+            $preSums = \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$subQuery->toSql()}) as prev_tx"))
+                ->mergeBindings($subQuery->getQuery())
+                ->selectRaw('SUM(debit) as sum_debit, SUM(kredit) as sum_kredit')
+                ->first();
+
+            $sumDebit = (float)($preSums->sum_debit ?? 0);
+            $sumKredit = (float)($preSums->sum_kredit ?? 0);
+
+            if ($isDebitNormal) {
+                $pageSaldoAwal += ($sumDebit - $sumKredit);
+            } else {
+                $pageSaldoAwal += ($sumKredit - $sumDebit);
             }
         }
 
@@ -597,7 +603,7 @@ class LaporanController extends Controller
             }
         }
 
-        $allRowsForPrint = (clone $query)->get();
+        $allRowsForPrint = (clone $query)->limit(1000)->get();
         $rows = $query->paginate(20)->withQueryString();
         return view('admin.laporan.ritase', compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'jenisArmada', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate', 'allRowsForPrint'));
     }

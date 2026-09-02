@@ -293,9 +293,13 @@ class TracingController extends Controller
         $invoiceJournals = JurnalHeader::where('referensi_type', Invoice::class)
             ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
             ->get();
+        
+        $invIdsFromJournals = $invoiceJournals->pluck('referensi_id')->filter()->unique();
+        $invoicesMap = Invoice::with('klien')->whereIn('id', $invIdsFromJournals)->get()->keyBy('id');
+
         foreach ($invoiceJournals as $jh) {
             if (!$jhIdsWithBP->contains($jh->id)) {
-                $inv = Invoice::with('klien')->find($jh->referensi_id);
+                $inv = $invoicesMap->get($jh->referensi_id);
                 if ($inv && in_array($inv->status, ['Sent', 'Paid'])) {
                     $issues[] = [
                         'type' => 'missing_buku_pembantu',
@@ -320,17 +324,24 @@ class TracingController extends Controller
             ];
         }
 
-        // 4. Invoice total mismatch with journal debit
+        // 4. Invoice total mismatch with journal debit (Batch preloaded)
         $sentPaidInvoices = Invoice::whereIn('status', ['Sent', 'Paid'])
             ->with('klien')
             ->get();
+        
+        $sentPaidInvoiceIds = $sentPaidInvoices->pluck('id');
+        $journalHeadersByInv = JurnalHeader::where('referensi_type', Invoice::class)
+            ->whereIn('referensi_id', $sentPaidInvoiceIds)
+            ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
+            ->with('details')
+            ->get()
+            ->groupBy('referensi_id');
+
         foreach ($sentPaidInvoices as $inv) {
-            $jh = JurnalHeader::where('referensi_type', Invoice::class)
-                ->where('referensi_id', $inv->id)
-                ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
-                ->first();
+            $jhList = $journalHeadersByInv->get($inv->id);
+            $jh = $jhList ? $jhList->first() : null;
             if ($jh) {
-                $totalDebit = JurnalDetail::where('jurnal_header_id', $jh->id)->sum('debit');
+                $totalDebit = $jh->details->sum('debit');
                 if (abs($totalDebit - $inv->total_tagihan) > 1) {
                     $issues[] = [
                         'type' => 'amount_mismatch',
@@ -342,7 +353,7 @@ class TracingController extends Controller
             }
         }
 
-        // 5. Buku Pembantu with status 'pending' but Invoice is 'Paid'
+        // 5. Buku Pembantu with status 'pending' but Invoice is 'Paid' (Batch preloaded)
         $bpPendingPaid = BukuPembantu::where('tipe', 'piutang')
             ->where('status', 'pending')
             ->whereHas('jurnalHeader', function ($q) {
@@ -351,8 +362,12 @@ class TracingController extends Controller
             })
             ->with('jurnalHeader')
             ->get();
+        
+        $bpInvoiceIds = $bpPendingPaid->pluck('jurnalHeader.referensi_id')->filter()->unique();
+        $bpInvoicesMap = Invoice::whereIn('id', $bpInvoiceIds)->get()->keyBy('id');
+
         foreach ($bpPendingPaid as $bp) {
-            $inv = Invoice::find($bp->jurnalHeader->referensi_id);
+            $inv = $bpInvoicesMap->get($bp->jurnalHeader->referensi_id);
             if ($inv && $inv->status === 'Paid') {
                 $issues[] = [
                     'type' => 'status_mismatch',

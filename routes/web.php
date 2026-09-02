@@ -35,6 +35,6 @@ Route::middleware(['auth'])->group(function () {
 use App\Http\Middleware\CheckSalaryType;
 
 Route::middleware(['auth', CheckSalaryType::class . ':bulanan'])->group(function () {
-    Route::get('/attendance/check-in', [\App\Http\Controllers\AttendanceController::class, 'checkIn'])->name('attendance.check-in');
-    Route::get('/attendance/check-out', [\App\Http\Controllers\AttendanceController::class, 'checkOut'])->name('attendance.check-out');
+    Route::post('/attendance/check-in', [\App\Http\Controllers\AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::post('/attendance/check-out', [\App\Http\Controllers\AttendanceController::class, 'checkOut'])->name('attendance.check-out');
 });
