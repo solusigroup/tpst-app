@@ -16,8 +16,8 @@ class WhatsAppService
      */
     public static function sendMessage($target, $message)
     {
-        $token = env('WA_API_TOKEN', 'YOUR_FONNTE_TOKEN');
-        $endpoint = env('WA_API_URL', 'https://api.fonnte.com/send');
+        $token = config('services.whatsapp.api_token', 'YOUR_FONNTE_TOKEN');
+        $endpoint = config('services.whatsapp.api_url', 'https://api.fonnte.com/send');
 
         if ($token === 'YOUR_FONNTE_TOKEN' || empty($token)) {
             Log::warning('WhatsApp token not configured, message not sent: ' . $message);

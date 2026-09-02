@@ -21,19 +21,31 @@ class BankReconciliationController extends Controller
     {
         Gate::authorize('view_jurnal_kas');
 
-        // Get all Kas & Bank COAs (kode_akun starts with '11')
-        $kasBankCoas = Coa::where('kode_akun', 'like', '11%')
-            ->orderBy('kode_akun')
-            ->get()
-            ->map(function ($coa) {
-                $saldo = JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
-                    ->where('jurnal_header.status', 'posted')
-                    ->where('jurnal_detail.coa_id', $coa->id)
-                    ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
-                    ->value('saldo') ?? 0;
-                $coa->saldo = $saldo;
-                return $coa;
-            });
+        // Get all Kas & Bank COAs (kode_akun starts with '11') with aggregated balance in a single query
+        $kasBankCoas = Coa::where('coa.kode_akun', 'like', '11%')
+            ->select('coa.*')
+            ->leftJoin('jurnal_detail', 'coa.id', '=', 'jurnal_detail.coa_id')
+            ->leftJoin('jurnal_header', function ($join) {
+                $join->on('jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                    ->where('jurnal_header.status', '=', 'posted');
+            })
+            ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+            ->groupBy(
+                'coa.id',
+                'coa.tenant_id',
+                'coa.kode_akun',
+                'coa.nama_akun',
+                'coa.tipe',
+                'coa.klasifikasi',
+                'coa.kategori_buku_pembantu',
+                'coa.saldo_normal',
+                'coa.deskripsi',
+                'coa.created_at',
+                'coa.updated_at',
+                'coa.deleted_at'
+            )
+            ->orderBy('coa.kode_akun')
+            ->get();
 
         return view('admin.rekonsiliasi-bank.index', compact('kasBankCoas'));
     }

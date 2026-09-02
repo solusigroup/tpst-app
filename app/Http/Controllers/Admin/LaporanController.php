@@ -34,6 +34,8 @@ class LaporanController extends Controller
             $dariPembanding = $request->get('dari_pembanding', now()->subMonth()->startOfMonth()->format('Y-m-d'));
             $sampaiPembanding = $request->get('sampai_pembanding', now()->subMonth()->endOfMonth()->format('Y-m-d'));
 
+            $tenantId = auth()->user()->isSuperAdmin() ? null : auth()->user()->tenant_id;
+
             $queryCurrent = DB::table('coa')
                 ->select([
                     'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
@@ -43,12 +45,19 @@ class LaporanController extends Controller
                         ELSE 0
                     END as saldo"),
                 ])
-                ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
-                ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->leftJoin('jurnal_detail as jd', function ($join) use ($tenantId) {
+                    $join->on('coa.id', '=', 'jd.coa_id')
+                        ->when($tenantId, fn ($q) => $q->where('jd.tenant_id', $tenantId));
+                })
+                ->leftJoin('jurnal_header as jh', function ($join) use ($tenantId) {
+                    $join->on('jd.jurnal_header_id', '=', 'jh.id')
+                        ->where('jh.status', 'posted')
+                        ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId));
+                })
                 ->whereIn('coa.tipe', ['Revenue', 'Expense'])
-                ->where('jh.status', 'posted')
-                ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
-                ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
+                ->when($tenantId, fn ($q) => $q->where('coa.tenant_id', $tenantId))
+                ->when($dari, fn ($q) => $q->where(fn($sq) => $sq->whereNull('jh.tanggal')->orWhereDate('jh.tanggal', '>=', $dari)))
+                ->when($sampai, fn ($q) => $q->where(fn($sq) => $sq->whereNull('jh.tanggal')->orWhereDate('jh.tanggal', '<=', $sampai)))
                 ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
                 ->get()->keyBy('id');
 
@@ -63,12 +72,19 @@ class LaporanController extends Controller
                             ELSE 0
                         END as saldo"),
                     ])
-                    ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
-                    ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                    ->leftJoin('jurnal_detail as jd', function ($join) use ($tenantId) {
+                        $join->on('coa.id', '=', 'jd.coa_id')
+                            ->when($tenantId, fn ($q) => $q->where('jd.tenant_id', $tenantId));
+                    })
+                    ->leftJoin('jurnal_header as jh', function ($join) use ($tenantId) {
+                        $join->on('jd.jurnal_header_id', '=', 'jh.id')
+                            ->where('jh.status', 'posted')
+                            ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId));
+                    })
                     ->whereIn('coa.tipe', ['Revenue', 'Expense'])
-                    ->where('jh.status', 'posted')
-                    ->when($dariPembanding, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dariPembanding))
-                    ->when($sampaiPembanding, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampaiPembanding))
+                    ->when($tenantId, fn ($q) => $q->where('coa.tenant_id', $tenantId))
+                    ->when($dariPembanding, fn ($q) => $q->where(fn($sq) => $sq->whereNull('jh.tanggal')->orWhereDate('jh.tanggal', '>=', $dariPembanding)))
+                    ->when($sampaiPembanding, fn ($q) => $q->where(fn($sq) => $sq->whereNull('jh.tanggal')->orWhereDate('jh.tanggal', '<=', $sampaiPembanding)))
                     ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
                     ->get()->keyBy('id');
             }
@@ -167,6 +183,8 @@ class LaporanController extends Controller
         $penyajian = $request->get('penyajian', 'single');
         $sampaiPembanding = $request->get('sampai_pembanding', now()->subYear()->endOfYear()->format('Y-m-d'));
 
+        $tenantId = auth()->user()->isSuperAdmin() ? null : auth()->user()->tenant_id;
+
         $queryCurrent = DB::table('coa')
             ->select([
                 'coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi',
@@ -175,11 +193,18 @@ class LaporanController extends Controller
                     ELSE COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0)
                 END as saldo"),
             ])
-            ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
-            ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+            ->leftJoin('jurnal_detail as jd', function ($join) use ($tenantId) {
+                $join->on('coa.id', '=', 'jd.coa_id')
+                    ->when($tenantId, fn ($q) => $q->where('jd.tenant_id', $tenantId));
+            })
+            ->leftJoin('jurnal_header as jh', function ($join) use ($tenantId) {
+                $join->on('jd.jurnal_header_id', '=', 'jh.id')
+                    ->where('jh.status', 'posted')
+                    ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId));
+            })
             ->whereIn('coa.tipe', ['Asset', 'Liability', 'Equity'])
-            ->where('jh.status', 'posted')
-            ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
+            ->when($tenantId, fn ($q) => $q->where('coa.tenant_id', $tenantId))
+            ->when($sampai, fn ($q) => $q->where(fn($sq) => $sq->whereNull('jh.tanggal')->orWhereDate('jh.tanggal', '<=', $sampai)))
             ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
             ->get()->keyBy('id');
 
@@ -193,11 +218,18 @@ class LaporanController extends Controller
                         ELSE COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0)
                     END as saldo"),
                 ])
-                ->leftJoin('jurnal_detail as jd', 'coa.id', '=', 'jd.coa_id')
-                ->leftJoin('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
+                ->leftJoin('jurnal_detail as jd', function ($join) use ($tenantId) {
+                    $join->on('coa.id', '=', 'jd.coa_id')
+                        ->when($tenantId, fn ($q) => $q->where('jd.tenant_id', $tenantId));
+                })
+                ->leftJoin('jurnal_header as jh', function ($join) use ($tenantId) {
+                    $join->on('jd.jurnal_header_id', '=', 'jh.id')
+                        ->where('jh.status', 'posted')
+                        ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId));
+                })
                 ->whereIn('coa.tipe', ['Asset', 'Liability', 'Equity'])
-                ->where('jh.status', 'posted')
-                ->when($sampaiPembanding, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampaiPembanding))
+                ->when($tenantId, fn ($q) => $q->where('coa.tenant_id', $tenantId))
+                ->when($sampaiPembanding, fn ($q) => $q->where(fn($sq) => $sq->whereNull('jh.tanggal')->orWhereDate('jh.tanggal', '<=', $sampaiPembanding)))
                 ->groupBy('coa.id', 'coa.kode_akun', 'coa.nama_akun', 'coa.tipe', 'coa.klasifikasi')
                 ->get()->keyBy('id');
         }
@@ -222,6 +254,7 @@ class LaporanController extends Controller
             ->join('coa', 'jd.coa_id', '=', 'coa.id')
             ->where('jh.status', 'posted')
             ->whereIn('coa.tipe', ['Revenue', 'Expense'])
+            ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
             ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
             ->selectRaw("COALESCE(SUM(CASE WHEN coa.tipe = 'Revenue' THEN jd.kredit - jd.debit ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN coa.tipe = 'Expense' THEN jd.debit - jd.kredit ELSE 0 END), 0) as laba_rugi")
             ->value('laba_rugi') ?? 0;
@@ -233,6 +266,7 @@ class LaporanController extends Controller
                 ->join('coa', 'jd.coa_id', '=', 'coa.id')
                 ->where('jh.status', 'posted')
                 ->whereIn('coa.tipe', ['Revenue', 'Expense'])
+                ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
                 ->when($sampaiPembanding, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampaiPembanding))
                 ->selectRaw("COALESCE(SUM(CASE WHEN coa.tipe = 'Revenue' THEN jd.kredit - jd.debit ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN coa.tipe = 'Expense' THEN jd.debit - jd.kredit ELSE 0 END), 0) as laba_rugi")
                 ->value('laba_rugi') ?? 0;
@@ -288,6 +322,7 @@ class LaporanController extends Controller
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $tenantId = auth()->user()->isSuperAdmin() ? null : auth()->user()->tenant_id;
 
         $kasAccounts = Coa::where('tipe', 'Asset')
             ->where('klasifikasi', 'Aset Lancar')
@@ -299,6 +334,7 @@ class LaporanController extends Controller
             ->join('coa', 'jd.coa_id', '=', 'coa.id')
             ->where('jh.status', 'posted')
             ->whereIn('jd.coa_id', $kasAccounts)
+            ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
             ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
             ->select([
@@ -318,6 +354,7 @@ class LaporanController extends Controller
             ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
             ->where('jh.status', 'posted')
             ->whereIn('jd.coa_id', $kasAccounts)
+            ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
             ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '<', $dari))
             ->selectRaw('COALESCE(SUM(jd.debit), 0) - COALESCE(SUM(jd.kredit), 0) as saldo')
             ->value('saldo') ?? 0;
@@ -344,6 +381,7 @@ class LaporanController extends Controller
 
         $dari = $request->get('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
+        $tenantId = auth()->user()->isSuperAdmin() ? null : auth()->user()->tenant_id;
 
         $ekuitasAccounts = Coa::where('tipe', 'Equity')->orderBy('kode_akun')->get();
 
@@ -354,6 +392,7 @@ class LaporanController extends Controller
             $saldoAwal = DB::table('jurnal_detail as jd')
                 ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
                 ->where('jh.status', 'posted')->where('jd.coa_id', $akun->id)
+                ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
                 ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '<', $dari))
                 ->selectRaw('COALESCE(SUM(jd.kredit), 0) - COALESCE(SUM(jd.debit), 0) as saldo')
                 ->value('saldo') ?? 0;
@@ -361,6 +400,7 @@ class LaporanController extends Controller
             $mutasi = DB::table('jurnal_detail as jd')
                 ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
                 ->where('jh.status', 'posted')->where('jd.coa_id', $akun->id)
+                ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
                 ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
                 ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
                 ->selectRaw('COALESCE(SUM(jd.kredit), 0) as penambahan, COALESCE(SUM(jd.debit), 0) as pengurangan')
@@ -382,6 +422,7 @@ class LaporanController extends Controller
             ->join('jurnal_header as jh', 'jd.jurnal_header_id', '=', 'jh.id')
             ->join('coa', 'jd.coa_id', '=', 'coa.id')
             ->where('jh.status', 'posted')->whereIn('coa.tipe', ['Revenue', 'Expense'])
+            ->when($tenantId, fn ($q) => $q->where('jh.tenant_id', $tenantId))
             ->when($dari, fn ($q) => $q->whereDate('jh.tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('jh.tanggal', '<=', $sampai))
             ->selectRaw("COALESCE(SUM(CASE WHEN coa.tipe = 'Revenue' THEN jd.kredit - jd.debit ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN coa.tipe = 'Expense' THEN jd.debit - jd.kredit ELSE 0 END), 0) as laba_rugi")
@@ -1075,8 +1116,7 @@ class LaporanController extends Controller
             ->get()
             ->keyBy('jenis');
 
-        $keluarSebelum = DB::table('penjualan')
-            ->selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
+        $keluarSebelum = Penjualan::selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '<', $dari))
             ->groupBy('jenis_produk')
             ->get()
@@ -1091,8 +1131,7 @@ class LaporanController extends Controller
             ->get()
             ->keyBy('jenis');
 
-        $penjualanAgg = DB::table('penjualan')
-            ->selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
+        $penjualanAgg = Penjualan::selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->groupBy('jenis_produk')
@@ -1442,9 +1481,9 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $jenisItem = $request->get('jenis');
 
-        // Dapatkan semua jenis item yang ada di DB untuk dropdown
-        $jenisHasilPilahan = DB::table('hasil_pilahan')->select('jenis')->distinct()->pluck('jenis');
-        $jenisPenjualan = DB::table('penjualan')->select('jenis_produk')->distinct()->pluck('jenis_produk');
+        // Dapatkan semua jenis item yang ada di DB untuk dropdown (mengikuti tenant aktif)
+        $jenisHasilPilahan = HasilPilahan::select('jenis')->distinct()->pluck('jenis');
+        $jenisPenjualan = Penjualan::select('jenis_produk')->distinct()->pluck('jenis_produk');
         $semuaJenis = $jenisHasilPilahan->concat($jenisPenjualan)->unique()->sort()->values();
 
         $mutasi = collect();
@@ -1452,21 +1491,18 @@ class LaporanController extends Controller
 
         if ($jenisItem) {
             // Hitung Saldo Awal (sebelum tanggal $dari)
-            $masukSebelum = DB::table('hasil_pilahan')
-                ->where('jenis', $jenisItem)
+            $masukSebelum = HasilPilahan::where('jenis', $jenisItem)
                 ->whereDate('tanggal', '<', $dari)
                 ->sum('tonase');
                 
-            $keluarSebelum = DB::table('penjualan')
-                ->where('jenis_produk', $jenisItem)
+            $keluarSebelum = Penjualan::where('jenis_produk', $jenisItem)
                 ->whereDate('tanggal', '<', $dari)
                 ->sum('berat_kg');
                 
             $saldoAwal = $masukSebelum - $keluarSebelum;
 
             // Tarik Mutasi Masuk (Produksi) pada rentang tanggal
-            $produksi = DB::table('hasil_pilahan')
-                ->where('jenis', $jenisItem)
+            $produksi = HasilPilahan::where('jenis', $jenisItem)
                 ->whereDate('tanggal', '>=', $dari)
                 ->whereDate('tanggal', '<=', $sampai)
                 ->select([
@@ -1479,19 +1515,21 @@ class LaporanController extends Controller
                 ])->get();
 
             // Tarik Mutasi Keluar (Penjualan) pada rentang tanggal
-            $penjualan = DB::table('penjualan')
-                ->join('klien', 'penjualan.klien_id', '=', 'klien.id')
-                ->where('penjualan.jenis_produk', $jenisItem)
-                ->whereDate('penjualan.tanggal', '>=', $dari)
-                ->whereDate('penjualan.tanggal', '<=', $sampai)
-                ->select([
-                    'penjualan.id',
-                    'penjualan.tanggal',
-                    DB::raw("'Keluar' as tipe"),
-                    DB::raw('0 as jumlah_masuk'),
-                    DB::raw('penjualan.berat_kg as jumlah_keluar'),
-                    DB::raw("CONCAT('Penjualan ke ', klien.nama_klien) as keterangan")
-                ])->get();
+            $penjualan = Penjualan::with('klien')
+                ->where('jenis_produk', $jenisItem)
+                ->whereDate('tanggal', '>=', $dari)
+                ->whereDate('tanggal', '<=', $sampai)
+                ->get()
+                ->map(function ($p) {
+                    return (object) [
+                        'id' => $p->id,
+                        'tanggal' => $p->tanggal,
+                        'tipe' => 'Keluar',
+                        'jumlah_masuk' => 0,
+                        'jumlah_keluar' => $p->berat_kg,
+                        'keterangan' => 'Penjualan ke ' . ($p->klien?->nama_klien ?? 'Umum'),
+                    ];
+                });
 
             // Gabungkan dan urutkan berdasarkan tanggal
             $mutasi = $produksi->concat($penjualan)->sortBy([

@@ -17,6 +17,10 @@ class UserController extends Controller
         Gate::authorize('view_users');
         $query = User::with(['tenant', 'roles']);
 
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
@@ -33,7 +37,9 @@ class UserController extends Controller
     public function create()
     {
         Gate::authorize('view_users');
-        $tenants = Tenant::orderBy('name')->get();
+        $tenants = auth()->user()->isSuperAdmin()
+            ? Tenant::orderBy('name')->get()
+            : Tenant::where('id', auth()->user()->tenant_id)->get();
         $roles = Role::orderBy('name')->get();
         return view('admin.users.form', compact('tenants', 'roles'));
     }
@@ -51,12 +57,16 @@ class UserController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
 
+        $tenantId = auth()->user()->isSuperAdmin()
+            ? ($validated['tenant_id'] ?? null)
+            : auth()->user()->tenant_id;
+
         $user = User::create([
             'name' => $validated['name'],
             'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'tenant_id' => $validated['tenant_id'] ?? null,
+            'tenant_id' => $tenantId,
             'role' => $validated['role'],
         ]);
 
@@ -69,7 +79,14 @@ class UserController extends Controller
     public function edit(User $user)
     {
         Gate::authorize('view_users');
-        $tenants = Tenant::orderBy('name')->get();
+
+        if (!auth()->user()->isSuperAdmin() && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $tenants = auth()->user()->isSuperAdmin()
+            ? Tenant::orderBy('name')->get()
+            : Tenant::where('id', auth()->user()->tenant_id)->get();
         $roles = Role::orderBy('name')->get();
         return view('admin.users.form', compact('user', 'tenants', 'roles'));
     }
@@ -77,6 +94,10 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         Gate::authorize('view_users');
+
+        if (!auth()->user()->isSuperAdmin() && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'Unauthorized.');
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -87,11 +108,15 @@ class UserController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
 
+        $tenantId = auth()->user()->isSuperAdmin()
+            ? ($validated['tenant_id'] ?? null)
+            : auth()->user()->tenant_id;
+
         $data = [
             'name' => $validated['name'],
             'username' => $validated['username'],
             'email' => $validated['email'],
-            'tenant_id' => $validated['tenant_id'] ?? null,
+            'tenant_id' => $tenantId,
             'role' => $validated['role'],
         ];
 
@@ -110,6 +135,10 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         Gate::authorize('view_users');
+
+        if (!auth()->user()->isSuperAdmin() && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'Unauthorized.');
+        }
 
         if ($user->isSuperAdmin()) {
             return redirect()->route('admin.users.index')->with('error', 'Tidak dapat menghapus super admin.');

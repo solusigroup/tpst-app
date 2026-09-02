@@ -130,22 +130,33 @@ class WageCalculation extends Model
                     ->where('tenant_id', $tenantId)
                     ->whereColumn('paid_quantity', '<', 'quantity')
                     ->whereBetween('output_date', [$carbonWeekStart->toDateString(), $carbonWeekEnd->toDateString()])
+                    ->with('wasteCategory')
                     ->orderBy('output_date')
                     ->get();
+
+                // Memoize totalSold and totalPaidGlobally per category to avoid repeated queries in loop
+                $categoryIds = $unpaidOutputs->pluck('waste_category_id')->unique()->filter();
+                $soldPerCategory = [];
+                $paidPerCategory = [];
+
+                foreach ($categoryIds as $catId) {
+                    $soldPerCategory[$catId] = (float) Penjualan::where('waste_category_id', $catId)
+                        ->where('tenant_id', $tenantId)
+                        ->where('tanggal', '<=', $carbonWeekEnd->toDateString())
+                        ->sum('berat_kg');
+
+                    $paidPerCategory[$catId] = (float) EmployeeOutput::where('waste_category_id', $catId)
+                        ->where('tenant_id', $tenantId)
+                        ->sum('paid_quantity');
+                }
 
                 foreach ($unpaidOutputs as $output) {
                     $remainingToPay = $output->quantity - $output->paid_quantity;
                     if ($remainingToPay <= 0) continue;
 
-                    // Calculate Global Available Sales for this category up to carbonWeekEnd
-                    $totalSold = Penjualan::where('waste_category_id', $output->waste_category_id)
-                        ->where('tenant_id', $tenantId)
-                        ->where('tanggal', '<=', $carbonWeekEnd->toDateString())
-                        ->sum('berat_kg');
-
-                    $totalPaidGlobally = EmployeeOutput::where('waste_category_id', $output->waste_category_id)
-                        ->where('tenant_id', $tenantId)
-                        ->sum('paid_quantity');
+                    $catId = $output->waste_category_id;
+                    $totalSold = $soldPerCategory[$catId] ?? 0;
+                    $totalPaidGlobally = $paidPerCategory[$catId] ?? 0;
 
                     $availableToPay = max(0, $totalSold - $totalPaidGlobally);
                     $canPay = min($remainingToPay, $availableToPay);
@@ -156,6 +167,9 @@ class WageCalculation extends Model
 
                         // Update output
                         $output->increment('paid_quantity', $canPay);
+
+                        // Update local tracked paid quantity for this category
+                        $paidPerCategory[$catId] = ($paidPerCategory[$catId] ?? 0) + $canPay;
 
                         // Track totals
                         $totalQuantity += $canPay;

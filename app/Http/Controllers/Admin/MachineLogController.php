@@ -17,15 +17,15 @@ class MachineLogController extends Controller
     public function index()
     {
         Gate::authorize('view_machine_log');
-        // View for operator logbook history
-        $logs = MachineLog::with(['machine', 'user'])->latest()->paginate(15);
+        // View for operator logbook history (scoped to tenant machines)
+        $logs = MachineLog::whereHas('machine')->with(['machine', 'user'])->latest()->paginate(15);
         return view('admin.machine_logs.index', compact('logs'));
     }
 
     public function create()
     {
         Gate::authorize('create_machine_log');
-        $machines = Machine::all();
+        $machines = Machine::orderBy('nama_mesin')->get();
         return view('admin.machine_logs.create', compact('machines'));
     }
 
@@ -51,14 +51,14 @@ class MachineLogController extends Controller
         if ($request->status_lampu === 'Merah') {
             $machine = Machine::find($request->machine_id);
             $message = "🚨 *DARURAT MESIN TPST* 🚨\n\n"
-                     . "Mesin: *" . $machine->nama_mesin . " (" . $machine->nomor_mesin . ")*\n"
+                     . "Mesin: *" . ($machine->nama_mesin ?? 'Mesin') . " (" . ($machine->nomor_mesin ?? '-') . ")*\n"
                      . "Waktu: *" . $request->waktu_cek . "*\n"
                      . "Status: 🔴 *MERAH (Breakdown/Emergency)*\n"
                      . "Keterangan: " . ($request->keterangan ?: "Tidak ada keterangan") . "\n\n"
                      . "Diperiksa oleh: " . Auth::user()->name . "\n"
                      . "Waktu Log: " . now()->format('Y-m-d H:i:s');
             
-            $waTarget = env('WA_ENGINEER_PHONE', '+6282141643495');
+            $waTarget = config('services.whatsapp.engineer_phone', '+6282141643495');
             WhatsAppService::sendMessage($waTarget, $message);
         }
 
@@ -69,7 +69,7 @@ class MachineLogController extends Controller
     {
         Gate::authorize('update_machine_log');
         // Operator doesn't usually edit, but let's provide it if admin needs it.
-        $machines = Machine::all();
+        $machines = Machine::orderBy('nama_mesin')->get();
         return view('admin.machine_logs.edit', compact('machineLog', 'machines'));
     }
 

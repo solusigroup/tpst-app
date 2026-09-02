@@ -29,27 +29,30 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
-    // Dashboard
-    Route::get('/test500', function() {
-        return response()->json(['status' => 'OK', 'message' => 'The code was successfully pulled!']);
+    // Debug / Dev Routes (Super Admin Only)
+    Route::middleware([\App\Http\Middleware\SuperAdminMiddleware::class])->group(function () {
+        Route::get('/test500', function() {
+            return response()->json(['status' => 'OK', 'message' => 'The code was successfully pulled!']);
+        });
+        Route::get('/test500-controller', [\App\Http\Controllers\Admin\Test500Controller::class, 'index']);
+        Route::get('/logs-debug', function() {
+            $logPath = storage_path('logs/laravel.log');
+            if (!file_exists($logPath)) {
+                return response('Log file does not exist.', 404);
+            }
+            $content = file_get_contents($logPath);
+            return response(substr($content, -20000), 200)->header('Content-Type', 'text/plain');
+        });
+        Route::get('/invoice-debug', function() {
+            try {
+                $invoices = \App\Models\Invoice::with('klien')->orderByDesc('tanggal_invoice')->paginate(15);
+                return view('admin.invoice.index', compact('invoices'))->render();
+            } catch (\Throwable $e) {
+                return response('<pre style="color:red; font-size:14px;"><strong>ERROR:</strong> ' . htmlspecialchars($e->getMessage()) . "\n<strong>FILE:</strong> " . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . "\n\n<strong>STACK TRACE:</strong>\n" . htmlspecialchars($e->getTraceAsString()) . '</pre>', 200)->header('Content-Type', 'text/html');
+            }
+        });
     });
-    Route::get('/test500-controller', [\App\Http\Controllers\Admin\Test500Controller::class, 'index']);
-    Route::get('/logs-debug', function() {
-        $logPath = storage_path('logs/laravel.log');
-        if (!file_exists($logPath)) {
-            return response('Log file does not exist.', 404);
-        }
-        $content = file_get_contents($logPath);
-        return response(substr($content, -20000), 200)->header('Content-Type', 'text/plain');
-    });
-    Route::get('/invoice-debug', function() {
-        try {
-            $invoices = \App\Models\Invoice::with('klien')->orderByDesc('tanggal_invoice')->paginate(15);
-            return view('admin.invoice.index', compact('invoices'))->render();
-        } catch (\Throwable $e) {
-            return response('<pre style="color:red; font-size:14px;"><strong>ERROR:</strong> ' . htmlspecialchars($e->getMessage()) . "\n<strong>FILE:</strong> " . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . "\n\n<strong>STACK TRACE:</strong>\n" . htmlspecialchars($e->getTraceAsString()) . '</pre>', 200)->header('Content-Type', 'text/html');
-        }
-    });
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional

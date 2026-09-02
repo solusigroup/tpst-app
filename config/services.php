@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'api_token' => env('WA_API_TOKEN', 'YOUR_FONNTE_TOKEN'),
+        'api_url' => env('WA_API_URL', 'https://api.fonnte.com/send'),
+        'engineer_phone' => env('WA_ENGINEER_PHONE', '+6282141643495'),
+    ],
+
 ];
