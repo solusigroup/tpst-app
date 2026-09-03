@@ -316,10 +316,11 @@ class TracingController extends Controller
             ->with('klien')
             ->get();
         foreach ($uninvoicedPenjualan as $p) {
+            $tgl = $p->tanggal ? $p->tanggal->format('d/m/Y') : '-';
             $issues[] = [
                 'type' => 'uninvoiced_penjualan',
                 'severity' => 'info',
-                'message' => 'Penjualan ' . $p->jenis_produk . ' (' . $p->tanggal->format('d/m/Y') . ') ke ' . ($p->klien->nama_klien ?? '?') . ' sebesar Rp ' . number_format($p->total_harga, 0, ',', '.') . ' belum di-invoice.',
+                'message' => 'Penjualan ' . $p->jenis_produk . ' (' . $tgl . ') ke ' . ($p->klien->nama_klien ?? '?') . ' sebesar Rp ' . number_format($p->total_harga, 0, ',', '.') . ' belum di-invoice.',
                 'link' => route('admin.penjualan.show', $p->id),
             ];
         }
@@ -333,7 +334,7 @@ class TracingController extends Controller
         $journalHeadersByInv = JurnalHeader::where('referensi_type', Invoice::class)
             ->whereIn('referensi_id', $sentPaidInvoiceIds)
             ->where('deskripsi', 'not like', '%Penerimaan Pembayaran%')
-            ->with('details')
+            ->with('jurnalDetails')
             ->get()
             ->groupBy('referensi_id');
 
@@ -341,7 +342,7 @@ class TracingController extends Controller
             $jhList = $journalHeadersByInv->get($inv->id);
             $jh = $jhList ? $jhList->first() : null;
             if ($jh) {
-                $totalDebit = $jh->details->sum('debit');
+                $totalDebit = $jh->jurnalDetails->sum('debit');
                 if (abs($totalDebit - $inv->total_tagihan) > 1) {
                     $issues[] = [
                         'type' => 'amount_mismatch',
