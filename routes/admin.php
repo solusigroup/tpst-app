@@ -203,6 +203,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('tonase-sumber', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'tonasePerSumber'])->name('tonase-sumber');
         Route::get('tonase-sumber/export-pdf', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'exportTonasePdf'])->name('tonase-sumber.export-pdf');
         Route::get('tonase-sumber/export-excel', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'exportTonaseExcel'])->name('tonase-sumber.export-excel');
+        Route::get('hasil-pilahan', [\App\Http\Controllers\Admin\StatistikKomparatifController::class, 'hasilPilahan'])->name('hasil-pilahan');
     });
 
     // AI Assistant

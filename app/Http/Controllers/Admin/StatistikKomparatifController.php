@@ -555,6 +555,207 @@ class StatistikKomparatifController extends Controller
         );
     }
 
+    /**
+     * Rekap Hasil Pilahan: daily / weekly / monthly / yearly
+     */
+    public function hasilPilahan(Request $request)
+    {
+        $this->checkAccess();
+
+        $period = $request->get('period', 'monthly'); // daily, weekly, monthly, yearly
+        $selectedMonth = $request->get('month', date('m'));
+        $selectedYear = $request->get('year', date('Y'));
+        $selectedCategory = $request->get('waste_category_id', 'all');
+
+        // Build base query
+        $query = HasilPilahan::query();
+
+        // Optional filter by waste category (jenis sampah)
+        if ($selectedCategory !== 'all') {
+            $query->where('waste_category_id', $selectedCategory);
+        }
+
+        // Determine grouping and date constraints based on period
+        switch ($period) {
+            case 'daily':
+                $query->whereYear('tanggal', $selectedYear)
+                      ->whereMonth('tanggal', $selectedMonth);
+                $groupSelect = 'DAY(tanggal) as period_key';
+                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, (int) $selectedMonth, (int) $selectedYear);
+                $periodRange = range(1, $daysInMonth);
+                $periodLabels = [];
+                foreach ($periodRange as $d) {
+                    $periodLabels[$d] = $d;
+                }
+                break;
+
+            case 'weekly':
+                $query->whereYear('tanggal', $selectedYear);
+                $groupSelect = 'WEEK(tanggal, 1) as period_key';
+                // ISO weeks 1-53
+                $periodRange = range(1, 53);
+                $periodLabels = [];
+                foreach ($periodRange as $w) {
+                    $periodLabels[$w] = 'Minggu ' . $w;
+                }
+                break;
+
+            case 'yearly':
+                // No date filter — all years
+                $groupSelect = 'YEAR(tanggal) as period_key';
+                $yearRange = $this->getYearRange();
+                $periodRange = array_keys($yearRange);
+                $periodLabels = [];
+                foreach ($periodRange as $y) {
+                    $periodLabels[$y] = (string) $y;
+                }
+                break;
+
+            case 'monthly':
+            default:
+                $period = 'monthly';
+                $query->whereYear('tanggal', $selectedYear);
+                $groupSelect = 'MONTH(tanggal) as period_key';
+                $periodRange = range(1, 12);
+                $months = $this->getMonthNames();
+                $periodLabels = $months;
+                break;
+        }
+
+        // Main aggregation: per period_key per kategori
+        $rawData = (clone $query)
+            ->selectRaw($groupSelect . ', kategori, SUM(tonase) as total_tonase, SUM(jml_bal) as total_bal')
+            ->groupBy('period_key', 'kategori')
+            ->get();
+
+        // Also get breakdown by jenis (waste category name) for the detail table
+        $jenisData = (clone $query)
+            ->selectRaw($groupSelect . ', jenis, SUM(tonase) as total_tonase, SUM(jml_bal) as total_bal')
+            ->groupBy('period_key', 'jenis')
+            ->get();
+
+        // Kategori list
+        $kategoriList = ['Organik', 'Anorganik', 'B3', 'Residu'];
+
+        // Pivot data: period_key => kategori => values
+        $pivoted = [];
+        foreach ($rawData as $row) {
+            $key = $row->period_key;
+            if (!isset($pivoted[$key])) {
+                $pivoted[$key] = ['total_tonase' => 0, 'total_bal' => 0];
+                foreach ($kategoriList as $k) {
+                    $pivoted[$key][$k] = ['tonase' => 0, 'bal' => 0];
+                }
+            }
+            $kat = $row->kategori;
+            if (in_array($kat, $kategoriList)) {
+                $pivoted[$key][$kat]['tonase'] = (float) $row->total_tonase;
+                $pivoted[$key][$kat]['bal'] = (int) $row->total_bal;
+            }
+            $pivoted[$key]['total_tonase'] += (float) $row->total_tonase;
+            $pivoted[$key]['total_bal'] += (int) $row->total_bal;
+        }
+
+        // Pivot jenis data: period_key => jenis => values
+        $jenisPivoted = [];
+        $allJenis = [];
+        foreach ($jenisData as $row) {
+            $key = $row->period_key;
+            $jenis = $row->jenis;
+            if (!in_array($jenis, $allJenis)) {
+                $allJenis[] = $jenis;
+            }
+            if (!isset($jenisPivoted[$key])) {
+                $jenisPivoted[$key] = [];
+            }
+            $jenisPivoted[$key][$jenis] = [
+                'tonase' => (float) $row->total_tonase,
+                'bal' => (int) $row->total_bal,
+            ];
+        }
+        sort($allJenis);
+
+        // Build chart data arrays
+        $chartData = [];
+        $totalTonase = 0;
+        $totalBal = 0;
+        $periodsWithData = 0;
+
+        foreach ($periodRange as $pk) {
+            $entry = [
+                'period_key' => $pk,
+                'period_label' => $periodLabels[$pk] ?? $pk,
+            ];
+            $rowTotal = 0;
+            foreach ($kategoriList as $kat) {
+                $val = $pivoted[$pk][$kat]['tonase'] ?? 0;
+                $entry[$kat] = round($val, 2);
+                $rowTotal += $val;
+            }
+            $entry['total'] = round($rowTotal, 2);
+            $entry['bal'] = $pivoted[$pk]['total_bal'] ?? 0;
+
+            // Jenis breakdown for this period
+            $jenisBreakdown = [];
+            foreach ($allJenis as $j) {
+                $jenisBreakdown[$j] = [
+                    'tonase' => round($jenisPivoted[$pk][$j]['tonase'] ?? 0, 2),
+                    'bal' => $jenisPivoted[$pk][$j]['bal'] ?? 0,
+                ];
+            }
+            $entry['jenis_breakdown'] = $jenisBreakdown;
+
+            $totalTonase += $rowTotal;
+            $totalBal += $entry['bal'];
+            if ($rowTotal > 0) {
+                $periodsWithData++;
+            }
+
+            $chartData[] = $entry;
+        }
+
+        // For weekly mode, trim weeks with no data at the end
+        if ($period === 'weekly') {
+            $chartData = array_values(array_filter($chartData, function ($item) use ($pivoted) {
+                return isset($pivoted[$item['period_key']]);
+            }));
+            // If no data at all, keep at least one placeholder
+            if (empty($chartData)) {
+                $chartData[] = [
+                    'period_key' => 1,
+                    'period_label' => 'Minggu 1',
+                    'Organik' => 0, 'Anorganik' => 0, 'B3' => 0, 'Residu' => 0,
+                    'total' => 0, 'bal' => 0, 'jenis_breakdown' => [],
+                ];
+            }
+        }
+
+        $avgPerPeriod = $periodsWithData > 0 ? $totalTonase / $periodsWithData : 0;
+
+        // Waste categories for filter dropdown
+        $wasteCategories = WasteCategory::where('is_active', true)->orderBy('name')->get();
+
+        $months = $this->getMonthNames();
+        $years = $this->getYearRange();
+
+        return view('admin.statistik.hasil_pilahan', compact(
+            'chartData',
+            'kategoriList',
+            'allJenis',
+            'totalTonase',
+            'totalBal',
+            'avgPerPeriod',
+            'periodsWithData',
+            'period',
+            'selectedMonth',
+            'selectedYear',
+            'selectedCategory',
+            'wasteCategories',
+            'months',
+            'years'
+        ));
+    }
+
     private function getSumberLabels(): array
     {
         return [

@@ -791,6 +791,11 @@
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Produksi vs Penjualan
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.statistik-komparatif.hasil-pilahan') ? 'active' : '' }}" href="{{ route('admin.statistik-komparatif.hasil-pilahan') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Rekap Hasil Pilahan
+                        </a>
+                    </li>
                 </ul>
             </li>
             @endcanany
