@@ -190,6 +190,32 @@
                 </div>
             </div>
         </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card stat-info">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stat-icon bg-info-light me-3">
+                        <i class="cil-layers"></i>
+                    </div>
+                    <div>
+                        <div class="text-body-secondary text-uppercase fw-semibold small">Sisa Stok RDF</div>
+                        <div class="fs-4 fw-bold">{{ number_format($sisaStokRdf, 2, ',', '.') }} kg</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card stat-warning">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stat-icon bg-warning-light me-3">
+                        <i class="cil-storage"></i>
+                    </div>
+                    <div>
+                        <div class="text-body-secondary text-uppercase fw-semibold small">Sisa Stok Hasil Pilahan</div>
+                        <div class="fs-4 fw-bold">{{ number_format($sisaStokHasilPilahan, 2, ',', '.') }} kg</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         @if(!auth()->user()->hasRole('ritase_only'))
             <div class="col-sm-6 col-xl-3">

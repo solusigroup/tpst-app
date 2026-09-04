@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ritase;
 use App\Models\Penjualan;
 use App\Models\HasilPilahan;
+use App\Models\ProduksiHarian;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -50,6 +51,16 @@ class DashboardController extends Controller
         $kemampuanReducePilahan = $tonaseAkumulasi > 0 
             ? ($pilahanAkumulasi / $tonaseAkumulasi) * 100 
             : 0;
+
+        // Sisa Stok RDF: total produksi RDF - total penjualan RDF
+        $totalProduksiRdf = ProduksiHarian::sum('hasil_rdf');
+        $totalPenjualanRdf = Penjualan::where('jenis_produk', 'RDF')->sum('berat_kg');
+        $sisaStokRdf = max(0, $totalProduksiRdf - $totalPenjualanRdf);
+
+        // Sisa Stok Semua Hasil Pilahan: total tonase masuk - total penjualan keluar
+        $totalMasukPilahan = HasilPilahan::sum('tonase');
+        $totalKeluarPilahan = Penjualan::sum('berat_kg');
+        $sisaStokHasilPilahan = max(0, $totalMasukPilahan - $totalKeluarPilahan);
 
         if (!auth()->user()->hasRole('ritase_only')) {
             $pendapatanTipping = Ritase::whereDate('waktu_masuk', $today)
@@ -154,6 +165,8 @@ class DashboardController extends Controller
             'jumlahRitaseBulanIni',
             'kemampuanReduceKeseluruhan',
             'kemampuanReducePilahan',
+            'sisaStokRdf',
+            'sisaStokHasilPilahan',
             'dailyTonnage',
             'monthlyFinancials',
             'selectedMonth',
