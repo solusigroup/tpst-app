@@ -21,8 +21,17 @@ class BankReconciliationController extends Controller
     {
         Gate::authorize('view_jurnal_kas');
 
-        // Get all Kas & Bank COAs (kode_akun starts with '11') with aggregated balance in a single query
-        $kasBankCoas = Coa::where('coa.kode_akun', 'like', '11%')
+        $kasBankCoas = $this->getKasBankCoas();
+
+        return view('admin.rekonsiliasi-bank.index', compact('kasBankCoas'));
+    }
+
+    /**
+     * Get all Kas & Bank COAs with calculated saldo.
+     */
+    private function getKasBankCoas()
+    {
+        return Coa::where('coa.kode_akun', 'like', '11%')
             ->select('coa.*')
             ->leftJoin('jurnal_detail', 'coa.id', '=', 'jurnal_detail.coa_id')
             ->leftJoin('jurnal_header', function ($join) {
@@ -38,16 +47,12 @@ class BankReconciliationController extends Controller
                 'coa.tipe',
                 'coa.klasifikasi',
                 'coa.kategori_buku_pembantu',
-                'coa.saldo_normal',
-                'coa.deskripsi',
                 'coa.created_at',
                 'coa.updated_at',
                 'coa.deleted_at'
             )
             ->orderBy('coa.kode_akun')
             ->get();
-
-        return view('admin.rekonsiliasi-bank.index', compact('kasBankCoas'));
     }
 
     /**
@@ -209,7 +214,7 @@ class BankReconciliationController extends Controller
                 : 0,
         ];
 
-        $kasBankCoas = Coa::where('kode_akun', 'like', '11%')->orderBy('kode_akun')->get();
+        $kasBankCoas = $this->getKasBankCoas();
 
         // Save reconciliation results to session for Excel export
         session([

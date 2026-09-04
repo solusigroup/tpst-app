@@ -139,7 +139,7 @@ class AiToolHandler
         $coas = Coa::where('nama_akun', 'LIKE', "%{$query}%")
             ->orWhere('kode_akun', 'LIKE', "%{$query}%")
             ->limit(10)
-            ->get(['kode_akun', 'nama_akun', 'tipe', 'saldo_normal']);
+            ->get(['kode_akun', 'nama_akun', 'tipe', 'klasifikasi']);
 
         if ($coas->isEmpty()) {
             return ['message' => 'No COA found matching the query.'];
