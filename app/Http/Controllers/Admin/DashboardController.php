@@ -51,14 +51,14 @@ class DashboardController extends Controller
             ? ($pilahanAkumulasi / $tonaseAkumulasi) * 100 
             : 0;
 
-        // Sisa Stok RDF: total masuk RDF (dari hasil pilahan) - total penjualan RDF
-        $totalMasukRdf = HasilPilahan::where('jenis', 'RDF')->sum('tonase');
-        $totalPenjualanRdf = Penjualan::where('jenis_produk', 'RDF')->sum('berat_kg');
+        // Sisa Stok RDF s/d akhir bulan terpilih
+        $totalMasukRdf = HasilPilahan::where('jenis', 'RDF')->whereDate('tanggal', '<=', $monthEnd)->sum('tonase');
+        $totalPenjualanRdf = Penjualan::where('jenis_produk', 'RDF')->whereDate('tanggal', '<=', $monthEnd)->sum('berat_kg');
         $sisaStokRdf = max(0, $totalMasukRdf - $totalPenjualanRdf);
 
-        // Sisa Stok Semua Hasil Pilahan: total tonase masuk - total penjualan keluar
-        $totalMasukPilahan = HasilPilahan::sum('tonase');
-        $totalKeluarPilahan = Penjualan::sum('berat_kg');
+        // Sisa Stok Semua Hasil Pilahan s/d akhir bulan terpilih
+        $totalMasukPilahan = HasilPilahan::whereDate('tanggal', '<=', $monthEnd)->sum('tonase');
+        $totalKeluarPilahan = Penjualan::whereDate('tanggal', '<=', $monthEnd)->sum('berat_kg');
         $sisaStokHasilPilahan = max(0, $totalMasukPilahan - $totalKeluarPilahan);
 
         if (!auth()->user()->hasRole('ritase_only')) {

@@ -197,7 +197,7 @@
                         <i class="cil-layers"></i>
                     </div>
                     <div>
-                        <div class="text-body-secondary text-uppercase fw-semibold small">Sisa Stok RDF</div>
+                        <div class="text-body-secondary text-uppercase fw-semibold small">Sisa Stok RDF s/d {{ $months[intval($selectedMonth)] }} {{ $selectedYear }}</div>
                         <div class="fs-4 fw-bold">{{ number_format($sisaStokRdf, 2, ',', '.') }} kg</div>
                     </div>
                 </div>
@@ -210,7 +210,7 @@
                         <i class="cil-storage"></i>
                     </div>
                     <div>
-                        <div class="text-body-secondary text-uppercase fw-semibold small">Sisa Stok Hasil Pilahan</div>
+                        <div class="text-body-secondary text-uppercase fw-semibold small">Sisa Stok Hasil Pilahan s/d {{ $months[intval($selectedMonth)] }} {{ $selectedYear }}</div>
                         <div class="fs-4 fw-bold">{{ number_format($sisaStokHasilPilahan, 2, ',', '.') }} kg</div>
                     </div>
                 </div>
