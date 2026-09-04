@@ -363,6 +363,46 @@ class RitaseController extends Controller
         return redirect()->back()->with('success', $msg);
     }
 
+    public function disapprove(Ritase $ritase)
+    {
+        // Hanya superuser yang boleh disapprove
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Hanya superuser yang dapat melakukan disapprove.');
+        }
+
+        if (!$ritase->is_approved) {
+            return redirect()->back()->with('info', 'Ritase ini belum di-approve.');
+        }
+
+        try {
+            DB::transaction(function () use ($ritase) {
+                $oldInvoice = $ritase->invoice;
+
+                $ritase->update([
+                    'is_approved' => false,
+                    'approved_at' => null,
+                    'status' => 'keluar',
+                    'invoice_id' => null,
+                    'status_invoice' => null,
+                ]);
+
+                // Recalculate invoice totals after removing this ritase
+                if ($oldInvoice) {
+                    $oldInvoice->recalculateTotals();
+                }
+            });
+        } catch (\Throwable $e) {
+            Log::error('Error in disapprove ritase: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'ritase_id' => $ritase->id,
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal melakukan disapprove: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Ritase berhasil di-disapprove.');
+    }
+
     public function bulkApprove(Request $request)
     {
         Gate::authorize('update_ritase');

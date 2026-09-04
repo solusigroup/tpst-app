@@ -125,6 +125,14 @@
                         <td>
                             @if($item->is_approved)
                                 <span class="badge bg-success"><i class="cil-check-circle me-1"></i> Approved</span>
+                                @if(auth()->user()->isSuperAdmin())
+                                    <form method="POST" action="{{ route('admin.ritase.disapprove', $item) }}" class="d-inline mt-1" onsubmit="return confirm('Yakin ingin membatalkan approval ritase ini?')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="cil-x-circle me-1"></i> Disapprove
+                                        </button>
+                                    </form>
+                                @endif
                             @else
                                 <form method="POST" action="{{ route('admin.ritase.approve', $item) }}">
                                     @csrf

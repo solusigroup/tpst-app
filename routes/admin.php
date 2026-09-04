@@ -61,6 +61,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('ritase/bulk-approve', fn() => redirect()->route('admin.ritase.index'));
     Route::post('ritase/bulk-approve', [RitaseController::class, 'bulkApprove'])->name('ritase.bulk-approve');
     Route::post('ritase/{ritase}/approve', [RitaseController::class, 'approve'])->name('ritase.approve');
+    Route::post('ritase/{ritase}/disapprove', [RitaseController::class, 'disapprove'])->name('ritase.disapprove');
     Route::resource('ritase', RitaseController::class);
 
     // Ritase DLH (Disetujui & Dibayar)
