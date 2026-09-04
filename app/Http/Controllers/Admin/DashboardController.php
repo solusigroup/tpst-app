@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Ritase;
 use App\Models\Penjualan;
 use App\Models\HasilPilahan;
-use App\Models\ProduksiHarian;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -52,10 +51,10 @@ class DashboardController extends Controller
             ? ($pilahanAkumulasi / $tonaseAkumulasi) * 100 
             : 0;
 
-        // Sisa Stok RDF: total produksi RDF - total penjualan RDF
-        $totalProduksiRdf = ProduksiHarian::sum('hasil_rdf');
+        // Sisa Stok RDF: total masuk RDF (dari hasil pilahan) - total penjualan RDF
+        $totalMasukRdf = HasilPilahan::where('jenis', 'RDF')->sum('tonase');
         $totalPenjualanRdf = Penjualan::where('jenis_produk', 'RDF')->sum('berat_kg');
-        $sisaStokRdf = max(0, $totalProduksiRdf - $totalPenjualanRdf);
+        $sisaStokRdf = max(0, $totalMasukRdf - $totalPenjualanRdf);
 
         // Sisa Stok Semua Hasil Pilahan: total tonase masuk - total penjualan keluar
         $totalMasukPilahan = HasilPilahan::sum('tonase');
