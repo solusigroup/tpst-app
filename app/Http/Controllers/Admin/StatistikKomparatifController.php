@@ -737,6 +737,15 @@ class StatistikKomparatifController extends Controller
 
         $months = $this->getMonthNames();
         $years = $this->getYearRange();
+        $selectedMonthName = $months[(int) $selectedMonth] ?? '';
+
+        $headerLabel = match ($period) {
+            'daily' => $selectedMonthName ? "Tanggal ({$selectedMonthName} {$selectedYear})" : "Tanggal ({$selectedYear})",
+            'weekly' => "Minggu ({$selectedYear})",
+            'monthly' => "Bulan ({$selectedYear})",
+            'yearly' => 'Tahun',
+            default => 'Periode',
+        };
 
         return view('admin.statistik.hasil_pilahan', compact(
             'chartData',
@@ -752,7 +761,8 @@ class StatistikKomparatifController extends Controller
             'selectedCategory',
             'wasteCategories',
             'months',
-            'years'
+            'years',
+            'headerLabel'
         ));
     }
 

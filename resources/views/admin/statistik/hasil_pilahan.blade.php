@@ -145,7 +145,7 @@
                     Breakdown tonase per kategori sampah —
                     @switch($period)
                         @case('daily')
-                            {{ $months[$selectedMonth] ?? '' }} {{ $selectedYear }}
+                            {{ $months[(int)$selectedMonth] ?? '' }} {{ $selectedYear }}
                         @break
                         @case('weekly')
                         @case('monthly')
@@ -204,7 +204,7 @@
                         <thead>
                             <tr>
                                 <th class="text-center" style="width: 60px;">No</th>
-                                <th>Periode</th>
+                                <th>{{ $headerLabel ?? 'Periode' }}</th>
                                 @foreach($kategoriList as $kat)
                                     <th class="text-end">{{ $kat }} (kg)</th>
                                 @endforeach
@@ -256,7 +256,7 @@
                         <thead>
                             <tr>
                                 <th class="text-center" style="width: 60px;">No</th>
-                                <th>Periode</th>
+                                <th>{{ $headerLabel ?? 'Periode' }}</th>
                                 @foreach($allJenis as $jenis)
                                     <th class="text-end">{{ $jenis }} (kg)</th>
                                 @endforeach
