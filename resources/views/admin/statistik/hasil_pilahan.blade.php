@@ -180,77 +180,25 @@
         </div>
     </div>
 
-    {{-- Tab switcher: Rekap per Kategori vs Rekap per Jenis --}}
+    {{-- Tab switcher: Rekap per Jenis vs Rekap per Kategori --}}
     <div class="card">
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
             <ul class="nav nav-tabs card-header-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold" id="tab-kategori" data-coreui-toggle="tab" data-coreui-target="#tabKategori" type="button" role="tab">
-                        <i class="cil-chart-pie me-1"></i> Rekap per Kategori
+                    <button class="nav-link active fw-bold" id="tab-jenis" data-coreui-toggle="tab" data-coreui-target="#tabJenis" type="button" role="tab">
+                        <i class="cil-list-rich me-1"></i> Rekap per Jenis Sampah
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold" id="tab-jenis" data-coreui-toggle="tab" data-coreui-target="#tabJenis" type="button" role="tab">
-                        <i class="cil-list-rich me-1"></i> Rekap per Jenis Sampah
+                    <button class="nav-link fw-bold" id="tab-kategori" data-coreui-toggle="tab" data-coreui-target="#tabKategori" type="button" role="tab">
+                        <i class="cil-chart-pie me-1"></i> Rekap per Kategori
                     </button>
                 </li>
             </ul>
         </div>
         <div class="tab-content">
-            {{-- Tab 1: Rekap per Kategori (Organik/Anorganik/B3/Residu) --}}
-            <div class="tab-pane fade show active" id="tabKategori" role="tabpanel">
-                <div class="table-responsive p-3">
-                    <table class="table table-hover table-striped align-middle border-top">
-                        <thead>
-                            <tr>
-                                <th class="text-center" style="width: 60px;">No</th>
-                                <th>{{ $headerLabel ?? 'Periode' }}</th>
-                                @foreach($kategoriList as $kat)
-                                    <th class="text-end">{{ $kat }} (kg)</th>
-                                @endforeach
-                                <th class="text-end fw-bold">Total (kg)</th>
-                                <th class="text-end">Bal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $idx = 0; @endphp
-                            @foreach($chartData as $row)
-                                @if($row['total'] > 0)
-                                    @php $idx++; @endphp
-                                    <tr>
-                                        <td class="text-center text-muted fw-bold">{{ $idx }}</td>
-                                        <td><strong>{{ $row['period_label'] }}</strong></td>
-                                        <td class="text-end font-monospace text-success">{{ number_format($row['Organik'], 2, ',', '.') }}</td>
-                                        <td class="text-end font-monospace text-primary">{{ number_format($row['Anorganik'], 2, ',', '.') }}</td>
-                                        <td class="text-end font-monospace text-danger">{{ number_format($row['B3'], 2, ',', '.') }}</td>
-                                        <td class="text-end font-monospace text-secondary">{{ number_format($row['Residu'], 2, ',', '.') }}</td>
-                                        <td class="text-end font-monospace fw-bold">{{ number_format($row['total'], 2, ',', '.') }}</td>
-                                        <td class="text-end font-monospace">{{ number_format($row['bal'], 0, ',', '.') }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-dark fw-bold">
-                                <td colspan="2" class="text-center">TOTAL</td>
-                                @foreach($kategoriList as $kat)
-                                    <td class="text-end font-monospace">
-                                        {{ number_format(collect($chartData)->sum($kat), 2, ',', '.') }}
-                                    </td>
-                                @endforeach
-                                <td class="text-end font-monospace">{{ number_format($totalTonase, 2, ',', '.') }}</td>
-                                <td class="text-end font-monospace">{{ number_format($totalBal, 0, ',', '.') }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    @if($totalTonase == 0)
-                        <p class="text-center text-muted py-3">Tidak ada data untuk periode terpilih.</p>
-                    @endif
-                </div>
-            </div>
-
-            {{-- Tab 2: Rekap per Jenis Sampah (detail) --}}
-            <div class="tab-pane fade" id="tabJenis" role="tabpanel">
+            {{-- Tab 1: Rekap per Jenis Sampah (detail) --}}
+            <div class="tab-pane fade show active" id="tabJenis" role="tabpanel">
                 <div class="table-responsive p-3">
                     <table class="table table-hover table-striped align-middle border-top">
                         <thead>
@@ -303,6 +251,58 @@
                     </table>
                     @if(count($allJenis) === 0)
                         <p class="text-center text-muted py-3">Tidak ada data jenis sampah untuk periode terpilih.</p>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Tab 2: Rekap per Kategori (Organik/Anorganik/B3/Residu) --}}
+            <div class="tab-pane fade" id="tabKategori" role="tabpanel">
+                <div class="table-responsive p-3">
+                    <table class="table table-hover table-striped align-middle border-top">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 60px;">No</th>
+                                <th>{{ $headerLabel ?? 'Periode' }}</th>
+                                @foreach($kategoriList as $kat)
+                                    <th class="text-end">{{ $kat }} (kg)</th>
+                                @endforeach
+                                <th class="text-end fw-bold">Total (kg)</th>
+                                <th class="text-end">Bal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $idx = 0; @endphp
+                            @foreach($chartData as $row)
+                                @if($row['total'] > 0)
+                                    @php $idx++; @endphp
+                                    <tr>
+                                        <td class="text-center text-muted fw-bold">{{ $idx }}</td>
+                                        <td><strong>{{ $row['period_label'] }}</strong></td>
+                                        <td class="text-end font-monospace text-success">{{ number_format($row['Organik'], 2, ',', '.') }}</td>
+                                        <td class="text-end font-monospace text-primary">{{ number_format($row['Anorganik'], 2, ',', '.') }}</td>
+                                        <td class="text-end font-monospace text-danger">{{ number_format($row['B3'], 2, ',', '.') }}</td>
+                                        <td class="text-end font-monospace text-secondary">{{ number_format($row['Residu'], 2, ',', '.') }}</td>
+                                        <td class="text-end font-monospace fw-bold">{{ number_format($row['total'], 2, ',', '.') }}</td>
+                                        <td class="text-end font-monospace">{{ number_format($row['bal'], 0, ',', '.') }}</td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-dark fw-bold">
+                                <td colspan="2" class="text-center">TOTAL</td>
+                                @foreach($kategoriList as $kat)
+                                    <td class="text-end font-monospace">
+                                        {{ number_format(collect($chartData)->sum($kat), 2, ',', '.') }}
+                                    </td>
+                                @endforeach
+                                <td class="text-end font-monospace">{{ number_format($totalTonase, 2, ',', '.') }}</td>
+                                <td class="text-end font-monospace">{{ number_format($totalBal, 0, ',', '.') }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    @if($totalTonase == 0)
+                        <p class="text-center text-muted py-3">Tidak ada data untuk periode terpilih.</p>
                     @endif
                 </div>
             </div>
