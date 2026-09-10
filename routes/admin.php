@@ -25,6 +25,9 @@ use App\Http\Controllers\Admin\WageCalculationController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\RitaseDlhController;
 use App\Http\Controllers\Admin\AiAssistantController;
+use App\Http\Controllers\Admin\KpiDashboardController;
+use App\Http\Controllers\Admin\KpiDailyInputController;
+use App\Http\Controllers\Admin\KpiEvaluationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -214,4 +217,30 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('history', [AiAssistantController::class, 'clearHistory'])->name('history.clear');
         Route::post('new-session', [AiAssistantController::class, 'newSession'])->name('new-session');
     });
+
+    // TPST Performance Management System (KPI)
+    Route::prefix('kpi')->name('kpi.')->group(function () {
+        // 5 Dashboard Utama
+        Route::get('dashboard/site-manager', [KpiDashboardController::class, 'siteManager'])->name('dashboard.site-manager');
+        Route::get('dashboard/operasional', [KpiDashboardController::class, 'operasional'])->name('dashboard.operasional');
+        Route::get('dashboard/mesin', [KpiDashboardController::class, 'mesin'])->name('dashboard.mesin');
+        Route::get('dashboard/revenue', [KpiDashboardController::class, 'revenue'])->name('dashboard.revenue');
+        Route::get('dashboard/pemilah', [KpiDashboardController::class, 'pemilah'])->name('dashboard.pemilah');
+
+        // Input Harian
+        Route::get('daily-input', [KpiDailyInputController::class, 'index'])->name('daily-input.index');
+        Route::post('daily-input/checklist', [KpiDailyInputController::class, 'storeChecklist'])->name('daily-input.checklist');
+        Route::post('daily-input/machine-log', [KpiDailyInputController::class, 'storeMachineLog'])->name('daily-input.machine-log');
+        Route::post('daily-input/complaint', [KpiDailyInputController::class, 'storeComplaint'])->name('daily-input.complaint');
+        Route::post('daily-input/complaint/{complaint}/resolve', [KpiDailyInputController::class, 'resolveComplaint'])->name('daily-input.complaint.resolve');
+
+        // Evaluasi & Rekapitulasi (Approval Supervisi PT PBS)
+        Route::get('evaluasi', [KpiEvaluationController::class, 'index'])->name('evaluasi.index');
+        Route::post('evaluasi/generate', [KpiEvaluationController::class, 'generate'])->name('evaluasi.generate');
+        Route::get('evaluasi/{kpiEvaluation}', [KpiEvaluationController::class, 'show'])->name('evaluasi.show');
+        Route::post('evaluasi/{kpiEvaluation}/submit', [KpiEvaluationController::class, 'submit'])->name('evaluasi.submit');
+        Route::post('evaluasi/{kpiEvaluation}/approve', [KpiEvaluationController::class, 'approve'])->name('evaluasi.approve');
+        Route::get('evaluasi/{kpiEvaluation}/export-pdf', [KpiEvaluationController::class, 'exportPdf'])->name('evaluasi.export-pdf');
+    });
 });
+

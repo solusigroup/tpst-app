@@ -555,6 +555,51 @@
             </li>
             @endif
 
+            {{-- TPST Performance Management System (KPI) --}}
+            <li class="nav-title">Performance (KPI)</li>
+            <li class="nav-group {{ request()->is('admin/kpi/dashboard*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon cil-chart-line"></i> 5 Dashboard KPI
+                </a>
+                <ul class="nav-group-items compact">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.kpi.dashboard.site-manager') ? 'active' : '' }}" href="{{ route('admin.kpi.dashboard.site-manager') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Site Manager
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.kpi.dashboard.operasional') ? 'active' : '' }}" href="{{ route('admin.kpi.dashboard.operasional') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Operasional & QC
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.kpi.dashboard.mesin') ? 'active' : '' }}" href="{{ route('admin.kpi.dashboard.mesin') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Mesin & Wheel Loader
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.kpi.dashboard.revenue') ? 'active' : '' }}" href="{{ route('admin.kpi.dashboard.revenue') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Revenue / Tipping Fee
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.kpi.dashboard.pemilah') ? 'active' : '' }}" href="{{ route('admin.kpi.dashboard.pemilah') }}">
+                            <span class="nav-icon"><span class="nav-icon-bullet"></span></span> 12 Tenaga Pemilah
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.kpi.daily-input.*') ? 'active' : '' }}" href="{{ route('admin.kpi.daily-input.index') }}">
+                    <i class="nav-icon cil-pen-alt"></i> Input Harian KPI
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.kpi.evaluasi.*') ? 'active' : '' }}" href="{{ route('admin.kpi.evaluasi.index') }}">
+                    <i class="nav-icon cil-check-circle"></i> Evaluasi & Supervisi PBS
+                </a>
+            </li>
+
             {{-- Operasional --}}
             @canany(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan', 'view_pengangkutan_residu', 'view_machine', 'view_machine_log'])
             <li class="nav-title">Operasional</li>
