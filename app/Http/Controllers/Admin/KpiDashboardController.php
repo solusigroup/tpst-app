@@ -79,9 +79,12 @@ class KpiDashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Foto bukti kebersihan area bongkar terkini
+        $latestProof = KpiDailyChecklist::whereNotNull('foto_bukti')->latest('tanggal')->first();
+
         return view('admin.kpi.dashboard-site-manager', compact(
             'startDate', 'endDate', 'filter',
-            'globalKpi', 'budiKpi', 'nitaKpi', 'agungKpi', 'anaKpi', 'complaints'
+            'globalKpi', 'budiKpi', 'nitaKpi', 'agungKpi', 'anaKpi', 'complaints', 'latestProof'
         ));
     }
 

@@ -224,6 +224,34 @@
                 </div>
             </div>
 
+            {{-- Bukti Foto Fisik Sisi Depan TPST --}}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="cil-camera me-1 text-success"></i>Bukti Foto Sisi Depan TPST
+                    </h6>
+                    @if($latestProof)
+                        <span class="badge bg-light text-dark border">{{ $latestProof->tanggal->format('d/m/Y') }}</span>
+                    @endif
+                </div>
+                <div class="card-body p-3 text-center">
+                    @if($latestProof && $latestProof->foto_bukti)
+                        <a href="{{ asset('storage/' . $latestProof->foto_bukti) }}" target="_blank">
+                            <img src="{{ asset('storage/' . $latestProof->foto_bukti) }}" class="img-fluid rounded border shadow-sm mb-2" style="max-height: 180px; object-fit: cover; width: 100%;" alt="Foto Sisi Depan TPST">
+                        </a>
+                        <div class="small text-muted text-start">
+                            <div><strong>Lokasi:</strong> {{ $latestProof->area }}</div>
+                            <div><strong>Status:</strong> <span class="badge bg-success">{{ $latestProof->status_kebersihan }}</span> ({{ $latestProof->ada_tumpukan_sampah ? 'Ada Tumpukan' : 'Nihil Tumpukan' }})</div>
+                        </div>
+                    @else
+                        <div class="py-4 text-muted small">
+                            <i class="cil-camera fs-2 d-block mb-1 text-secondary opacity-50"></i>
+                            Belum ada foto bukti fisik yang diunggah.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             {{-- Kartu Status Supervisi PT PBS --}}
             <div class="card border-0 shadow-sm border-start border-4 border-primary">
                 <div class="card-body">

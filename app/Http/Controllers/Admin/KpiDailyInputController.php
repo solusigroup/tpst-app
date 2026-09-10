@@ -43,6 +43,7 @@ class KpiDailyInputController extends Controller
             'status_kebersihan' => 'required|in:Bersih,Kurang Bersih,Kotor',
             'status_bau' => 'required|in:Tidak Bau,Bau Ringan,Bau Berat',
             'ada_tumpukan_sampah' => 'nullable|boolean',
+            'foto_bukti' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'catatan' => 'nullable|string',
         ]);
 
@@ -58,6 +59,11 @@ class KpiDailyInputController extends Controller
             'Bau Berat' => 0,
         };
 
+        $fotoPath = null;
+        if ($request->hasFile('foto_bukti')) {
+            $fotoPath = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_bukti'), 'kpi_checklists');
+        }
+
         KpiDailyChecklist::create([
             'tanggal' => $request->tanggal,
             'area' => $request->area,
@@ -67,11 +73,12 @@ class KpiDailyInputController extends Controller
             'skor_kebersihan' => $skorKebersihan,
             'skor_bau' => $skorBau,
             'user_id' => auth()->id(),
+            'foto_bukti' => $fotoPath,
             'catatan' => $request->catatan,
         ]);
 
         return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal])
-            ->with('success', 'Checklist kebersihan & bau berhasil disimpan.');
+            ->with('success', 'Checklist kebersihan & bau beserta foto bukti berhasil disimpan.');
     }
 
     /**

@@ -33,18 +33,27 @@
 
     {{-- Tabs Input Harian --}}
     <ul class="nav nav-pills mb-4" id="dailyInputTabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active fw-semibold" id="tab-kebersihan" data-bs-toggle="pill" data-bs-target="#content-kebersihan" type="button">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold" id="tab-kebersihan" 
+                data-coreui-toggle="tab" data-coreui-target="#content-kebersihan"
+                data-bs-toggle="tab" data-bs-target="#content-kebersihan" 
+                type="button" role="tab" aria-controls="content-kebersihan" aria-selected="true">
                 <i class="cil-brush me-1"></i> 1. Kebersihan & Bau Area (Ana / Agung)
             </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link fw-semibold" id="tab-mesin" data-bs-toggle="pill" data-bs-target="#content-mesin" type="button">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="tab-mesin" 
+                data-coreui-toggle="tab" data-coreui-target="#content-mesin"
+                data-bs-toggle="tab" data-bs-target="#content-mesin" 
+                type="button" role="tab" aria-controls="content-mesin" aria-selected="false">
                 <i class="cil-memory me-1"></i> 2. Mesin & Wheel Loader (Agung)
             </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link fw-semibold" id="tab-complaint" data-bs-toggle="pill" data-bs-target="#content-complaint" type="button">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="tab-complaint" 
+                data-coreui-toggle="tab" data-coreui-target="#content-complaint"
+                data-bs-toggle="tab" data-bs-target="#content-complaint" 
+                type="button" role="tab" aria-controls="content-complaint" aria-selected="false">
                 <i class="cil-speech me-1"></i> 3. Keluhan Stakeholder (Nita / Budi)
             </button>
         </li>
@@ -52,7 +61,7 @@
 
     <div class="tab-content" id="dailyInputTabContent">
         {{-- ================= TAB 1: KEBERSIHAN & BAU ================= --}}
-        <div class="tab-pane fade show active" id="content-kebersihan" role="tabpanel">
+        <div class="tab-pane fade show active" id="content-kebersihan" role="tabpanel" aria-labelledby="tab-kebersihan">
             <div class="row g-4">
                 <div class="col-lg-5">
                     <div class="card border-0 shadow-sm">
@@ -62,14 +71,15 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('admin.kpi.daily-input.checklist') }}" method="POST">
+                            <form action="{{ route('admin.kpi.daily-input.checklist') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="tanggal" value="{{ $tanggal }}">
 
                                 <div class="mb-3">
                                     <label class="form-label">Area TPST <span class="text-danger">*</span></label>
                                     <select name="area" class="form-select" required>
-                                        <option value="Receiving Area (Timbangan & Bongkar)">Receiving Area (Timbangan & Bongkar)</option>
+                                        <option value="Sisi Depan TPST (Bongkar Muatan Armada)">Sisi Depan TPST (Bongkar Muatan Armada)</option>
+                                        <option value="Receiving Area (Timbangan & Manuver Truk)">Receiving Area (Timbangan & Manuver Truk)</option>
                                         <option value="Conveyor Pemilahan">Conveyor Pemilahan</option>
                                         <option value="Area Sortir & Baling">Area Sortir & Baling</option>
                                         <option value="Area Mesin RDF & Residu">Area Mesin RDF & Residu</option>
@@ -105,12 +115,22 @@
                                 </div>
 
                                 <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="cil-camera me-1 text-primary"></i> Upload Foto Bukti Sisi Depan TPST (Bongkar Muatan) <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="file" name="foto_bukti" class="form-control" accept="image/*">
+                                    <div class="form-text small text-muted">
+                                        Lampirkan bukti foto fisik sisi depan TPST tempat bongkar muatan armada sampah ber-tanggal/timestamp kamera (JPG, PNG, WebP maks 5MB).
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
                                     <label class="form-label">Catatan Lapangan</label>
                                     <textarea name="catatan" class="form-control" rows="2" placeholder="Kondisi cuaca, tumpukan, penanganan sanitasi/enzim..."></textarea>
                                 </div>
 
                                 <button type="submit" class="btn btn-success w-100">
-                                    <i class="cil-save me-1"></i> Simpan Checklist
+                                    <i class="cil-save me-1"></i> Simpan Checklist & Foto Bukti
                                 </button>
                             </form>
                         </div>
@@ -133,6 +153,7 @@
                                             <th>Kebersihan</th>
                                             <th>Tumpukan</th>
                                             <th>Bau</th>
+                                            <th class="text-center">Foto Bukti</th>
                                             <th>Skor</th>
                                         </tr>
                                     </thead>
@@ -155,11 +176,20 @@
                                                     {{ $c->status_bau }}
                                                 </span>
                                             </td>
+                                            <td class="text-center">
+                                                @if($c->foto_bukti)
+                                                    <a href="{{ asset('storage/' . $c->foto_bukti) }}" target="_blank" title="Lihat Foto Bukti Bongkar Muatan">
+                                                        <img src="{{ asset('storage/' . $c->foto_bukti) }}" class="rounded border shadow-sm" style="height: 38px; width: 38px; object-fit: cover;" alt="Bukti Foto">
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted small">-</span>
+                                                @endif
+                                            </td>
                                             <td class="fw-bold">{{ $c->skor_kebersihan }} / {{ $c->skor_bau }}</td>
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="5" class="text-center py-4 text-muted">
+                                            <td colspan="6" class="text-center py-4 text-muted">
                                                 Belum ada checklist kebersihan yang diinput untuk tanggal ini.
                                             </td>
                                         </tr>
@@ -452,4 +482,46 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('#dailyInputTabs button');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // CoreUI Tab API
+            if (typeof coreui !== 'undefined' && coreui.Tab) {
+                try {
+                    const tab = coreui.Tab.getOrCreateInstance(this);
+                    if (tab) {
+                        tab.show();
+                        return;
+                    }
+                } catch(err) {
+                    console.warn('CoreUI Tab err, falling back to manual switch', err);
+                }
+            }
+
+            // Fallback manual class switching
+            tabButtons.forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
+            });
+            document.querySelectorAll('#dailyInputTabContent .tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+            this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
+            const target = this.getAttribute('data-coreui-target') || this.getAttribute('data-bs-target');
+            const targetPane = document.querySelector(target);
+            if (targetPane) {
+                targetPane.classList.add('show', 'active');
+            }
+        });
+    });
+});
+</script>
+@endpush
 @endsection

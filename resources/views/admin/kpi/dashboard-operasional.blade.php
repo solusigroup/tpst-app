@@ -171,6 +171,7 @@
                             <th>Kebersihan</th>
                             <th>Tumpukan Sampah</th>
                             <th>Kondisi Bau</th>
+                            <th class="text-center">Foto Bukti</th>
                             <th>Skor Kebersihan</th>
                             <th>Skor Bau</th>
                             <th>Catatan</th>
@@ -196,13 +197,22 @@
                                     {{ $chk->status_bau }}
                                 </span>
                             </td>
+                            <td class="text-center">
+                                @if($chk->foto_bukti)
+                                    <a href="{{ asset('storage/' . $chk->foto_bukti) }}" target="_blank" title="Buka Foto Bongkar Muatan">
+                                        <img src="{{ asset('storage/' . $chk->foto_bukti) }}" class="rounded border shadow-sm" style="height: 38px; width: 38px; object-fit: cover;" alt="Bukti Foto">
+                                    </a>
+                                @else
+                                    <span class="text-muted small">-</span>
+                                @endif
+                            </td>
                             <td class="fw-bold">{{ $chk->skor_kebersihan }}</td>
                             <td class="fw-bold">{{ $chk->skor_bau }}</td>
                             <td><small class="text-muted">{{ $chk->catatan ?? '-' }}</small></td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
+                            <td colspan="9" class="text-center py-4 text-muted">
                                 Belum ada input checklist untuk periode ini. Silakan tambahkan melalui menu Input Harian KPI.
                             </td>
                         </tr>
