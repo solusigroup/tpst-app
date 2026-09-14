@@ -15,6 +15,7 @@ use App\Models\ProduksiHarian;
 use App\Services\KpiCalculationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class KpiDashboardController extends Controller
 {
@@ -30,6 +31,8 @@ class KpiDashboardController extends Controller
      */
     protected function getPeriod(Request $request)
     {
+        Gate::authorize('view_kpi_dashboard');
+
         $filter = $request->get('filter', 'mingguan');
         $today = Carbon::today();
 

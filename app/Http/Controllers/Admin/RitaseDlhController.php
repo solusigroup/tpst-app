@@ -50,7 +50,9 @@ class RitaseDlhController extends Controller
      */
     public function approved(Request $request)
     {
-        Gate::authorize('view_ritase');
+        if (!Gate::allows('view_ritase_dlh') && !Gate::allows('view_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $query = $this->baseQuery($request)
             ->where(function ($q) {
@@ -74,7 +76,9 @@ class RitaseDlhController extends Controller
      */
     public function paid(Request $request)
     {
-        Gate::authorize('view_ritase');
+        if (!Gate::allows('view_ritase_dlh') && !Gate::allows('view_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $query = $this->baseQuery($request)
             ->where('status_invoice', 'Paid');
@@ -95,7 +99,9 @@ class RitaseDlhController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        Gate::authorize('view_ritase');
+        if (!Gate::allows('view_ritase_dlh') && !Gate::allows('view_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $type = $request->get('type', 'approved');
 
@@ -132,7 +138,9 @@ class RitaseDlhController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        Gate::authorize('view_ritase');
+        if (!Gate::allows('view_ritase_dlh') && !Gate::allows('view_ritase')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $type = $request->get('type', 'approved');
 

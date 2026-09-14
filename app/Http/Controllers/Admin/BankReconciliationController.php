@@ -19,7 +19,9 @@ class BankReconciliationController extends Controller
      */
     public function index()
     {
-        Gate::authorize('view_jurnal_kas');
+        if (!Gate::allows('view_rekonsiliasi_bank') && !Gate::allows('view_jurnal_kas')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $kasBankCoas = $this->getKasBankCoas();
 
@@ -60,7 +62,9 @@ class BankReconciliationController extends Controller
      */
     public function proses(Request $request)
     {
-        Gate::authorize('view_jurnal_kas');
+        if (!Gate::allows('view_rekonsiliasi_bank') && !Gate::allows('view_jurnal_kas')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:10240',
@@ -246,7 +250,9 @@ class BankReconciliationController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        Gate::authorize('view_jurnal_kas');
+        if (!Gate::allows('view_rekonsiliasi_bank') && !Gate::allows('view_jurnal_kas')) {
+            abort(403, 'Akses ditolak.');
+        }
 
         $hasil = session('rekonsiliasi_hasil');
 

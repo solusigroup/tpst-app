@@ -1,5 +1,5 @@
-{{-- Only render if AI assistant is enabled --}}
-@if(config('ai-assistant.enabled', true) && auth()->check())
+{{-- Only render if AI assistant is enabled and user has permission --}}
+@if(config('ai-assistant.enabled', true) && auth()->check() && (auth()->user()->hasRole('super_admin') || auth()->user()->can('view_ai_assistant')))
 
 {{-- Load CSS --}}
 <link rel="stylesheet" href="{{ asset('css/ai-chat-widget.css') }}">

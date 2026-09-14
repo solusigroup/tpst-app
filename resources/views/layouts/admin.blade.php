@@ -556,7 +556,9 @@
             @endif
 
             {{-- TPST Performance Management System (KPI) --}}
+            @canany(['view_kpi_dashboard', 'view_kpi_daily_input', 'view_kpi_evaluasi'])
             <li class="nav-title">Performance (KPI)</li>
+            @can('view_kpi_dashboard')
             <li class="nav-group {{ request()->is('admin/kpi/dashboard*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-chart-line"></i> 5 Dashboard KPI
@@ -589,19 +591,25 @@
                     </li>
                 </ul>
             </li>
+            @endcan
+            @can('view_kpi_daily_input')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.kpi.daily-input.*') ? 'active' : '' }}" href="{{ route('admin.kpi.daily-input.index') }}">
                     <i class="nav-icon cil-pen-alt"></i> Input Harian KPI
                 </a>
             </li>
+            @endcan
+            @can('view_kpi_evaluasi')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.kpi.evaluasi.*') ? 'active' : '' }}" href="{{ route('admin.kpi.evaluasi.index') }}">
                     <i class="nav-icon cil-check-circle"></i> Evaluasi & Supervisi PBS
                 </a>
             </li>
+            @endcan
+            @endcanany
 
             {{-- Operasional --}}
-            @canany(['view_ritase', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan', 'view_pengangkutan_residu', 'view_machine', 'view_machine_log'])
+            @canany(['view_ritase', 'view_ritase_dlh', 'view_klien', 'view_armada', 'view_hasil_pilahan', 'view_penjualan', 'view_pengangkutan_residu', 'view_machine', 'view_machine_log'])
             <li class="nav-title">Operasional</li>
             @endcanany
 
@@ -651,6 +659,8 @@
                     <i class="nav-icon cil-truck"></i> Ritase
                 </a>
             </li>
+            @endcan
+            @canany(['view_ritase', 'view_ritase_dlh'])
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.ritase-dlh.approved') ? 'active' : '' }}" href="{{ route('admin.ritase-dlh.approved') }}">
                     <i class="nav-icon cil-check-circle"></i> Ritase DLH (Disetujui)
@@ -661,7 +671,7 @@
                     <i class="nav-icon cil-dollar"></i> Ritase DLH (Dibayar)
                 </a>
             </li>
-            @endcan
+            @endcanany
 
 
             @can('view_pengangkutan_residu')
@@ -875,12 +885,14 @@
                     <i class="nav-icon cil-money"></i> Jurnal Kas
                 </a>
             </li>
+            @endcan
+            @canany(['view_jurnal_kas', 'view_rekonsiliasi_bank'])
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.rekonsiliasi-bank.*') ? 'active' : '' }}" href="{{ route('admin.rekonsiliasi-bank.index') }}">
                     <i class="nav-icon cil-swap-horizontal"></i> Rekonsiliasi Bank
                 </a>
             </li>
-            @endcan
+            @endcanany
             @can('view_invoice')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.invoice.*') && !request()->routeIs('admin.invoice.swasta-lunas') ? 'active' : '' }}" href="{{ route('admin.invoice.index') }}">
@@ -912,28 +924,29 @@
                     </li>
                 </ul>
             </li>
+            @endcan
+            @canany(['view_buku_pembantu', 'view_tracing'])
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.tracing.*') ? 'active' : '' }}" href="{{ route('admin.tracing.index') }}">
                     <i class="nav-icon cil-find-in-page"></i> Tracing Transaksi
                 </a>
             </li>
-            @endcan
+            @endcanany
 
             {{-- HRD (Sumber Daya Manusia) --}}
             @canany(['view_attendance', 'view_employee_output', 'view_waste_category', 'view_wage_rate', 'view_wage_calculation', 'view_employee'])
             <li class="nav-title">S D M</li>
-            @endcanany
             
-            @hasanyrole('manajemen|hrd|super_admin')
+            @can('view_employee')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hrd.employee.*') ? 'active' : '' }}" href="{{ route('admin.hrd.employee.index') }}">
                     <i class="nav-icon cil-people"></i> Karyawan
                 </a>
             </li>
-            @endhasanyrole
+            @endcan
 
-            {{-- Show Kehadiran to HR roles OR users with salary_type = bulanan --}}
-            @if((auth()->user() && auth()->user()->salary_type === 'bulanan') || (auth()->user() && auth()->user()->hasAnyRole(['manajemen','hrd','super_admin'])))
+            {{-- Show Kehadiran to users with salary_type = bulanan OR users with view_attendance permission --}}
+            @if((auth()->user() && auth()->user()->salary_type === 'bulanan') || (auth()->user() && (auth()->user()->can('view_attendance') || auth()->user()->hasRole('super_admin'))))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hrd.attendance.*') || request()->routeIs('attendance.check-in') ? 'active' : '' }}" href="{{ auth()->user() && auth()->user()->salary_type === 'bulanan' ? route('attendance.check-in') : route('admin.hrd.attendance.index') }}">
                     <i class="nav-icon cil-calendar-check"></i> Kehadiran
@@ -941,35 +954,43 @@
             </li>
             @endif
 
-            @hasanyrole('manajemen|hrd|super_admin')
+            @can('view_employee_output')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hrd.output.*') ? 'active' : '' }}" href="{{ route('admin.hrd.output.index') }}">
                     <i class="nav-icon cil-chart-pie"></i> Output Pemilah
                 </a>
             </li>
+            @endcan
+
+            @can('view_waste_category')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.hrd.waste-category.*') ? 'active' : '' }}" href="{{ route('admin.hrd.waste-category.index') }}">
                     <i class="nav-icon cil-tags"></i> Kategori Sampah
                 </a>
             </li>
-            @endhasanyrole
+            @endcan
 
-            @hasanyrole('manajemen|hrd|keuangan|super_admin')
+            @canany(['view_wage_rate', 'view_wage_calculation', 'view_laporan_upah'])
             <li class="nav-group {{ request()->is('admin/hrd/wage-*') || request()->routeIs('admin.laporan-operasional.upah') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="nav-icon cil-dollar"></i> Gaji & Upah
                 </a>
                 <ul class="nav-group-items compact">
+                    @can('view_wage_rate')
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.hrd.wage-rate.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-rate.index') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Tarif Upah
                         </a>
                     </li>
+                    @endcan
+                    @can('view_wage_calculation')
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.hrd.wage-calculation.*') ? 'active' : '' }}" href="{{ route('admin.hrd.wage-calculation.index') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Perhitungan Upah
                         </a>
                     </li>
+                    @endcan
+                    @canany(['view_laporan_operasional', 'view_laporan_upah'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.laporan-operasional.upah.borongan') ? 'active' : '' }}" href="{{ route('admin.laporan-operasional.upah.borongan') }}">
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Borongan
@@ -985,9 +1006,11 @@
                             <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Upah Harian
                         </a>
                     </li>
+                    @endcanany
                 </ul>
             </li>
-            @endhasanyrole
+            @endcanany
+            @endcanany
 
             {{-- Administrasi --}}
             <li class="nav-title">Administrasi</li>

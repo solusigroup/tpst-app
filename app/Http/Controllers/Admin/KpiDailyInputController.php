@@ -10,6 +10,7 @@ use App\Models\Machine;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class KpiDailyInputController extends Controller
 {
@@ -18,6 +19,8 @@ class KpiDailyInputController extends Controller
      */
     public function index(Request $request)
     {
+        Gate::authorize('view_kpi_daily_input');
+
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
         $checklists = KpiDailyChecklist::where('tanggal', $tanggal)->latest()->get();
@@ -37,6 +40,10 @@ class KpiDailyInputController extends Controller
      */
     public function storeChecklist(Request $request)
     {
+        if (!Gate::allows('create_kpi_daily_input') && !Gate::allows('view_kpi_daily_input')) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'area' => 'required|string',
@@ -86,6 +93,10 @@ class KpiDailyInputController extends Controller
      */
     public function storeMachineLog(Request $request)
     {
+        if (!Gate::allows('create_kpi_daily_input') && !Gate::allows('view_kpi_daily_input')) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'nama_alat' => 'required|string',
@@ -119,6 +130,10 @@ class KpiDailyInputController extends Controller
      */
     public function storeComplaint(Request $request)
     {
+        if (!Gate::allows('create_kpi_daily_input') && !Gate::allows('view_kpi_daily_input')) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'stakeholder_type' => 'required|in:DLH,Penggerobak/Desa,Klien Swasta,Warga/Masyarakat,Lainnya',
@@ -146,6 +161,10 @@ class KpiDailyInputController extends Controller
      */
     public function resolveComplaint(Request $request, KpiStakeholderComplaint $complaint)
     {
+        if (!Gate::allows('create_kpi_daily_input') && !Gate::allows('view_kpi_daily_input')) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $request->validate([
             'tindakan_perbaikan' => 'required|string',
             'status_penanganan' => 'required|in:Proses,Resolved',

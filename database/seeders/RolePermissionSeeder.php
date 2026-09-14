@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             // Operasional
             'view_ritase', 'create_ritase', 'update_ritase', 'delete_ritase',
+            'view_ritase_dlh',
             'view_klien', 'create_klien', 'update_klien', 'delete_klien',
             'view_armada', 'create_armada', 'update_armada', 'delete_armada',
             'view_hasil_pilahan', 'create_hasil_pilahan', 'update_hasil_pilahan', 'delete_hasil_pilahan',
@@ -28,14 +29,20 @@ class RolePermissionSeeder extends Seeder
             'view_pengangkutan_residu', 'create_pengangkutan_residu', 'update_pengangkutan_residu', 'delete_pengangkutan_residu',
             'view_machine', 'create_machine', 'update_machine', 'delete_machine',
             'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
+
+            // TPST Performance (KPI)
+            'view_kpi_dashboard', 'view_kpi_daily_input', 'create_kpi_daily_input',
+            'view_kpi_evaluasi', 'approve_kpi_evaluasi',
             
             // Keuangan
             'view_coa', 'create_coa', 'update_coa', 'delete_coa',
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
+            'view_rekonsiliasi_bank',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
+            'view_tracing',
             
             // Laporan
             'view_laporan_keuangan',
@@ -60,10 +67,11 @@ class RolePermissionSeeder extends Seeder
             'view_wage_calculation', 'create_wage_calculation', 'update_wage_calculation', 'delete_wage_calculation',
             'view_employee', 'create_employee', 'update_employee', 'delete_employee',
             
-            // Administrasi
+            // Administrasi & Sistem
             'view_users', 'create_users', 'update_users', 'delete_users',
             'view_company_settings', 'update_company_settings',
             'view_activity_log',
+            'view_ai_assistant',
             
             // Central System (Superadmin only)
             'view_tenants', 'create_tenants', 'update_tenants', 'delete_tenants',
@@ -79,10 +87,11 @@ class RolePermissionSeeder extends Seeder
         $superAdmin = Role::firstOrCreate(['name' => 'super_admin']);
         $superAdmin->givePermissionTo(Permission::all());
 
-        // 2. Manajemen Role (Semua operasional & keuangan, BUKAN admin users/settings)
+        // 2. Manajemen Role (Semua operasional & keuangan & KPI, BUKAN admin users/settings)
         $manajemen = Role::firstOrCreate(['name' => 'manajemen']);
         $manajemen->givePermissionTo([
             'view_ritase', 'create_ritase', 'update_ritase', 'delete_ritase',
+            'view_ritase_dlh',
             'view_klien', 'create_klien', 'update_klien', 'delete_klien',
             'view_armada', 'create_armada', 'update_armada', 'delete_armada',
             'view_hasil_pilahan', 'create_hasil_pilahan', 'update_hasil_pilahan', 'delete_hasil_pilahan',
@@ -90,12 +99,16 @@ class RolePermissionSeeder extends Seeder
             'view_pengangkutan_residu', 'create_pengangkutan_residu', 'update_pengangkutan_residu', 'delete_pengangkutan_residu',
             'view_machine', 'create_machine', 'update_machine', 'delete_machine',
             'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
+            'view_kpi_dashboard', 'view_kpi_daily_input', 'create_kpi_daily_input',
+            'view_kpi_evaluasi', 'approve_kpi_evaluasi',
             'view_coa', 'create_coa', 'update_coa', 'delete_coa',
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
+            'view_rekonsiliasi_bank',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
+            'view_tracing',
             'view_laporan_keuangan', 'view_laporan_operasional', 'view_statistik_komparatif',
             'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
             'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
@@ -108,6 +121,7 @@ class RolePermissionSeeder extends Seeder
             'view_wage_rate', 'create_wage_rate', 'update_wage_rate', 'delete_wage_rate',
             'view_wage_calculation', 'create_wage_calculation', 'update_wage_calculation', 'delete_wage_calculation',
             'view_employee', 'create_employee', 'update_employee', 'delete_employee',
+            'view_ai_assistant',
             // no users, company_settings, etc
         ]);
 
@@ -116,10 +130,13 @@ class RolePermissionSeeder extends Seeder
         $keuangan->givePermissionTo([
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',
+            'view_rekonsiliasi_bank',
             'view_penjualan', 'create_penjualan', 'update_penjualan', 'delete_penjualan',
             'view_invoice', 'create_invoice', 'update_invoice', 'delete_invoice',
             'view_vendor', 'create_vendor', 'update_vendor', 'delete_vendor',
             'view_buku_pembantu',
+            'view_tracing',
+            'view_ritase_dlh',
             'view_laporan_keuangan', 'view_laporan_operasional', 'view_statistik_komparatif',
             'view_laporan_ritase', 'view_laporan_rekap_ritase', 'view_laporan_rekap_ritase_2',
             'view_laporan_penjualan_op', 'view_laporan_hasil_pilahan',
@@ -139,6 +156,7 @@ class RolePermissionSeeder extends Seeder
             'view_pengangkutan_residu', 'create_pengangkutan_residu', 'update_pengangkutan_residu', 'delete_pengangkutan_residu',
             'view_machine', 'create_machine', 'update_machine', 'delete_machine',
             'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
+            'view_kpi_daily_input', 'create_kpi_daily_input',
         ]);
 
         // 5. Ritase Only Role

@@ -7,6 +7,7 @@ use App\Models\AiConversation;
 use App\Services\AiAssistantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class AiAssistantController extends Controller
@@ -15,11 +16,25 @@ class AiAssistantController extends Controller
         private AiAssistantService $aiService,
     ) {}
 
+    private function checkAiAccess(): ?JsonResponse
+    {
+        if (!Gate::allows('view_ai_assistant') && !auth()->user()->hasRole('super_admin')) {
+            return response()->json([
+                'error' => 'Anda tidak memiliki izin untuk menggunakan fitur AI Assistant.',
+            ], 403);
+        }
+        return null;
+    }
+
     /**
      * Send a chat message and get AI response.
      */
     public function chat(Request $request): JsonResponse
     {
+        if ($forbidden = $this->checkAiAccess()) {
+            return $forbidden;
+        }
+
         $request->validate([
             'message'    => 'required|string|max:2000',
             'session_id' => 'required|string|max:36',
@@ -63,6 +78,10 @@ class AiAssistantController extends Controller
      */
     public function history(Request $request): JsonResponse
     {
+        if ($forbidden = $this->checkAiAccess()) {
+            return $forbidden;
+        }
+
         $request->validate([
             'session_id' => 'required|string|max:36',
         ]);
@@ -88,6 +107,10 @@ class AiAssistantController extends Controller
      */
     public function clearHistory(Request $request): JsonResponse
     {
+        if ($forbidden = $this->checkAiAccess()) {
+            return $forbidden;
+        }
+
         $request->validate([
             'session_id' => 'required|string|max:36',
         ]);
@@ -104,6 +127,10 @@ class AiAssistantController extends Controller
      */
     public function newSession(): JsonResponse
     {
+        if ($forbidden = $this->checkAiAccess()) {
+            return $forbidden;
+        }
+
         return response()->json([
             'success'    => true,
             'session_id' => (string) Str::uuid(),

@@ -17,12 +17,19 @@ use Illuminate\Support\Facades\DB;
 
 class TracingController extends Controller
 {
+    private function checkAccess(): void
+    {
+        if (!Gate::allows('view_tracing') && !Gate::allows('view_buku_pembantu')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengakses Tracing Transaksi.');
+        }
+    }
+
     /**
      * Display the tracing portal dashboard.
      */
     public function index(Request $request)
     {
-        Gate::authorize('view_buku_pembantu');
+        $this->checkAccess();
 
         $jenis = $request->input('jenis', 'semua'); // piutang_swasta, penjualan_pilahan, semua
         $search = $request->input('search');
@@ -132,7 +139,7 @@ class TracingController extends Controller
      */
     public function show(string $type, int $id)
     {
-        Gate::authorize('view_buku_pembantu');
+        $this->checkAccess();
 
         $data = [];
 
@@ -269,7 +276,7 @@ class TracingController extends Controller
      */
     public function auditCheck()
     {
-        Gate::authorize('view_buku_pembantu');
+        $this->checkAccess();
 
         $issues = [];
 
@@ -391,7 +398,7 @@ class TracingController extends Controller
      */
     public function syncDiscrepancies()
     {
-        Gate::authorize('view_buku_pembantu');
+        $this->checkAccess();
 
         \Illuminate\Support\Facades\Artisan::call('app:rebuild-invoice-journals', ['--force' => true]);
 

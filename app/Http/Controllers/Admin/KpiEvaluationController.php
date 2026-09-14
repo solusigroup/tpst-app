@@ -9,6 +9,7 @@ use App\Services\KpiCalculationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class KpiEvaluationController extends Controller
 {
@@ -24,6 +25,8 @@ class KpiEvaluationController extends Controller
      */
     public function index(Request $request)
     {
+        Gate::authorize('view_kpi_evaluasi');
+
         $tipe = $request->get('periode_tipe', 'mingguan');
         $status = $request->get('status');
 
@@ -48,6 +51,10 @@ class KpiEvaluationController extends Controller
      */
     public function generate(Request $request)
     {
+        if (!Gate::allows('approve_kpi_evaluasi') && !Gate::allows('view_kpi_evaluasi')) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $request->validate([
             'periode_tipe' => 'required|in:mingguan,bulanan',
             'periode_mulai' => 'required|date',
@@ -96,6 +103,8 @@ class KpiEvaluationController extends Controller
      */
     public function show(KpiEvaluation $kpiEvaluation)
     {
+        Gate::authorize('view_kpi_evaluasi');
+
         $kpiEvaluation->load('user', 'approvedBy');
 
         return view('admin.kpi.evaluasi.show', compact('kpiEvaluation'));
@@ -106,6 +115,10 @@ class KpiEvaluationController extends Controller
      */
     public function submit(KpiEvaluation $kpiEvaluation)
     {
+        if (!Gate::allows('approve_kpi_evaluasi') && !Gate::allows('view_kpi_evaluasi')) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $kpiEvaluation->update([
             'status' => 'submitted',
             'submitted_at' => now(),
@@ -119,6 +132,8 @@ class KpiEvaluationController extends Controller
      */
     public function approve(Request $request, KpiEvaluation $kpiEvaluation)
     {
+        Gate::authorize('approve_kpi_evaluasi');
+
         $request->validate([
             'supervisor_name' => 'required|string',
             'supervisor_notes' => 'nullable|string',
@@ -150,6 +165,8 @@ class KpiEvaluationController extends Controller
      */
     public function exportPdf(KpiEvaluation $kpiEvaluation)
     {
+        Gate::authorize('view_kpi_evaluasi');
+
         $kpiEvaluation->load('user', 'approvedBy');
 
         $pdf = Pdf::loadView('admin.kpi.evaluasi.pdf-rekap', compact('kpiEvaluation'))
