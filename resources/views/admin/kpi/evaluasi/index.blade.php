@@ -17,7 +17,7 @@
                     </p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generateModal">
+                    <button class="btn btn-primary btn-sm" id="btnOpenGenerateModal" data-coreui-toggle="modal" data-coreui-target="#generateModal" data-bs-toggle="modal" data-bs-target="#generateModal" type="button">
                         <i class="cil-plus me-1"></i> Generate Evaluasi Baru
                     </button>
                 </div>
@@ -154,7 +154,7 @@
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">Generate Dokumen Evaluasi KPI</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p class="small text-muted">
@@ -189,11 +189,43 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">Generate Draft Evaluasi</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btnOpenGenerateModal');
+    const modalEl = document.getElementById('generateModal');
+    if (btn && modalEl) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof coreui !== 'undefined' && coreui.Modal) {
+                try {
+                    const modal = coreui.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                    return;
+                } catch(err) {
+                    console.warn('CoreUI modal show error:', err);
+                }
+            }
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                try {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                    return;
+                } catch(err) {
+                    console.warn('Bootstrap modal show error:', err);
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

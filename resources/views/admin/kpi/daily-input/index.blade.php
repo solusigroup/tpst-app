@@ -562,7 +562,7 @@
                                             <td class="text-end">
                                                 <div class="d-inline-flex gap-1 align-items-center">
                                                     @if($cmp->status_penanganan !== 'Resolved')
-                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#resolveModal{{ $cmp->id }}" title="Tindak Lanjut">
+                                                    <button class="btn btn-sm btn-outline-info" data-coreui-toggle="modal" data-coreui-target="#resolveModal{{ $cmp->id }}" data-bs-toggle="modal" data-bs-target="#resolveModal{{ $cmp->id }}" title="Tindak Lanjut">
                                                         <i class="cil-notes"></i> Respon
                                                     </button>
                                                     @endif
@@ -604,7 +604,7 @@
                                                                 @csrf
                                                                 <div class="modal-header">
                                                                     <h5 class="modal-title">Tindak Lanjut Keluhan Stakeholder</h5>
-                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                    <button type="button" class="btn-close" data-coreui-dismiss="modal" data-bs-dismiss="modal"></button>
                                                                 </div>
                                                                 <div class="modal-body">
                                                                     <p class="small text-muted"><strong>Keluhan:</strong> {{ $cmp->isi_keluhan }}</p>
@@ -621,7 +621,7 @@
                                                                     </div>
                                                                 </div>
                                                                 <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                                    <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal" data-bs-dismiss="modal">Batal</button>
                                                                     <button type="submit" class="btn btn-success">Simpan Solusi</button>
                                                                 </div>
                                                             </form>
