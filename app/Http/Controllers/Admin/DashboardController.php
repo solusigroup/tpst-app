@@ -122,8 +122,8 @@ class DashboardController extends Controller
             $row = $dailyRdfData->get($dateKey);
             $dailyRdf->push([
                 'date' => $date->format('d/m'),
-                'tonase' => round($row->total ?? 0, 2),
-                'bal' => (int) ($row->total_bal ?? 0),
+                'tonase' => round($row?->total ?? 0, 2),
+                'bal' => (int) ($row?->total_bal ?? 0),
             ]);
         }
 
