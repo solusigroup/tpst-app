@@ -286,6 +286,39 @@
             </div>
         @endif
     </div>
+
+    {{-- Chart: Hasil Pilahan / Mutasi RDF Harian --}}
+    <div class="row g-4 mb-4">
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header bg-white border-bottom-0 pt-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-1 fw-semibold">
+                            <i class="cil-fire me-2 text-danger"></i>Hasil Pilahan RDF Harian ({{ $months[intval($selectedMonth)] }} {{ $selectedYear }})
+                        </h5>
+                        <small class="text-body-secondary">Tonase (kg) &amp; Jumlah Bal per hari — Waste Category: RDF (Refuse Derived Fuel)</small>
+                    </div>
+                    @php
+                        $totalRdfBulan = $dailyRdf->sum('tonase');
+                        $totalBalBulan = $dailyRdf->sum('bal');
+                    @endphp
+                    <div class="d-flex gap-3">
+                        <div class="text-end">
+                            <div class="text-body-secondary text-uppercase small fw-semibold">Total Tonase</div>
+                            <div class="fs-5 fw-bold text-danger">{{ number_format($totalRdfBulan, 2, ',', '.') }} kg</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-body-secondary text-uppercase small fw-semibold">Total Bal</div>
+                            <div class="fs-5 fw-bold text-primary">{{ number_format($totalBalBulan, 0, ',', '.') }} bal</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyRdfChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
@@ -418,6 +451,89 @@
                     }
                 });
             @endif
+
+            // Daily RDF Hasil Pilahan Chart
+            const rdfData = @json($dailyRdf);
+            new Chart(document.getElementById('dailyRdfChart'), {
+                type: 'bar',
+                data: {
+                    labels: rdfData.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Tonase RDF (kg)',
+                            data: rdfData.map(d => d.tonase),
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            yAxisID: 'y',
+                            order: 2,
+                        },
+                        {
+                            label: 'Jumlah Bal',
+                            data: rdfData.map(d => d.bal),
+                            type: 'line',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            fill: false,
+                            tension: 0.3,
+                            yAxisID: 'y1',
+                            order: 1,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    if (ctx.dataset.yAxisID === 'y1') {
+                                        return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('id-ID') + ' bal';
+                                    }
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('id-ID') + ' kg';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { callback: v => v.toLocaleString('id-ID') + ' kg' },
+                            title: { display: true, text: 'Tonase (kg)', color: 'rgba(239, 68, 68, 0.8)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: { drawOnChartArea: false },
+                            ticks: {
+                                callback: v => v.toLocaleString('id-ID') + ' bal',
+                                stepSize: 1,
+                            },
+                            title: { display: true, text: 'Jumlah Bal', color: 'rgba(59, 130, 246, 0.8)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
     });
     </script>
 @endpush

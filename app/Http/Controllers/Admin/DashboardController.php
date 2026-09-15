@@ -106,6 +106,27 @@ class DashboardController extends Controller
             ]);
         }
 
+        // Chart data: Daily RDF hasil pilahan for selected month
+        $dailyRdfData = HasilPilahan::join('waste_categories', 'hasil_pilahan.waste_category_id', '=', 'waste_categories.id')
+            ->where('waste_categories.name', 'RDF')
+            ->whereBetween('hasil_pilahan.tanggal', [$monthStart->copy()->startOfDay(), $monthEnd->copy()->endOfDay()])
+            ->selectRaw('DATE(hasil_pilahan.tanggal) as date_str, SUM(hasil_pilahan.tonase) as total, SUM(hasil_pilahan.jml_bal) as total_bal')
+            ->groupByRaw('DATE(hasil_pilahan.tanggal)')
+            ->get()
+            ->keyBy('date_str');
+
+        $dailyRdf = collect();
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = Carbon::createFromDate($selectedYear, $selectedMonth, $d);
+            $dateKey = $date->format('Y-m-d');
+            $row = $dailyRdfData->get($dateKey);
+            $dailyRdf->push([
+                'date' => $date->format('d/m'),
+                'tonase' => round($row->total ?? 0, 2),
+                'bal' => (int) ($row->total_bal ?? 0),
+            ]);
+        }
+
         // Chart data: Revenue vs Expense for 6 months ending at selected month (Aggregated queries)
         $monthlyFinancials = collect();
         if (!auth()->user()->hasRole('ritase_only')) {
@@ -167,6 +188,7 @@ class DashboardController extends Controller
             'sisaStokRdf',
             'sisaStokHasilPilahan',
             'dailyTonnage',
+            'dailyRdf',
             'monthlyFinancials',
             'selectedMonth',
             'selectedYear',
