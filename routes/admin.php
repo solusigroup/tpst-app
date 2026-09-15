@@ -230,9 +230,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // Input Harian
         Route::get('daily-input', [KpiDailyInputController::class, 'index'])->name('daily-input.index');
         Route::post('daily-input/checklist', [KpiDailyInputController::class, 'storeChecklist'])->name('daily-input.checklist');
+        Route::post('daily-input/checklist/{checklist}/approve', [KpiDailyInputController::class, 'approveChecklist'])->name('daily-input.checklist.approve');
+        Route::post('daily-input/checklist/{checklist}/unapprove', [KpiDailyInputController::class, 'unapproveChecklist'])->name('daily-input.checklist.unapprove');
+        Route::delete('daily-input/checklist/{checklist}', [KpiDailyInputController::class, 'destroyChecklist'])->name('daily-input.checklist.destroy');
+
         Route::post('daily-input/machine-log', [KpiDailyInputController::class, 'storeMachineLog'])->name('daily-input.machine-log');
+        Route::post('daily-input/machine-log/{machineLog}/approve', [KpiDailyInputController::class, 'approveMachineLog'])->name('daily-input.machine-log.approve');
+        Route::post('daily-input/machine-log/{machineLog}/unapprove', [KpiDailyInputController::class, 'unapproveMachineLog'])->name('daily-input.machine-log.unapprove');
+        Route::delete('daily-input/machine-log/{machineLog}', [KpiDailyInputController::class, 'destroyMachineLog'])->name('daily-input.machine-log.destroy');
+
         Route::post('daily-input/complaint', [KpiDailyInputController::class, 'storeComplaint'])->name('daily-input.complaint');
         Route::post('daily-input/complaint/{complaint}/resolve', [KpiDailyInputController::class, 'resolveComplaint'])->name('daily-input.complaint.resolve');
+        Route::post('daily-input/complaint/{complaint}/approve', [KpiDailyInputController::class, 'approveComplaint'])->name('daily-input.complaint.approve');
+        Route::post('daily-input/complaint/{complaint}/unapprove', [KpiDailyInputController::class, 'unapproveComplaint'])->name('daily-input.complaint.unapprove');
+        Route::delete('daily-input/complaint/{complaint}', [KpiDailyInputController::class, 'destroyComplaint'])->name('daily-input.complaint.destroy');
 
         // Evaluasi & Rekapitulasi (Approval Supervisi PT PBS)
         Route::get('evaluasi', [KpiEvaluationController::class, 'index'])->name('evaluasi.index');

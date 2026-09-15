@@ -24,16 +24,26 @@ class KpiStakeholderComplaint extends Model
         'tindakan_perbaikan',
         'tanggal_selesai',
         'handled_by_id',
+        'is_approved',
+        'approved_by_id',
+        'approved_at',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'tanggal_selesai' => 'date',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
     ];
 
     public function handledBy()
     {
         return $this->belongsTo(User::class, 'handled_by_id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by_id');
     }
 
     public function tenant()

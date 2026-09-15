@@ -22,17 +22,212 @@ class KpiDailyInputController extends Controller
         Gate::authorize('view_kpi_daily_input');
 
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
+        $activeTab = $request->get('tab', session('active_tab', 'kebersihan'));
 
-        $checklists = KpiDailyChecklist::where('tanggal', $tanggal)->latest()->get();
-        $machineLogs = KpiMachineActivityLog::where('tanggal', $tanggal)->latest()->get();
-        $complaints = KpiStakeholderComplaint::where('tanggal', $tanggal)->latest()->get();
+        $checklists = KpiDailyChecklist::with(['user', 'approvedBy'])->where('tanggal', $tanggal)->latest()->get();
+        $machineLogs = KpiMachineActivityLog::with(['operator', 'machine', 'approvedBy'])->where('tanggal', $tanggal)->latest()->get();
+        $complaints = KpiStakeholderComplaint::with(['handledBy', 'approvedBy'])->where('tanggal', $tanggal)->latest()->get();
 
         $machines = Machine::all();
         $users = User::where('is_active', true)->get();
 
         return view('admin.kpi.daily-input.index', compact(
-            'tanggal', 'checklists', 'machineLogs', 'complaints', 'machines', 'users'
+            'tanggal', 'activeTab', 'checklists', 'machineLogs', 'complaints', 'machines', 'users'
         ));
+    }
+
+    /**
+     * Otorisasi approval (Role: manajemen & super_admin)
+     */
+    protected function authorizeApprove(): void
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isSuperAdmin() && !$user->hasRole(['manajemen', 'super_admin', 'superadmin']))) {
+            abort(403, 'Akses ditolak. Hanya role Manajemen dan Superadmin yang diizinkan melakukan approval.');
+        }
+    }
+
+    /**
+     * Otorisasi hapus (Role: super_admin)
+     */
+    protected function authorizeDelete(): void
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isSuperAdmin() && !$user->hasRole(['super_admin', 'superadmin']))) {
+            abort(403, 'Akses ditolak. Hanya role Superadmin yang diizinkan menghapus data.');
+        }
+    }
+
+    /**
+     * Approve Checklist Kebersihan
+     */
+    public function approveChecklist(KpiDailyChecklist $checklist)
+    {
+        $this->authorizeApprove();
+
+        $checklist->update([
+            'is_approved' => true,
+            'approved_by_id' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $checklist->tanggal->format('Y-m-d'),
+            'tab' => 'kebersihan',
+        ])->with('success', "Checklist area \"{$checklist->area}\" berhasil disetujui (Approved).");
+    }
+
+    /**
+     * Batalkan Approval Checklist Kebersihan
+     */
+    public function unapproveChecklist(KpiDailyChecklist $checklist)
+    {
+        $this->authorizeApprove();
+
+        $checklist->update([
+            'is_approved' => false,
+            'approved_by_id' => null,
+            'approved_at' => null,
+        ]);
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $checklist->tanggal->format('Y-m-d'),
+            'tab' => 'kebersihan',
+        ])->with('success', "Approval checklist area \"{$checklist->area}\" berhasil dibatalkan.");
+    }
+
+    /**
+     * Hapus Checklist Kebersihan (Superadmin)
+     */
+    public function destroyChecklist(KpiDailyChecklist $checklist)
+    {
+        $this->authorizeDelete();
+
+        $tanggal = $checklist->tanggal->format('Y-m-d');
+        $area = $checklist->area;
+
+        if ($checklist->foto_bukti && \Illuminate\Support\Facades\Storage::disk('public')->exists($checklist->foto_bukti)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($checklist->foto_bukti);
+        }
+
+        $checklist->delete();
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $tanggal,
+            'tab' => 'kebersihan',
+        ])->with('success', "Data checklist area \"{$area}\" berhasil dihapus.");
+    }
+
+    /**
+     * Approve Log Mesin
+     */
+    public function approveMachineLog(KpiMachineActivityLog $machineLog)
+    {
+        $this->authorizeApprove();
+
+        $machineLog->update([
+            'is_approved' => true,
+            'approved_by_id' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $machineLog->tanggal->format('Y-m-d'),
+            'tab' => 'mesin',
+        ])->with('success', "Log mesin \"{$machineLog->nama_alat}\" berhasil disetujui (Approved).");
+    }
+
+    /**
+     * Batalkan Approval Log Mesin
+     */
+    public function unapproveMachineLog(KpiMachineActivityLog $machineLog)
+    {
+        $this->authorizeApprove();
+
+        $machineLog->update([
+            'is_approved' => false,
+            'approved_by_id' => null,
+            'approved_at' => null,
+        ]);
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $machineLog->tanggal->format('Y-m-d'),
+            'tab' => 'mesin',
+        ])->with('success', "Approval log mesin \"{$machineLog->nama_alat}\" berhasil dibatalkan.");
+    }
+
+    /**
+     * Hapus Log Mesin (Superadmin)
+     */
+    public function destroyMachineLog(KpiMachineActivityLog $machineLog)
+    {
+        $this->authorizeDelete();
+
+        $tanggal = $machineLog->tanggal->format('Y-m-d');
+        $namaAlat = $machineLog->nama_alat;
+
+        $machineLog->delete();
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $tanggal,
+            'tab' => 'mesin',
+        ])->with('success', "Data log mesin \"{$namaAlat}\" berhasil dihapus.");
+    }
+
+    /**
+     * Approve Keluhan Stakeholder
+     */
+    public function approveComplaint(KpiStakeholderComplaint $complaint)
+    {
+        $this->authorizeApprove();
+
+        $complaint->update([
+            'is_approved' => true,
+            'approved_by_id' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $complaint->tanggal->format('Y-m-d'),
+            'tab' => 'complaint',
+        ])->with('success', "Keluhan stakeholder \"{$complaint->stakeholder_type}\" berhasil disetujui (Approved).");
+    }
+
+    /**
+     * Batalkan Approval Keluhan Stakeholder
+     */
+    public function unapproveComplaint(KpiStakeholderComplaint $complaint)
+    {
+        $this->authorizeApprove();
+
+        $complaint->update([
+            'is_approved' => false,
+            'approved_by_id' => null,
+            'approved_at' => null,
+        ]);
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $complaint->tanggal->format('Y-m-d'),
+            'tab' => 'complaint',
+        ])->with('success', "Approval keluhan stakeholder \"{$complaint->stakeholder_type}\" berhasil dibatalkan.");
+    }
+
+    /**
+     * Hapus Keluhan Stakeholder (Superadmin)
+     */
+    public function destroyComplaint(KpiStakeholderComplaint $complaint)
+    {
+        $this->authorizeDelete();
+
+        $tanggal = $complaint->tanggal->format('Y-m-d');
+        $stakeholder = $complaint->stakeholder_type;
+
+        $complaint->delete();
+
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $tanggal,
+            'tab' => 'complaint',
+        ])->with('success', "Catatan keluhan \"{$stakeholder}\" berhasil dihapus.");
     }
 
     /**
@@ -84,7 +279,7 @@ class KpiDailyInputController extends Controller
             'catatan' => $request->catatan,
         ]);
 
-        return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal])
+        return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal, 'tab' => 'kebersihan'])
             ->with('success', 'Checklist kebersihan & bau beserta foto bukti berhasil disimpan.');
     }
 
@@ -121,7 +316,7 @@ class KpiDailyInputController extends Controller
             'operator_id' => $request->operator_id ?? auth()->id(),
         ]);
 
-        return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal])
+        return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal, 'tab' => 'mesin'])
             ->with('success', 'Log aktivitas mesin & alat berat berhasil disimpan.');
     }
 
@@ -152,7 +347,7 @@ class KpiDailyInputController extends Controller
             'handled_by_id' => auth()->id(),
         ]);
 
-        return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal])
+        return redirect()->route('admin.kpi.daily-input.index', ['tanggal' => $request->tanggal, 'tab' => 'complaint'])
             ->with('success', 'Catatan keluhan stakeholder berhasil disimpan.');
     }
 
@@ -177,6 +372,9 @@ class KpiDailyInputController extends Controller
             'handled_by_id' => auth()->id(),
         ]);
 
-        return redirect()->back()->with('success', 'Status tindak lanjut keluhan berhasil diperbarui.');
+        return redirect()->route('admin.kpi.daily-input.index', [
+            'tanggal' => $complaint->tanggal->format('Y-m-d'),
+            'tab' => 'complaint',
+        ])->with('success', 'Status tindak lanjut keluhan berhasil diperbarui.');
     }
 }

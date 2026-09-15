@@ -3,6 +3,12 @@
 @section('title', 'Input Harian KPI TPST - Performance Management')
 
 @section('content')
+@php
+    $user = auth()->user();
+    $canApprove = auth()->check() && ($user->isSuperAdmin() || $user->hasRole(['manajemen', 'super_admin', 'superadmin']));
+    $canDelete = auth()->check() && ($user->isSuperAdmin() || $user->hasRole(['super_admin', 'superadmin']));
+    $currentTab = $activeTab ?? 'kebersihan';
+@endphp
 <div class="container-fluid">
     {{-- Header & Date Picker --}}
     <div class="card mb-4 border-0 shadow-sm">
@@ -16,9 +22,10 @@
                         Pencatatan Harian: Checklist Kebersihan & Bau (Ana), Log Alat Berat & Mesin (Agung), serta Keluhan Stakeholder (Nita/Budi).
                     </p>
                 </div>
-                <form action="{{ route('admin.kpi.daily-input.index') }}" method="GET" class="d-flex align-items-center gap-2">
+                <form action="{{ route('admin.kpi.daily-input.index') }}" method="GET" class="d-flex align-items-center gap-2" id="datePickerForm">
                     <label class="small fw-semibold text-nowrap">Pilih Tanggal:</label>
                     <input type="date" name="tanggal" class="form-control form-control-sm" value="{{ $tanggal }}" onchange="this.form.submit()">
+                    <input type="hidden" name="tab" id="formActiveTab" value="{{ $currentTab }}">
                 </form>
             </div>
         </div>
@@ -34,26 +41,26 @@
     {{-- Tabs Input Harian --}}
     <ul class="nav nav-pills mb-4" id="dailyInputTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-semibold" id="tab-kebersihan" 
+            <button class="nav-link {{ $currentTab === 'kebersihan' ? 'active' : '' }} fw-semibold" id="tab-kebersihan" 
                 data-coreui-toggle="tab" data-coreui-target="#content-kebersihan"
                 data-bs-toggle="tab" data-bs-target="#content-kebersihan" 
-                type="button" role="tab" aria-controls="content-kebersihan" aria-selected="true">
+                type="button" role="tab" aria-controls="content-kebersihan" aria-selected="{{ $currentTab === 'kebersihan' ? 'true' : 'false' }}">
                 <i class="cil-brush me-1"></i> 1. Kebersihan & Bau Area (Ana / Agung)
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-semibold" id="tab-mesin" 
+            <button class="nav-link {{ $currentTab === 'mesin' ? 'active' : '' }} fw-semibold" id="tab-mesin" 
                 data-coreui-toggle="tab" data-coreui-target="#content-mesin"
                 data-bs-toggle="tab" data-bs-target="#content-mesin" 
-                type="button" role="tab" aria-controls="content-mesin" aria-selected="false">
+                type="button" role="tab" aria-controls="content-mesin" aria-selected="{{ $currentTab === 'mesin' ? 'true' : 'false' }}">
                 <i class="cil-memory me-1"></i> 2. Mesin & Wheel Loader (Agung)
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-semibold" id="tab-complaint" 
+            <button class="nav-link {{ $currentTab === 'complaint' ? 'active' : '' }} fw-semibold" id="tab-complaint" 
                 data-coreui-toggle="tab" data-coreui-target="#content-complaint"
                 data-bs-toggle="tab" data-bs-target="#content-complaint" 
-                type="button" role="tab" aria-controls="content-complaint" aria-selected="false">
+                type="button" role="tab" aria-controls="content-complaint" aria-selected="{{ $currentTab === 'complaint' ? 'true' : 'false' }}">
                 <i class="cil-speech me-1"></i> 3. Keluhan Stakeholder (Nita / Budi)
             </button>
         </li>
@@ -61,7 +68,7 @@
 
     <div class="tab-content" id="dailyInputTabContent">
         {{-- ================= TAB 1: KEBERSIHAN & BAU ================= --}}
-        <div class="tab-pane fade show active" id="content-kebersihan" role="tabpanel" aria-labelledby="tab-kebersihan">
+        <div class="tab-pane fade {{ $currentTab === 'kebersihan' ? 'show active' : '' }}" id="content-kebersihan" role="tabpanel" aria-labelledby="tab-kebersihan">
             <div class="row g-4">
                 <div class="col-lg-5">
                     <div class="card border-0 shadow-sm">
@@ -155,12 +162,21 @@
                                             <th>Bau</th>
                                             <th class="text-center">Foto Bukti</th>
                                             <th>Skor</th>
+                                            <th class="text-center">Approval</th>
+                                            @if($canApprove || $canDelete)
+                                            <th class="text-end">Aksi</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($checklists as $c)
                                         <tr>
-                                            <td class="fw-semibold">{{ $c->area }}</td>
+                                            <td class="fw-semibold">
+                                                {{ $c->area }}
+                                                @if($c->user)
+                                                    <div class="small text-muted" style="font-size: 0.75rem;"><i class="cil-user me-1"></i>{{ $c->user->name }}</div>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <span class="badge {{ $c->status_kebersihan === 'Bersih' ? 'bg-success' : 'bg-warning' }}">
                                                     {{ $c->status_kebersihan }}
@@ -186,10 +202,57 @@
                                                 @endif
                                             </td>
                                             <td class="fw-bold">{{ $c->skor_kebersihan }} / {{ $c->skor_bau }}</td>
+                                            <td class="text-center">
+                                                @if($c->is_approved)
+                                                    <span class="badge bg-success" title="Disetujui pada {{ $c->approved_at?->format('d/m/Y H:i') }}">
+                                                        <i class="cil-check me-1"></i> Disetujui
+                                                    </span>
+                                                    @if($c->approvedBy)
+                                                        <div class="text-muted small" style="font-size: 0.72rem;">{{ $c->approvedBy->name }}</div>
+                                                    @endif
+                                                @else
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="cil-clock me-1"></i> Pending
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            @if($canApprove || $canDelete)
+                                            <td class="text-end">
+                                                <div class="d-inline-flex gap-1 align-items-center">
+                                                    @if($canApprove)
+                                                        @if(!$c->is_approved)
+                                                        <form action="{{ route('admin.kpi.daily-input.checklist.approve', $c) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-success text-white" title="Approve Checklist">
+                                                                <i class="cil-check"></i> Setujui
+                                                            </button>
+                                                        </form>
+                                                        @else
+                                                        <form action="{{ route('admin.kpi.daily-input.checklist.unapprove', $c) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Batalkan Approval" onclick="return confirm('Batalkan status approval checklist area ini?')">
+                                                                <i class="cil-x"></i> Batal
+                                                            </button>
+                                                        </form>
+                                                        @endif
+                                                    @endif
+
+                                                    @if($canDelete)
+                                                    <form action="{{ route('admin.kpi.daily-input.checklist.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data checklist ini secara permanen?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Data (Superadmin)">
+                                                            <i class="cil-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            @endif
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="6" class="text-center py-4 text-muted">
+                                            <td colspan="{{ ($canApprove || $canDelete) ? 8 : 7 }}" class="text-center py-4 text-muted">
                                                 Belum ada checklist kebersihan yang diinput untuk tanggal ini.
                                             </td>
                                         </tr>
@@ -204,7 +267,7 @@
         </div>
 
         {{-- ================= TAB 2: MESIN & ALAT BERAT ================= --}}
-        <div class="tab-pane fade" id="content-mesin" role="tabpanel">
+        <div class="tab-pane fade {{ $currentTab === 'mesin' ? 'show active' : '' }}" id="content-mesin" role="tabpanel">
             <div class="row g-4">
                 <div class="col-lg-5">
                     <div class="card border-0 shadow-sm">
@@ -294,13 +357,22 @@
                                             <th>Operasi</th>
                                             <th>Downtime</th>
                                             <th>BBM</th>
-                                            <th>Status</th>
+                                            <th>Kondisi Alat</th>
+                                            <th class="text-center">Approval</th>
+                                            @if($canApprove || $canDelete)
+                                            <th class="text-end">Aksi</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($machineLogs as $m)
                                         <tr>
-                                            <td class="fw-semibold">{{ $m->nama_alat }}</td>
+                                            <td class="fw-semibold">
+                                                {{ $m->nama_alat }}
+                                                @if($m->operator)
+                                                    <div class="small text-muted" style="font-size: 0.75rem;"><i class="cil-user me-1"></i>{{ $m->operator->name }}</div>
+                                                @endif
+                                            </td>
                                             <td>{{ $m->jam_operasi }} Jam</td>
                                             <td class="{{ $m->jam_downtime > 0 ? 'text-danger fw-bold' : '' }}">{{ $m->jam_downtime }} Jam</td>
                                             <td>{{ $m->bbm_liter }} L</td>
@@ -309,10 +381,57 @@
                                                     {{ $m->status_alat }}
                                                 </span>
                                             </td>
+                                            <td class="text-center">
+                                                @if($m->is_approved)
+                                                    <span class="badge bg-success" title="Disetujui pada {{ $m->approved_at?->format('d/m/Y H:i') }}">
+                                                        <i class="cil-check me-1"></i> Disetujui
+                                                    </span>
+                                                    @if($m->approvedBy)
+                                                        <div class="text-muted small" style="font-size: 0.72rem;">{{ $m->approvedBy->name }}</div>
+                                                    @endif
+                                                @else
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="cil-clock me-1"></i> Pending
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            @if($canApprove || $canDelete)
+                                            <td class="text-end">
+                                                <div class="d-inline-flex gap-1 align-items-center">
+                                                    @if($canApprove)
+                                                        @if(!$m->is_approved)
+                                                        <form action="{{ route('admin.kpi.daily-input.machine-log.approve', $m) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-success text-white" title="Approve Log Mesin">
+                                                                <i class="cil-check"></i> Setujui
+                                                            </button>
+                                                        </form>
+                                                        @else
+                                                        <form action="{{ route('admin.kpi.daily-input.machine-log.unapprove', $m) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Batalkan Approval" onclick="return confirm('Batalkan status approval log mesin ini?')">
+                                                                <i class="cil-x"></i> Batal
+                                                            </button>
+                                                        </form>
+                                                        @endif
+                                                    @endif
+
+                                                    @if($canDelete)
+                                                    <form action="{{ route('admin.kpi.daily-input.machine-log.destroy', $m) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus catatan log mesin ini secara permanen?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Data (Superadmin)">
+                                                            <i class="cil-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            @endif
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="5" class="text-center py-4 text-muted">
+                                            <td colspan="{{ ($canApprove || $canDelete) ? 7 : 6 }}" class="text-center py-4 text-muted">
                                                 Belum ada catatan aktivitas mesin untuk tanggal ini.
                                             </td>
                                         </tr>
@@ -327,7 +446,7 @@
         </div>
 
         {{-- ================= TAB 3: KELUHAN STAKEHOLDER ================= --}}
-        <div class="tab-pane fade" id="content-complaint" role="tabpanel">
+        <div class="tab-pane fade {{ $currentTab === 'complaint' ? 'show active' : '' }}" id="content-complaint" role="tabpanel">
             <div class="row g-4">
                 <div class="col-lg-5">
                     <div class="card border-0 shadow-sm">
@@ -400,8 +519,9 @@
                                             <th>Stakeholder</th>
                                             <th>Isi Keluhan</th>
                                             <th>Urgensi</th>
-                                            <th>Status</th>
-                                            <th>Aksi</th>
+                                            <th>Status Penanganan</th>
+                                            <th class="text-center">Approval</th>
+                                            <th class="text-end">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -421,15 +541,63 @@
                                                 <span class="badge {{ $cmp->status_penanganan === 'Resolved' ? 'bg-success' : 'bg-danger' }}">
                                                     {{ $cmp->status_penanganan }}
                                                 </span>
+                                                @if($cmp->status_penanganan === 'Resolved' && $cmp->tindakan_perbaikan)
+                                                    <div class="small text-muted mt-1" style="font-size: 0.72rem;">{{ Str::limit($cmp->tindakan_perbaikan, 35) }}</div>
+                                                @endif
                                             </td>
-                                            <td>
-                                                @if($cmp->status_penanganan !== 'Resolved')
-                                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#resolveModal{{ $cmp->id }}">
-                                                    Tindak Lanjut
-                                                </button>
+                                            <td class="text-center">
+                                                @if($cmp->is_approved)
+                                                    <span class="badge bg-success" title="Disetujui pada {{ $cmp->approved_at?->format('d/m/Y H:i') }}">
+                                                        <i class="cil-check me-1"></i> Disetujui
+                                                    </span>
+                                                    @if($cmp->approvedBy)
+                                                        <div class="text-muted small" style="font-size: 0.72rem;">{{ $cmp->approvedBy->name }}</div>
+                                                    @endif
+                                                @else
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="cil-clock me-1"></i> Pending
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="d-inline-flex gap-1 align-items-center">
+                                                    @if($cmp->status_penanganan !== 'Resolved')
+                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#resolveModal{{ $cmp->id }}" title="Tindak Lanjut">
+                                                        <i class="cil-notes"></i> Respon
+                                                    </button>
+                                                    @endif
+
+                                                    @if($canApprove)
+                                                        @if(!$cmp->is_approved)
+                                                        <form action="{{ route('admin.kpi.daily-input.complaint.approve', $cmp) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-success text-white" title="Approve Keluhan">
+                                                                <i class="cil-check"></i> Setujui
+                                                            </button>
+                                                        </form>
+                                                        @else
+                                                        <form action="{{ route('admin.kpi.daily-input.complaint.unapprove', $cmp) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Batalkan Approval" onclick="return confirm('Batalkan status approval keluhan ini?')">
+                                                                <i class="cil-x"></i> Batal
+                                                            </button>
+                                                        </form>
+                                                        @endif
+                                                    @endif
+
+                                                    @if($canDelete)
+                                                    <form action="{{ route('admin.kpi.daily-input.complaint.destroy', $cmp) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data keluhan ini secara permanen?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Data (Superadmin)">
+                                                            <i class="cil-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    @endif
+                                                </div>
 
                                                 {{-- Modal Tindak Lanjut --}}
-                                                <div class="modal fade" id="resolveModal{{ $cmp->id }}" tabindex="-1">
+                                                <div class="modal fade text-start" id="resolveModal{{ $cmp->id }}" tabindex="-1">
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
                                                             <form action="{{ route('admin.kpi.daily-input.complaint.resolve', $cmp) }}" method="POST">
@@ -460,14 +628,11 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                @else
-                                                <span class="small text-success"><i class="cil-check"></i> Selesai</span>
-                                                @endif
                                             </td>
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="5" class="text-center py-4 text-muted">
+                                            <td colspan="6" class="text-center py-4 text-muted">
                                                 Nihil keluhan pada tanggal ini.
                                             </td>
                                         </tr>
@@ -490,6 +655,22 @@ document.addEventListener('DOMContentLoaded', function() {
     tabButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+
+            let tabKey = 'kebersihan';
+            if (this.id === 'tab-mesin') tabKey = 'mesin';
+            if (this.id === 'tab-complaint') tabKey = 'complaint';
+
+            const activeTabInput = document.getElementById('formActiveTab');
+            if (activeTabInput) {
+                activeTabInput.value = tabKey;
+            }
+
+            // Sync URL without reload
+            try {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabKey);
+                window.history.replaceState({}, '', url);
+            } catch(e) {}
             
             // CoreUI Tab API
             if (typeof coreui !== 'undefined' && coreui.Tab) {

@@ -24,6 +24,9 @@ class KpiDailyChecklist extends Model
         'user_id',
         'foto_bukti',
         'catatan',
+        'is_approved',
+        'approved_by_id',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -31,11 +34,18 @@ class KpiDailyChecklist extends Model
         'ada_tumpukan_sampah' => 'boolean',
         'skor_kebersihan' => 'integer',
         'skor_bau' => 'integer',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by_id');
     }
 
     public function tenant()

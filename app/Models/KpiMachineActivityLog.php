@@ -25,6 +25,9 @@ class KpiMachineActivityLog extends Model
         'status_alat',
         'catatan_kendala',
         'operator_id',
+        'is_approved',
+        'approved_by_id',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -32,6 +35,8 @@ class KpiMachineActivityLog extends Model
         'jam_operasi' => 'decimal:2',
         'jam_downtime' => 'decimal:2',
         'bbm_liter' => 'decimal:2',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
     ];
 
     public function machine()
@@ -42,6 +47,11 @@ class KpiMachineActivityLog extends Model
     public function operator()
     {
         return $this->belongsTo(User::class, 'operator_id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by_id');
     }
 
     public function tenant()
