@@ -62,11 +62,11 @@ class KpiCalculationService
         if ($tenantId) $checklistQuery->where('tenant_id', $tenantId);
         $totalChecklist = $checklistQuery->count();
         $cleanChecklist = (clone $checklistQuery)->where('ada_tumpukan_sampah', false)->count();
-        $nilaiKebersihan = $totalChecklist > 0 ? ($cleanChecklist / $totalChecklist) * 100 : 100.0;
+        $nilaiKebersihan = $totalChecklist > 0 ? ($cleanChecklist / $totalChecklist) * 100 : 0.0;
 
         // 4. Pengendalian Bau (Rata-rata skor bau: 100 = Tidak Bau, 70 = Ringan, 0 = Berat)
         $avgBau = (clone $checklistQuery)->avg('skor_bau');
-        $nilaiBau = $avgBau !== null ? (float) $avgBau : 100.0;
+        $nilaiBau = $avgBau !== null ? (float) $avgBau : 0.0;
 
         // 5. Keandalan Mesin (Zero Mesin Off - Availability)
         $machineLogQuery = KpiMachineActivityLog::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()]);
@@ -74,7 +74,7 @@ class KpiCalculationService
         $totalJamOperasi = (float) (clone $machineLogQuery)->sum('jam_operasi');
         $totalJamDowntime = (float) (clone $machineLogQuery)->sum('jam_downtime');
         $totalJamTotal = $totalJamOperasi + $totalJamDowntime;
-        $nilaiMesin = $totalJamTotal > 0 ? ($totalJamOperasi / $totalJamTotal) * 100 : 100.0;
+        $nilaiMesin = $totalJamTotal > 0 ? ($totalJamOperasi / $totalJamTotal) * 100 : 0.0;
 
         // 6. Kepuasan Stakeholder (DLH & Penggerobak / Warga) - Negatif KPI
         $complaintQuery = KpiStakeholderComplaint::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()]);
@@ -178,12 +178,23 @@ class KpiCalculationService
                 if ($tenantId) $attQuery->where('tenant_id', $tenantId);
                 $totalAtt = $attQuery->count();
                 $presentAtt = (clone $attQuery)->where('status', 'present')->count();
-                $nilaiSdm = $totalAtt > 0 ? ($presentAtt / $totalAtt) * 100 : 95.0;
+                $nilaiSdm = $totalAtt > 0 ? ($presentAtt / $totalAtt) * 100 : 0.0;
 
                 // DLH Complaint
                 $dlhComplaints = KpiStakeholderComplaint::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
                     ->where('stakeholder_type', 'DLH')->count();
                 $nilaiDlh = max(0.0, 100.0 - ($dlhComplaints * 30.0));
+
+                // Laporan Manajemen Tepat Waktu (Evaluasi KPI Periodik)
+                $evalQuery = KpiEvaluation::where(function($q) use ($start, $end) {
+                    $q->whereBetween('periode_mulai', [$start->toDateString(), $end->toDateString()])
+                      ->orWhereBetween('periode_selesai', [$start->toDateString(), $end->toDateString()]);
+                });
+                if ($tenantId) $evalQuery->where('tenant_id', $tenantId);
+                $evalCount = $evalQuery->count();
+                $hasReport = $evalCount > 0;
+                $nilaiLaporan = $hasReport ? 100.0 : 0.0;
+                $realisasiLaporan = $hasReport ? '100% Tepat Waktu' : '0% Tepat Waktu';
 
                 $kpiItems = [
                     [
@@ -237,10 +248,10 @@ class KpiCalculationService
                     [
                         'nama' => 'Laporan Manajemen Tepat Waktu',
                         'target' => '100%',
-                        'realisasi' => '100% Tepat Waktu',
-                        'nilai' => 100.0,
+                        'realisasi' => $realisasiLaporan,
+                        'nilai' => round($nilaiLaporan, 1),
                         'bobot' => 10,
-                        'skor' => 10.0,
+                        'skor' => round(($nilaiLaporan * 10) / 100, 2),
                     ],
                 ];
                 break;
@@ -305,22 +316,26 @@ class KpiCalculationService
 
             case 'equipment_logistik': // Agung
                 // Kesiapan Wheel Loader dari log alat
-                $wlLogs = KpiMachineActivityLog::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+                $wlQuery = KpiMachineActivityLog::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
                     ->where(function($q) {
                         $q->where('nama_alat', 'LIKE', '%wheel loader%')
                           ->orWhere('nama_alat', 'LIKE', '%loader%');
-                    })->get();
+                    });
+                if ($tenantId) $wlQuery->where('tenant_id', $tenantId);
+                $wlLogs = $wlQuery->get();
                 $wlOperasi = $wlLogs->sum('jam_operasi');
                 $wlDowntime = $wlLogs->sum('jam_downtime');
                 $wlTotal = $wlOperasi + $wlDowntime;
-                $nilaiWl = $wlTotal > 0 ? ($wlOperasi / $wlTotal) * 100 : 100.0;
+                $nilaiWl = $wlTotal > 0 ? ($wlOperasi / $wlTotal) * 100 : 0.0;
 
                 // Kebersihan Area Receiving
-                $recChecklist = KpiDailyChecklist::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
-                    ->where('area', 'Receiving')->get();
+                $recChecklistQuery = KpiDailyChecklist::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+                    ->where('area', 'Receiving');
+                if ($tenantId) $recChecklistQuery->where('tenant_id', $tenantId);
+                $recChecklist = $recChecklistQuery->get();
                 $recClean = $recChecklist->where('ada_tumpukan_sampah', false)->count();
                 $recTotal = $recChecklist->count();
-                $nilaiRec = $recTotal > 0 ? ($recClean / $recTotal) * 100 : 100.0;
+                $nilaiRec = $recTotal > 0 ? ($recClean / $recTotal) * 100 : 0.0;
 
                 $kpiItems = [
                     [
