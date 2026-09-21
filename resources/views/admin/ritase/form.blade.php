@@ -133,7 +133,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Foto Timbangan Tarra (Maks 5MB)</label>
+                        <label class="form-label">Foto Armada (Maks 5MB)</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_tarra').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
@@ -146,19 +146,19 @@
                         <div id="image-preview-tarra" class="mt-2 text-center border p-2 rounded {{ (isset($ritase) && $ritase->foto_tiket_tarra) ? '' : 'd-none' }}">
                             @if(isset($ritase) && $ritase->foto_tiket_tarra)
                                 <a href="{{ asset('storage/' . $ritase->foto_tiket_tarra) }}" target="_blank" id="preview-link-tarra">
-                                    <img src="{{ asset('storage/' . $ritase->foto_tiket_tarra) }}" id="preview-img-tarra" class="img-fluid rounded" style="max-height: 200px;">
+                                     <img src="{{ asset('storage/' . $ritase->foto_tiket_tarra) }}" id="preview-img-tarra" class="img-fluid rounded" style="max-height: 200px;">
                                 </a>
                             @else
                                 <a href="#" target="_blank" id="preview-link-tarra">
                                     <img src="" id="preview-img-tarra" class="img-fluid rounded" style="max-height: 200px;">
                                 </a>
                             @endif
-                            <p class="small text-muted mt-1 mb-0">Preview foto timbangan tarra</p>
+                            <p class="small text-muted mt-1 mb-0">Preview foto armada</p>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Foto Tiket Umum</label>
+                        <label class="form-label">Foto Tiket/Kitir</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket').click()">
                                 <i class="cil-camera me-1"></i> Ambil Foto / Pilih File
@@ -178,7 +178,7 @@
                                     <img src="" id="preview-img" class="img-fluid rounded" style="max-height: 200px;">
                                 </a>
                             @endif
-                            <p class="small text-muted mt-1 mb-0">Preview foto tiket</p>
+                            <p class="small text-muted mt-1 mb-0">Preview foto tiket/kitir</p>
                         </div>
                     </div>
                 </div>
