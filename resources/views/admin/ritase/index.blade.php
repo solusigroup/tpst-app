@@ -89,8 +89,11 @@
                         <th>Berat Netto</th>
                         <th>Status</th>
                         <th>Waktu Masuk</th>
+                        <th>Keterangan</th>
                         <th>Bukti</th>
-                        <th>Foto</th>
+                        <th class="text-center">Foto Bruto</th>
+                        <th class="text-center">Foto Armada</th>
+                        <th class="text-center">Foto Tiket</th>
                         <th>Approved</th>
                         <th>Status Invoice</th>
                         <th class="text-end">Aksi</th>
@@ -115,11 +118,30 @@
                             <span class="badge bg-{{ $statusColors[$item->status] ?? 'secondary' }}">{{ ucfirst($item->status) }}</span>
                         </td>
                         <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
+                        <td><small class="text-muted">{{ Str::limit($item->keterangan, 40) ?? '-' }}</small></td>
                         <td>{{ $item->tiket ?? '-' }}</td>
-                        <td>
+                        <td class="text-center">
+                            @if($item->foto_tiket_bruto)
+                                <a href="{{ asset('storage/' . $item->foto_tiket_bruto) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $item->foto_tiket_bruto) }}" alt="Bruto" class="rounded shadow-sm" style="width:48px;height:48px;object-fit:cover;">
+                                </a>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            @if($item->foto_tiket_tarra)
+                                <a href="{{ asset('storage/' . $item->foto_tiket_tarra) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $item->foto_tiket_tarra) }}" alt="Armada" class="rounded shadow-sm" style="width:48px;height:48px;object-fit:cover;">
+                                </a>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td class="text-center">
                             @if($item->foto_tiket)
-                                <a href="{{ asset('storage/' . $item->foto_tiket) }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                    <i class="cil-image"></i>
+                                <a href="{{ asset('storage/' . $item->foto_tiket) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $item->foto_tiket) }}" alt="Tiket" class="rounded shadow-sm" style="width:48px;height:48px;object-fit:cover;">
                                 </a>
                             @else
                                 <span class="text-muted">-</span>
@@ -161,7 +183,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="13" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                    <tr><td colspan="16" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                     @endforelse
                 </tbody>
             </table>

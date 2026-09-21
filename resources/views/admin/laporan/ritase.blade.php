@@ -131,7 +131,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Klien</th><th>Jenis Klien</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Approve</th><th>Status Invoice</th></tr></thead>
+                        <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Driver</th><th>Klien</th><th>Jenis Klien</th><th>Keterangan</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Approve</th><th>Status Invoice</th><th class="text-center">Foto Bruto</th><th class="text-center">Foto Armada</th><th class="text-center">Foto Tiket</th></tr></thead>
                         <tbody>
                             @forelse($rows as $r)
                             <tr>
@@ -139,6 +139,7 @@
                                 <td><strong>{{ $r->nomor_tiket }}</strong></td>
                                 <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                                 <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
+                                <td>{{ $r->driver ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
                                 <td>
                                     @php
@@ -152,6 +153,7 @@
                                     @endphp
                                     <span class="badge bg-{{ $color }}">{{ $r->klien->jenis ?? '-' }}</span>
                                 </td>
+                                <td><small class="text-muted">{{ Str::limit($r->keterangan, 40) ?? '-' }}</small></td>
                                 <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
@@ -169,19 +171,46 @@
                                     @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
                                     <span class="badge bg-{{ $invoiceColors[$r->status_invoice] ?? 'secondary' }}">{{ $r->status_invoice ?? 'Unbilled' }}</span>
                                 </td>
+                                <td class="text-center">
+                                    @if($r->foto_tiket_bruto)
+                                        <a href="{{ asset('storage/' . $r->foto_tiket_bruto) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $r->foto_tiket_bruto) }}" alt="Bruto" class="rounded shadow-sm" style="width:48px;height:48px;object-fit:cover;">
+                                        </a>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($r->foto_tiket_tarra)
+                                        <a href="{{ asset('storage/' . $r->foto_tiket_tarra) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $r->foto_tiket_tarra) }}" alt="Armada" class="rounded shadow-sm" style="width:48px;height:48px;object-fit:cover;">
+                                        </a>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($r->foto_tiket)
+                                        <a href="{{ asset('storage/' . $r->foto_tiket) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $r->foto_tiket) }}" alt="Tiket" class="rounded shadow-sm" style="width:48px;height:48px;object-fit:cover;">
+                                        </a>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                             </tr>
                             @empty
-                            <tr><td colspan="13" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                            <tr><td colspan="18" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                             @endforelse
                         </tbody>
                         <tfoot class="border-top border-2 fw-bold">
                             <tr>
-                                <td colspan="6" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td>
+                                <td colspan="8" class="text-end">TOTAL ({{ number_format($totals->total_rows ?? 0, 0, ',', '.') }} Ritase)</td>
                                 <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td>
                                 <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
-                                <td colspan="3"></td>
+                                <td colspan="6"></td>
                             </tr>
                         </tfoot>
                     </table>
