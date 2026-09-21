@@ -86,6 +86,10 @@
                         <td>: <strong>{{ $ritase->armada->plat_nomor ?? '-' }}</strong></td>
                     </tr>
                     <tr>
+                        <th>Driver</th>
+                        <td>: {{ $ritase->driver ?? '-' }}</td>
+                    </tr>
+                    <tr>
                         <th>Jenis/Asal Sampah</th>
                         <td>: {{ $ritase->jenis_sampah ?? '-' }}</td>
                     </tr>

@@ -25,6 +25,7 @@ class Ritase extends Model
     protected $fillable = [
         'tenant_id',
         'armada_id',
+        'driver',
         'klien_id',
         'invoice_id',
         'nomor_tiket',

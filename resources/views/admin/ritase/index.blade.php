@@ -28,6 +28,7 @@
                 <select name="search_by" class="form-select" title="Cari Berdasarkan">
                     <option value="tiket" {{ request('search_by') == 'tiket' ? 'selected' : '' }}>Tiket</option>
                     <option value="armada" {{ request('search_by') == 'armada' ? 'selected' : '' }}>Armada</option>
+                    <option value="driver" {{ request('search_by') == 'driver' ? 'selected' : '' }}>Driver</option>
                     <option value="klien" {{ request('search_by') == 'klien' ? 'selected' : '' }}>Klien</option>
                     <option value="status_invoice" {{ request('search_by') == 'status_invoice' ? 'selected' : '' }}>Status Invoice</option>
                 </select>
@@ -82,6 +83,7 @@
                         <th style="width: 40px;"><input type="checkbox" id="checkAll" class="form-check-input"></th>
                         <th>No. Tiket</th>
                         <th>Armada</th>
+                        <th>Driver</th>
                         <th>Klien</th>
                         <th>Asal Sampah</th>
                         <th>Berat Netto</th>
@@ -104,6 +106,7 @@
                         </td>
                         <td><strong>{{ $item->nomor_tiket ?? '-' }}</strong></td>
                         <td>{{ $item->armada->plat_nomor ?? '-' }}</td>
+                        <td>{{ $item->driver ?? '-' }}</td>
                         <td>{{ $item->klien->nama_klien ?? '-' }}</td>
                         <td>{{ $item->jenis_sampah ?? '-' }}</td>
                         <td>{{ number_format($item->berat_netto, 2, ',', '.') }} kg</td>

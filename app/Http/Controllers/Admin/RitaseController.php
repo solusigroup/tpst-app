@@ -27,6 +27,8 @@ class RitaseController extends Controller
                     $q->where('plat_nomor', 'like', '%' . $searchValue . '%')
                       ->orWhere('nama_sopir', 'like', '%' . $searchValue . '%');
                 });
+            } elseif ($searchBy == 'driver') {
+                $query->where('driver', 'like', '%' . $searchValue . '%');
             } elseif ($searchBy == 'klien') {
                 $query->whereHas('klien', function($q) use ($searchValue) {
                     $q->where('nama_klien', 'like', '%' . $searchValue . '%');
@@ -36,7 +38,8 @@ class RitaseController extends Controller
             } else {
                 $query->where(function($q) use ($searchValue) {
                     $q->where('nomor_tiket', 'like', '%' . $searchValue . '%')
-                      ->orWhere('tiket', 'like', '%' . $searchValue . '%');
+                      ->orWhere('tiket', 'like', '%' . $searchValue . '%')
+                      ->orWhere('driver', 'like', '%' . $searchValue . '%');
                 });
             }
         }
@@ -77,6 +80,8 @@ class RitaseController extends Controller
                     $q->where('plat_nomor', 'like', '%' . $searchValue . '%')
                       ->orWhere('nama_sopir', 'like', '%' . $searchValue . '%');
                 });
+            } elseif ($searchBy == 'driver') {
+                $query->where('driver', 'like', '%' . $searchValue . '%');
             } elseif ($searchBy == 'klien') {
                 $query->whereHas('klien', function($q) use ($searchValue) {
                     $q->where('nama_klien', 'like', '%' . $searchValue . '%');
@@ -86,7 +91,8 @@ class RitaseController extends Controller
             } else {
                 $query->where(function($q) use ($searchValue) {
                     $q->where('nomor_tiket', 'like', '%' . $searchValue . '%')
-                      ->orWhere('tiket', 'like', '%' . $searchValue . '%');
+                      ->orWhere('tiket', 'like', '%' . $searchValue . '%')
+                      ->orWhere('driver', 'like', '%' . $searchValue . '%');
                 });
             }
         }
@@ -152,6 +158,7 @@ class RitaseController extends Controller
 
         $validated = $request->validate([
             'armada_id' => 'required|exists:armada,id',
+            'driver' => 'nullable|string|max:255',
             'klien_id' => 'required|exists:klien,id',
             'waktu_masuk' => 'required|date',
             'waktu_keluar' => 'nullable|date',
@@ -165,6 +172,10 @@ class RitaseController extends Controller
             'foto_tiket_bruto' => 'nullable|image|max:5120',
             'foto_tiket_tarra' => 'nullable|image|max:5120',
         ]);
+
+        if (empty($validated['driver'])) {
+            $validated['driver'] = 'Agus';
+        }
 
         if ($request->hasFile('foto_tiket')) {
             $validated['foto_tiket'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket'), 'ritase_tiket');
@@ -201,6 +212,7 @@ class RitaseController extends Controller
 
         $validated = $request->validate([
             'armada_id' => 'required|exists:armada,id',
+            'driver' => 'nullable|string|max:255',
             'klien_id' => 'required|exists:klien,id',
             'waktu_masuk' => 'required|date',
             'waktu_keluar' => 'nullable|date',

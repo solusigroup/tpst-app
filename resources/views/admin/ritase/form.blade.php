@@ -24,10 +24,15 @@
                             <select name="armada_id" class="form-select @error('armada_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Armada --</option>
                                 @foreach($armadas as $a)
-                                    <option value="{{ $a->id }}" data-berat-kosong="{{ $a->berat_kosong }}" data-klien-id="{{ $a->klien_id }}" {{ old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : '' }}>{{ $a->plat_nomor }}</option>
+                                    <option value="{{ $a->id }}" data-berat-kosong="{{ $a->berat_kosong }}" data-klien-id="{{ $a->klien_id }}" data-nama-sopir="{{ $a->nama_sopir }}" {{ old('armada_id', $ritase->armada_id ?? '') == $a->id ? 'selected' : '' }}>{{ $a->plat_nomor }}</option>
                                 @endforeach
                             </select>
                             @error('armada_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Driver</label>
+                            <input type="text" name="driver" id="driver" class="form-control @error('driver') is-invalid @enderror" value="{{ old('driver', $ritase->driver ?? 'Agus') }}" placeholder="Agus">
+                            @error('driver') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Klien <span class="text-danger">*</span></label>

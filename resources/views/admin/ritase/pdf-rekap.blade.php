@@ -149,13 +149,14 @@
                 <th width="3%">No</th>
                 <th width="11%">No. Tiket</th>
                 <th width="8%">Tiket</th>
-                <th width="12%">Waktu Masuk</th>
+                <th width="11%">Waktu Masuk</th>
                 <th width="10%">Asal Sampah</th>
-                <th width="12%">Armada</th>
-                <th width="14%">Klien</th>
-                <th width="10%">Status</th>
-                <th width="10%">Status Invoice</th>
-                <th width="10%" class="text-right">Berat Netto (kg)</th>
+                <th width="11%">Armada</th>
+                <th width="9%">Driver</th>
+                <th width="13%">Klien</th>
+                <th width="8%">Status</th>
+                <th width="8%">Status Invoice</th>
+                <th width="8%" class="text-right">Berat Netto (kg)</th>
             </tr>
         </thead>
         <tbody>
@@ -167,6 +168,7 @@
                     <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
                     <td>{{ $item->jenis_sampah ?? '-' }}</td>
                     <td>{{ $item->armada->plat_nomor ?? '-' }}</td>
+                    <td>{{ $item->driver ?? '-' }}</td>
                     <td>{{ $item->klien->nama_klien ?? '-' }}</td>
                     <td class="text-center">
                         <span class="badge badge-{{ $item->status ?? 'default' }}">{{ ucfirst($item->status) }}</span>
