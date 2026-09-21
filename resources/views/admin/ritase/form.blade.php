@@ -113,6 +113,12 @@
                         <input type="text" name="tiket" class="form-control" value="{{ old('tiket', $ritase->tiket ?? '') }}">
                     </div>
                     <div class="mb-3">
+                        <label class="form-label fw-bold">Keterangan</label>
+                        <input type="text" name="keterangan" id="keterangan" class="form-control @error('keterangan') is-invalid @enderror" value="{{ old('keterangan', $ritase->keterangan ?? (isset($ritase) ? '' : 'Diterima di TPST')) }}" placeholder="Contoh: Diterima di TPST, TPA, dll">
+                        @error('keterangan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="form-text">Contoh: Diterima di TPST, TPA, dll (dapat diedit atau dihapus).</div>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Foto Timbangan Bruto (Maks 5MB)</label>
                         <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('foto_tiket_bruto').click()">

@@ -36,6 +36,10 @@
                         <td>: {{ $ritase->tiket ?? '-' }}</td>
                     </tr>
                     <tr>
+                        <th>Keterangan</th>
+                        <td>: {{ $ritase->keterangan ?? '-' }}</td>
+                    </tr>
+                    <tr>
                         <th>Status Ritase</th>
                         <td>: 
                             @php $statusColors = ['masuk'=>'info','timbang'=>'warning','keluar'=>'primary','selesai'=>'success']; @endphp

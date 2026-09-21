@@ -30,6 +30,7 @@ class Ritase extends Model
         'invoice_id',
         'nomor_tiket',
         'tiket',
+        'keterangan',
         'foto_tiket',
         'foto_tiket_bruto',
         'foto_tiket_tarra',
