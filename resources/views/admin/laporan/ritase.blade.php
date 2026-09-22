@@ -131,45 +131,26 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Armada</th><th>Jenis Armada</th><th>Driver</th><th>Klien</th><th>Jenis Klien</th><th>Keterangan</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Status Tiket</th><th>Approve</th><th>Status Invoice</th><th class="text-center">Foto Bruto</th><th class="text-center">Foto Armada</th><th class="text-center">Foto Tiket</th></tr></thead>
+                        <thead class="table-light"><tr><th>Tanggal</th><th>No Tiket</th><th>Jenis Armada</th><th>NOPOL</th><th>Driver</th><th>Klien</th><th>Asal Sampah</th><th>Keterangan</th><th class="text-end">Bruto</th><th class="text-end">Tarra</th><th class="text-end">Berat Netto</th><th class="text-end">Biaya Tipping</th><th>Approve</th><th class="text-center">Foto Bruto</th><th class="text-center">Foto Armada</th><th class="text-center">Foto Tiket</th></tr></thead>
                         <tbody>
                             @forelse($rows as $r)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->translatedFormat('d M Y') }}</td>
                                 <td><strong>{{ $r->nomor_tiket }}</strong></td>
-                                <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                                 <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
+                                <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                                 <td>{{ $r->driver ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
-                                <td>
-                                    @php
-                                        $jenisColors = [
-                                            'DLH' => 'info',
-                                            'Swasta' => 'primary',
-                                            'Offtaker' => 'success',
-                                            'Internal' => 'secondary'
-                                        ];
-                                        $color = $jenisColors[$r->klien->jenis] ?? 'light';
-                                    @endphp
-                                    <span class="badge bg-{{ $color }}">{{ $r->klien->jenis ?? '-' }}</span>
-                                </td>
+                                <td>{{ $r->jenis_sampah ?? '-' }}</td>
                                 <td><small class="text-muted">{{ Str::limit($r->keterangan, 40) ?? '-' }}</small></td>
                                 <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
                                 <td class="text-end">Rp {{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
                                 <td>
-                                    @php $statusColors = ['masuk'=>'warning','timbang'=>'info','keluar'=>'primary','selesai'=>'success']; @endphp
-                                    <span class="badge bg-{{ $statusColors[$r->status] ?? 'secondary' }}">{{ ucfirst($r->status) }}</span>
-                                </td>
-                                <td>
                                     <span class="badge bg-{{ $r->is_approved ? 'success' : 'danger' }}">
                                         {{ $r->is_approved ? 'Yes' : 'No' }}
                                     </span>
-                                </td>
-                                <td>
-                                    @php $invoiceColors = ['Draft'=>'secondary','Sent'=>'info','Paid'=>'success','Canceled'=>'danger']; @endphp
-                                    <span class="badge bg-{{ $invoiceColors[$r->status_invoice] ?? 'secondary' }}">{{ $r->status_invoice ?? 'Unbilled' }}</span>
                                 </td>
                                 <td class="text-center">
                                     @if($r->foto_tiket_bruto)
@@ -200,7 +181,7 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="18" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                            <tr><td colspan="16" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                             @endforelse
                         </tbody>
                         <tfoot class="border-top border-2 fw-bold">
@@ -210,7 +191,7 @@
                                 <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }} kg</td>
                                 <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
-                                <td colspan="6"></td>
+                                <td colspan="4"></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -347,15 +328,16 @@
                                 <th class="text-center" style="width: 40px;">No</th>
                                 <th>Tanggal</th>
                                 <th>No Tiket</th>
-                                <th>Armada</th>
                                 <th>Jenis Armada</th>
+                                <th>NOPOL</th>
+                                <th>Driver</th>
                                 <th>Klien</th>
-                                <th>Jenis Klien</th>
+                                <th>Asal Sampah</th>
+                                <th>Keterangan</th>
                                 <th class="text-end">Bruto</th>
                                 <th class="text-end">Tarra</th>
                                 <th class="text-end">Netto (kg)</th>
                                 <th class="text-end">Tipping</th>
-                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -364,26 +346,26 @@
                                 <td class="text-center">{{ $index + 1 }}</td>
                                 <td>{{ \Carbon\Carbon::parse($r->waktu_masuk)->format('d/m/Y') }}</td>
                                 <td>{{ $r->nomor_tiket }}</td>
-                                <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
                                 <td>{{ $r->armada->jenis_armada ?? '-' }}</td>
+                                <td>{{ $r->armada->plat_nomor ?? '-' }}</td>
+                                <td>{{ $r->driver ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
-                                <td>{{ $r->klien->jenis ?? '-' }}</td>
+                                <td>{{ $r->jenis_sampah ?? '-' }}</td>
+                                <td>{{ $r->keterangan ?? '-' }}</td>
                                 <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->biaya_tipping, 0, ',', '.') }}</td>
-                                <td>{{ ucfirst($r->status) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="fw-bold">
                             <tr class="table-light border-dark">
-                                <td colspan="7" class="text-end">TOTAL KESELURUHAN</td>
+                                <td colspan="9" class="text-end">TOTAL KESELURUHAN</td>
                                 <td class="text-end">{{ number_format($totals->total_bruto ?? 0, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($totals->total_tarra ?? 0, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($totals->total_netto ?? 0, 2, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($totals->total_tipping ?? 0, 0, ',', '.') }}</td>
-                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
