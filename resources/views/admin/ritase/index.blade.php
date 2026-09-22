@@ -118,7 +118,7 @@
                             <span class="badge bg-{{ $statusColors[$item->status] ?? 'secondary' }}">{{ ucfirst($item->status) }}</span>
                         </td>
                         <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
-                        <td><small class="text-muted">{{ Str::limit($item->keterangan, 40) ?? '-' }}</small></td>
+                        <td><small class="text-muted">{{ Str::limit($item->keterangan ?: 'Diterima di TPST', 40) }}</small></td>
                         <td>{{ $item->tiket ?? '-' }}</td>
                         <td class="text-center">
                             @if($item->foto_tiket_bruto)

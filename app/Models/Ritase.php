@@ -68,6 +68,10 @@ class Ritase extends Model
         static::addGlobalScope(new TenantScope());
 
         static::creating(function (Ritase $ritase) {
+            if (empty($ritase->keterangan)) {
+                $ritase->keterangan = 'Diterima di TPST';
+            }
+
             if (empty($ritase->nomor_tiket)) {
                 $prefix = 'RT-' . now()->format('Ym') . '-';
                 

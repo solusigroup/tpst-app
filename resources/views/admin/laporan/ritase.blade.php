@@ -142,7 +142,7 @@
                                 <td>{{ $r->driver ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
                                 <td>{{ $r->jenis_sampah ?? '-' }}</td>
-                                <td><small class="text-muted">{{ Str::limit($r->keterangan, 40) ?? '-' }}</small></td>
+                                <td><small class="text-muted">{{ Str::limit($r->keterangan ?: 'Diterima di TPST', 40) }}</small></td>
                                 <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }} kg</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }} kg</td>
@@ -351,7 +351,7 @@
                                 <td>{{ $r->driver ?? '-' }}</td>
                                 <td>{{ $r->klien->nama_klien ?? '-' }}</td>
                                 <td>{{ $r->jenis_sampah ?? '-' }}</td>
-                                <td>{{ $r->keterangan ?? '-' }}</td>
+                                <td>{{ $r->keterangan ?: 'Diterima di TPST' }}</td>
                                 <td class="text-end">{{ number_format($r->berat_bruto, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->berat_tarra, 2, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($r->berat_netto, 2, ',', '.') }}</td>

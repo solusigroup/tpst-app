@@ -177,6 +177,9 @@ class RitaseController extends Controller
         if (empty($validated['driver'])) {
             $validated['driver'] = 'Agus';
         }
+        if (empty($validated['keterangan'])) {
+            $validated['keterangan'] = 'Diterima di TPST';
+        }
 
         if ($request->hasFile('foto_tiket')) {
             $validated['foto_tiket'] = \App\Helpers\ImageHelper::compressAndStore($request->file('foto_tiket'), 'ritase_tiket');

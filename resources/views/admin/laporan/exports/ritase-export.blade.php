@@ -64,7 +64,7 @@
             <td>{{ $r->driver ?? '-' }}</td>
             <td>{{ $r->klien->nama_klien ?? '-' }}</td>
             <td>{{ $r->jenis_sampah ?? '-' }}</td>
-            <td>{{ $r->keterangan ?? '-' }}</td>
+            <td>{{ $r->keterangan ?: 'Diterima di TPST' }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($r->berat_bruto) : number_format($r->berat_bruto, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($r->berat_tarra) : number_format($r->berat_tarra, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($r->berat_netto) : number_format($r->berat_netto, 2, ',', '.')) }}</td>
