@@ -213,6 +213,8 @@
                             <option value="jenis_klien">Jenis Klien</option>
                             <option value="jenis_armada">Jenis Armada</option>
                             <option value="plat_nomor">Plat Nomor</option>
+                            <option value="jenis_sampah">Asal Sampah</option>
+                            <option value="keterangan">Keterangan</option>
                             <option value="status">Status Tiket</option>
                             <option value="tanggal">Tanggal (Hari)</option>
                             <option value="bulan">Tanggal (Bulan)</option>
@@ -224,6 +226,8 @@
                             <option value="" selected>-- Tidak Ada (1 Dimensi) --</option>
                             <option value="jenis_klien">Jenis Klien</option>
                             <option value="jenis_armada">Jenis Armada</option>
+                            <option value="jenis_sampah">Asal Sampah</option>
+                            <option value="keterangan">Keterangan</option>
                             <option value="status">Status Tiket</option>
                         </select>
                     </div>
@@ -262,6 +266,8 @@
             'jenis_armada'  => $r->armada->jenis_armada ?? 'Lainnya',
             'nama_klien'    => $r->klien->nama_klien ?? '-',
             'jenis_klien'   => $r->klien->jenis ?? '-',
+            'jenis_sampah'  => $r->jenis_sampah ?? '-',
+            'keterangan'    => $r->keterangan ?: 'Diterima di TPST',
             'berat_bruto'   => (float)$r->berat_bruto,
             'berat_tarra'   => (float)$r->berat_tarra,
             'berat_netto'   => (float)$r->berat_netto,
@@ -473,6 +479,8 @@ document.addEventListener('DOMContentLoaded', function () {
         'jenis_klien': 'Jenis Klien',
         'jenis_armada': 'Jenis Armada',
         'plat_nomor': 'Plat Nomor',
+        'jenis_sampah': 'Asal Sampah',
+        'keterangan': 'Keterangan',
         'status': 'Status Tiket',
         'tanggal': 'Tanggal',
         'bulan': 'Bulan'
