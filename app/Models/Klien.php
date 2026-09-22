@@ -78,4 +78,12 @@ class Klien extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * Get all master asal sampah for this klien.
+     */
+    public function asalSampah(): HasMany
+    {
+        return $this->hasMany(MasterAsalSampah::class);
+    }
 }

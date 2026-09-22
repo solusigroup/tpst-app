@@ -59,6 +59,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Operasional
+    Route::post('master-asal-sampah/merge', [\App\Http\Controllers\Admin\MasterAsalSampahController::class, 'merge'])->name('master-asal-sampah.merge');
+    Route::resource('master-asal-sampah', \App\Http\Controllers\Admin\MasterAsalSampahController::class)->parameters(['master-asal-sampah' => 'masterAsalSampah']);
+
     Route::get('ritase/export-rekap', [RitaseController::class, 'exportRekap'])->name('ritase.export-rekap');
     Route::get('ritase/asal-sampah', [RitaseController::class, 'asalSampahByKlien'])->name('ritase.asal-sampah');
     Route::get('ritase/bulk-approve', fn() => redirect()->route('admin.ritase.index'));

@@ -644,6 +644,11 @@
                     <i class="nav-icon cil-people"></i> Klien
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.master-asal-sampah.*') ? 'active' : '' }}" href="{{ route('admin.master-asal-sampah.index') }}">
+                    <i class="nav-icon cil-list-rich"></i> Asal Sampah
+                </a>
+            </li>
             @endcan
             @can('view_armada')
             <li class="nav-item">

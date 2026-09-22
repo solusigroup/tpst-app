@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ritase;
 use App\Models\Armada;
 use App\Models\Klien;
+use App\Models\MasterAsalSampah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
@@ -123,7 +124,7 @@ class RitaseController extends Controller
     }
 
     /**
-     * API: Return distinct asal_sampah (jenis_sampah) values for a given klien_id.
+     * API: Return distinct asal_sampah (jenis_sampah) values for a given klien_id from Master Data.
      */
     public function asalSampahByKlien(Request $request)
     {
@@ -132,14 +133,10 @@ class RitaseController extends Controller
             return response()->json([]);
         }
 
-        $items = Ritase::where('klien_id', $klienId)
-            ->whereNotNull('jenis_sampah')
-            ->where('jenis_sampah', '!=', '')
-            ->selectRaw('jenis_sampah, COUNT(*) as used_count')
-            ->groupBy('jenis_sampah')
-            ->orderByDesc('used_count')
-            ->limit(50)
-            ->pluck('jenis_sampah');
+        $items = MasterAsalSampah::where('klien_id', $klienId)
+            ->where('is_active', true)
+            ->orderBy('nama_asal_sampah')
+            ->pluck('nama_asal_sampah');
 
         return response()->json($items);
     }
@@ -192,8 +189,19 @@ class RitaseController extends Controller
         }
 
         $validated['berat_netto'] = ($validated['berat_bruto'] ?? 0) - ($validated['berat_tarra'] ?? 0);
-
         $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
+
+        // Normalisasi string jenis_sampah & auto-register ke MasterAsalSampah (Opsi B Hybrid)
+        if (!empty($validated['jenis_sampah'])) {
+            $validated['jenis_sampah'] = preg_replace('/\s+/', ' ', trim($validated['jenis_sampah']));
+            MasterAsalSampah::withoutGlobalScopes()->firstOrCreate([
+                'tenant_id' => $validated['tenant_id'],
+                'klien_id' => $validated['klien_id'],
+                'nama_asal_sampah' => $validated['jenis_sampah'],
+            ], [
+                'is_active' => true,
+            ]);
+        }
 
         DB::transaction(function () use ($validated) {
             Ritase::create($validated);
@@ -258,6 +266,20 @@ class RitaseController extends Controller
 
         if (empty($ritase->tenant_id)) {
             $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();
+        }
+
+        $tenantId = $validated['tenant_id'] ?? $ritase->tenant_id ?? auth()->user()->getEffectiveTenantId();
+
+        // Normalisasi string jenis_sampah & auto-register ke MasterAsalSampah (Opsi B Hybrid)
+        if (!empty($validated['jenis_sampah'])) {
+            $validated['jenis_sampah'] = preg_replace('/\s+/', ' ', trim($validated['jenis_sampah']));
+            MasterAsalSampah::withoutGlobalScopes()->firstOrCreate([
+                'tenant_id' => $tenantId,
+                'klien_id' => $validated['klien_id'],
+                'nama_asal_sampah' => $validated['jenis_sampah'],
+            ], [
+                'is_active' => true,
+            ]);
         }
 
         DB::transaction(function () use ($ritase, $validated) {
