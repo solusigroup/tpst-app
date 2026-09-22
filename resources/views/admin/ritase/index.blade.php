@@ -82,7 +82,7 @@
                     <tr>
                         <th style="width: 40px;"><input type="checkbox" id="checkAll" class="form-check-input"></th>
                         <th>No. Tiket</th>
-                        <th>Armada</th>
+                        <th>NOPOL</th>
                         <th>Driver</th>
                         <th>Klien</th>
                         <th>Asal Sampah</th>
@@ -90,7 +90,6 @@
                         <th>Status</th>
                         <th>Waktu Masuk</th>
                         <th>Keterangan</th>
-                        <th>Bukti</th>
                         <th class="text-center">Foto Bruto</th>
                         <th class="text-center">Foto Armada</th>
                         <th class="text-center">Foto Tiket</th>
@@ -119,7 +118,6 @@
                         </td>
                         <td>{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m/Y H:i') : '-' }}</td>
                         <td><small class="text-muted" title="{{ $item->keterangan ?: 'Diterima di TPST' }}">{{ Str::limit($item->keterangan ?: 'Diterima di TPST', 40) }}</small></td>
-                        <td>{{ $item->tiket ?? '-' }}</td>
                         <td class="text-center">
                             @if($item->foto_tiket_bruto)
                                 <a href="{{ asset('storage/' . $item->foto_tiket_bruto) }}" target="_blank">
@@ -183,7 +181,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="16" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
+                    <tr><td colspan="15" class="text-center py-4 text-body-secondary">Belum ada data ritase.</td></tr>
                     @endforelse
                 </tbody>
             </table>
