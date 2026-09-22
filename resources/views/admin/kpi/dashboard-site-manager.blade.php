@@ -126,12 +126,12 @@
     </div>
 
     <div class="row g-4 mb-4">
-        {{-- Tabel Rincian KPI Budi Sucahyo --}}
+        {{-- Tabel Rincian KPI Global --}}
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-dark">
-                        <i class="cil-user me-2 text-primary"></i>Rincian Penilaian KPI - Budi Sucahyo
+                        <i class="cil-user me-2 text-primary"></i>Rincian Penilaian KPI - Global
                     </h5>
                     <span class="badge bg-primary">Skor: {{ $budiKpi['total_skor'] }}%</span>
                 </div>
