@@ -51,6 +51,9 @@
             <th class="text-end">Berat Netto (kg)</th>
             <th class="text-end">Biaya Tipping</th>
             <th>Approve</th>
+            <th class="text-center">Foto Bruto</th>
+            <th class="text-center">Foto Armada</th>
+            <th class="text-center">Foto Tiket</th>
         </tr>
     </thead>
     <tbody>
@@ -70,6 +73,33 @@
             <td class="text-end">{{ (request('export') == 'excel' ? ($r->berat_netto) : number_format($r->berat_netto, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $r->biaya_tipping }}</td>
             <td>{{ $r->is_approved ? 'Yes' : 'No' }}</td>
+            <td class="text-center">
+                @if(request('export') == 'excel')
+                    <!-- Photo drawing embedded by PhpSpreadsheet -->
+                @elseif($r->foto_tiket_bruto && file_exists(public_path('storage/' . $r->foto_tiket_bruto)))
+                    <img src="{{ public_path('storage/' . $r->foto_tiket_bruto) }}" style="width:40px;height:40px;object-fit:cover;">
+                @else
+                    -
+                @endif
+            </td>
+            <td class="text-center">
+                @if(request('export') == 'excel')
+                    <!-- Photo drawing embedded by PhpSpreadsheet -->
+                @elseif($r->foto_tiket_tarra && file_exists(public_path('storage/' . $r->foto_tiket_tarra)))
+                    <img src="{{ public_path('storage/' . $r->foto_tiket_tarra) }}" style="width:40px;height:40px;object-fit:cover;">
+                @else
+                    -
+                @endif
+            </td>
+            <td class="text-center">
+                @if(request('export') == 'excel')
+                    <!-- Photo drawing embedded by PhpSpreadsheet -->
+                @elseif($r->foto_tiket && file_exists(public_path('storage/' . $r->foto_tiket)))
+                    <img src="{{ public_path('storage/' . $r->foto_tiket) }}" style="width:40px;height:40px;object-fit:cover;">
+                @else
+                    -
+                @endif
+            </td>
         </tr>
         @endforeach
     </tbody>
@@ -80,7 +110,7 @@
             <td class="text-end">{{ (request('export') == 'excel' ? ($totals->total_tarra ?? 0) : number_format($totals->total_tarra ?? 0, 2, ',', '.')) }}</td>
             <td class="text-end">{{ (request('export') == 'excel' ? ($totals->total_netto ?? 0) : number_format($totals->total_netto ?? 0, 2, ',', '.')) }}</td>
             <td class="text-end">{{ $totals->total_tipping ?? 0 }}</td>
-            <td></td>
+            <td colspan="4"></td>
         </tr>
     </tfoot>
 </table>

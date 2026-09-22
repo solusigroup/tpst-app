@@ -638,7 +638,7 @@ class LaporanController extends Controller
                 return $pdf->download('Laporan_Ritase_' . $dari . '_' . $sampai . '.pdf');
             } elseif ($request->export === 'excel') {
                 return \Maatwebsite\Excel\Facades\Excel::download(
-                    new \App\Exports\LaporanExcelExport('admin.laporan.exports.ritase-export', $data), 
+                    new \App\Exports\LaporanRitaseExcelExport($data, $request->all()), 
                     'Laporan_Ritase_' . $dari . '_' . $sampai . '.xlsx'
                 );
             }
