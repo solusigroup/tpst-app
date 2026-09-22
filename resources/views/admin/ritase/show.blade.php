@@ -13,11 +13,47 @@
             </ol>
         </nav>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 align-items-center">
+        @if(!$ritase->is_approved)
+            <form method="POST" action="{{ route('admin.ritase.approve', $ritase) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-warning text-dark fw-semibold">
+                    <i class="cil-check me-1"></i> Approve Ritase
+                </button>
+            </form>
+        @elseif(auth()->user()->isSuperAdmin())
+            <form method="POST" action="{{ route('admin.ritase.disapprove', $ritase) }}" class="d-inline" onsubmit="return confirm('Yakin ingin membatalkan approval ritase ini?')">
+                @csrf
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="cil-x-circle me-1"></i> Disapprove
+                </button>
+            </form>
+        @endif
         <a href="{{ route('admin.ritase.edit', $ritase) }}" class="btn btn-primary"><i class="cil-pencil me-1"></i> Edit Ritase</a>
         <a href="{{ route('admin.ritase.index') }}" class="btn btn-outline-secondary">Kembali</a>
     </div>
 </div>
+
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    <i class="cil-check-circle me-1"></i> {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="cil-warning me-1"></i> {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if(session('info'))
+<div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+    <i class="cil-info me-1"></i> {{ session('info') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
 
 <div class="row">
     <div class="col-md-6">
@@ -37,7 +73,7 @@
                     </tr>
                     <tr>
                         <th>Keterangan</th>
-                        <td>: {{ $ritase->keterangan ?? '-' }}</td>
+                        <td>: {{ $ritase->keterangan ?: 'Diterima di TPST' }}</td>
                     </tr>
                     <tr>
                         <th>Status Ritase</th>
@@ -58,9 +94,23 @@
                         <th>Approval</th>
                         <td>: 
                             @if($ritase->is_approved)
-                                <span class="badge bg-success"><i class="cil-check-circle me-1"></i> Approved at {{ $ritase->approved_at ? \Carbon\Carbon::parse($ritase->approved_at)->format('d/m/Y H:i') : '' }}</span>
+                                <span class="badge bg-success me-1"><i class="cil-check-circle me-1"></i> Approved at {{ $ritase->approved_at ? \Carbon\Carbon::parse($ritase->approved_at)->format('d/m/Y H:i') : '' }}</span>
+                                @if(auth()->user()->isSuperAdmin())
+                                    <form method="POST" action="{{ route('admin.ritase.disapprove', $ritase) }}" class="d-inline ms-1" onsubmit="return confirm('Yakin ingin membatalkan approval ritase ini?')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="cil-x-circle me-1"></i> Disapprove
+                                        </button>
+                                    </form>
+                                @endif
                             @else
-                                <span class="badge bg-secondary">Pending Approval</span>
+                                <span class="badge bg-secondary me-2">Pending Approval</span>
+                                <form method="POST" action="{{ route('admin.ritase.approve', $ritase) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning text-dark fw-semibold">
+                                        <i class="cil-check me-1"></i> Approve
+                                    </button>
+                                </form>
                             @endif
                         </td>
                     </tr>

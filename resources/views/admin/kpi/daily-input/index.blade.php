@@ -284,11 +284,12 @@
                                 <div class="mb-3">
                                     <label class="form-label">Nama Alat / Mesin <span class="text-danger">*</span></label>
                                     <select name="nama_alat" class="form-select" required>
-                                        <option value="Wheel Loader">Wheel Loader (Feeding & Unloading)</option>
                                         <option value="Conveyor Pemilahan">Conveyor Pemilahan</option>
-                                        <option value="Separator Organik-Anorganik">Separator Organik-Anorganik</option>
-                                        <option value="Mesin Pengolah RDF">Mesin Pengolah RDF</option>
-                                        <option value="Mesin Press Baler Residu">Mesin Press Baler Residu</option>
+                                        <option value="Separator Organik-anorganik">Separator Organik-anorganik</option>
+                                        <option value="Pencacah RDF">Pencacah RDF</option>
+                                        <option value="Ballpress RDF">Ballpress RDF</option>
+                                        <option value="Wheel Loader">Wheel Loader</option>
+                                        <option value="Truk">Truk</option>
                                     </select>
                                 </div>
 
