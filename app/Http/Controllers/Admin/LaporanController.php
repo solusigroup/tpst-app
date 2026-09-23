@@ -630,6 +630,8 @@ class LaporanController extends Controller
         $kliens = \App\Models\Klien::orderBy('nama_klien')->get();
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
+            ini_set('memory_limit', '1G');
+            set_time_limit(300);
             $rows = $query->get();
             $data = compact('rows', 'kliens', 'dari', 'sampai', 'klienId', 'jenisKlien', 'jenisArmada', 'status', 'isApproved', 'totals', 'rekapJenis', 'sortDate');
 

@@ -69,38 +69,44 @@ class LaporanRitaseExcelExport implements FromView, WithEvents
                 $sheet->getColumnDimension('P')->setWidth($colWidthUnits);
                 $sheet->getColumnDimension('Q')->setWidth($colWidthUnits);
 
+                // Jika jumlah data lebih dari 100 baris dan tidak ada flag with_photo=1, skip attach gambar untuk menghindari OOM/500 error
+                $withPhoto = isset($this->requestParams['with_photo']) ? filter_var($this->requestParams['with_photo'], FILTER_VALIDATE_BOOLEAN) : false;
+                $skipPhoto = count($rows) > 100 && !$withPhoto;
+
                 foreach ($rows as $index => $item) {
                     $currentRow = $startDataRow + $index;
                     $hasAnyPhoto = false;
 
-                    $photoFields = [
-                        'O' => $item->foto_tiket_bruto,
-                        'P' => $item->foto_tiket_tarra,
-                        'Q' => $item->foto_tiket,
-                    ];
+                    if (!$skipPhoto) {
+                        $photoFields = [
+                            'O' => $item->foto_tiket_bruto,
+                            'P' => $item->foto_tiket_tarra,
+                            'Q' => $item->foto_tiket,
+                        ];
 
-                    foreach ($photoFields as $col => $relativePath) {
-                        if ($relativePath && Storage::disk('public')->exists($relativePath)) {
-                            $fullPath = Storage::disk('public')->path($relativePath);
-                            if (file_exists($fullPath)) {
-                                $hasAnyPhoto = true;
-                                $drawing = new Drawing();
-                                $drawing->setName('Foto ' . $col . ' ' . ($index + 1));
-                                $drawing->setDescription('Foto Ritase');
-                                $drawing->setPath($fullPath);
-                                $drawing->setCoordinates($col . $currentRow);
+                        foreach ($photoFields as $col => $relativePath) {
+                            if ($relativePath && Storage::disk('public')->exists($relativePath)) {
+                                $fullPath = Storage::disk('public')->path($relativePath);
+                                if (file_exists($fullPath)) {
+                                    $hasAnyPhoto = true;
+                                    $drawing = new Drawing();
+                                    $drawing->setName('Foto ' . $col . ' ' . ($index + 1));
+                                    $drawing->setDescription('Foto Ritase');
+                                    $drawing->setPath($fullPath);
+                                    $drawing->setCoordinates($col . $currentRow);
 
-                                // Set dimensions
-                                if ($heightMm > 0) {
-                                    $drawing->setHeight($targetHeightPx);
+                                    // Set dimensions
+                                    if ($heightMm > 0) {
+                                        $drawing->setHeight($targetHeightPx);
+                                    }
+                                    if ($widthMm > 0 && isset($this->requestParams['foto_w'])) {
+                                        $drawing->setWidth($targetWidthPx);
+                                    }
+
+                                    $drawing->setOffsetY(4);
+                                    $drawing->setOffsetX(4);
+                                    $drawing->setWorksheet($sheet);
                                 }
-                                if ($widthMm > 0 && isset($this->requestParams['foto_w'])) {
-                                    $drawing->setWidth($targetWidthPx);
-                                }
-
-                                $drawing->setOffsetY(4);
-                                $drawing->setOffsetX(4);
-                                $drawing->setWorksheet($sheet);
                             }
                         }
                     }
