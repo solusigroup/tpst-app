@@ -4,6 +4,12 @@
 <div class="text-center mb-4">
     <h2 style="margin:0">LAPORAN HASIL PILAHAN</h2>
     <p style="margin:5px 0">Periode: {{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</p>
+    @if($kategori)
+        <p style="margin:5px 0">Kategori: {{ $kategori }}</p>
+    @endif
+    @if(isset($jenis) && $jenis)
+        <p style="margin:5px 0">Jenis Pilahan: {{ $jenis }}</p>
+    @endif
     @if($userId)
         @php $selectedEmp = $employees->firstWhere('id', $userId); @endphp
         <p style="margin:5px 0">Karyawan: {{ $selectedEmp ? $selectedEmp->name : 'N/A' }}</p>

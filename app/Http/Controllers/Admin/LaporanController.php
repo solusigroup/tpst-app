@@ -1097,6 +1097,7 @@ class LaporanController extends Controller
         $sampai = $request->get('sampai', now()->format('Y-m-d'));
         $kategori = $request->get('kategori');
         $userId = $request->get('user_id');
+        $jenis = $request->get('jenis');
 
         $sortDate = $request->get('sort_date', 'desc');
         $query = HasilPilahan::with(['wasteCategory.wageRates'])
@@ -1104,6 +1105,7 @@ class LaporanController extends Controller
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->when($jenis, fn ($q) => $q->where('jenis', $jenis))
             ->orderBy('tanggal', $sortDate);
 
         $rows = $query->paginate(20)->withQueryString();
@@ -1114,12 +1116,14 @@ class LaporanController extends Controller
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '<', $dari))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->when($jenis, fn ($q) => $q->where('jenis', $jenis))
             ->groupBy('kategori', 'jenis')
             ->get()
             ->keyBy('jenis');
 
         $keluarSebelum = Penjualan::selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '<', $dari))
+            ->when($jenis, fn ($q) => $q->where('jenis_produk', $jenis))
             ->groupBy('jenis_produk')
             ->get()
             ->keyBy('jenis_produk');
@@ -1129,6 +1133,7 @@ class LaporanController extends Controller
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
             ->when($kategori, fn ($q) => $q->where('kategori', $kategori))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->when($jenis, fn ($q) => $q->where('jenis', $jenis))
             ->groupBy('kategori', 'jenis')
             ->get()
             ->keyBy('jenis');
@@ -1136,6 +1141,7 @@ class LaporanController extends Controller
         $penjualanAgg = Penjualan::selectRaw('jenis_produk, SUM(berat_kg) as total_keluar')
             ->when($dari, fn ($q) => $q->whereDate('tanggal', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('tanggal', '<=', $sampai))
+            ->when($jenis, fn ($q) => $q->where('jenis_produk', $jenis))
             ->groupBy('jenis_produk')
             ->get()
             ->keyBy('jenis_produk');
@@ -1145,6 +1151,7 @@ class LaporanController extends Controller
             ->when($dari, fn ($q) => $q->whereDate('output_date', '>=', $dari))
             ->when($sampai, fn ($q) => $q->whereDate('output_date', '<=', $sampai))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->when($jenis, fn ($q) => $q->where('waste_categories.name', $jenis))
             ->groupBy('waste_categories.name')
             ->get()
             ->keyBy('jenis');
@@ -1227,10 +1234,11 @@ class LaporanController extends Controller
             $employees->where('tenant_id', auth()->user()->tenant_id);
         }
         $employees = $employees->orderBy('name')->get();
+        $wasteCategories = \App\Models\WasteCategory::orderBy('name')->get();
 
         if ($request->export === 'pdf' || $request->export === 'excel') {
             $rows = $query->get();
-            $data = compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees', 'sortDate');
+            $data = compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'jenis', 'totals', 'stokSummary', 'summaryTotals', 'employees', 'sortDate', 'wasteCategories');
 
             if ($request->export === 'pdf') {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.exports.hasil-pilahan-export', $data);
@@ -1244,7 +1252,7 @@ class LaporanController extends Controller
         }
 
         $rows = $query->paginate(20)->withQueryString();
-        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'totals', 'stokSummary', 'summaryTotals', 'employees', 'sortDate'));
+        return view('admin.laporan.hasil-pilahan', compact('rows', 'dari', 'sampai', 'kategori', 'userId', 'jenis', 'totals', 'stokSummary', 'summaryTotals', 'employees', 'sortDate', 'wasteCategories'));
     }
 
     public function laporanResidu(Request $request)

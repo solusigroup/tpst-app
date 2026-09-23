@@ -33,6 +33,15 @@
             </select>
         </div>
         <div class="col-auto">
+            <label class="form-label mb-0 small text-body-secondary">Jenis Pilahan</label>
+            <select name="jenis" class="form-select">
+                <option value="">-- Semua --</option>
+                @foreach($wasteCategories as $wc)
+                    <option value="{{ $wc->name }}" {{ (isset($jenis) && $jenis == $wc->name) ? 'selected' : '' }}>{{ $wc->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-auto">
             <label class="form-label mb-0 small text-body-secondary">Karyawan</label>
             <select name="user_id" class="form-select">
                 <option value="">-- Semua --</option>
