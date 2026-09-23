@@ -90,22 +90,36 @@ class PenjualanController extends Controller
             'klien_id' => 'required|exists:klien,id',
             'tanggal' => 'required|date',
             'jenis_produk' => 'required|string',
-            'berat_kg' => 'required|numeric|min:0',
-            'harga_satuan' => 'required|numeric|min:0',
+            'berat_kg' => 'required|numeric|gt:0',
+            'harga_satuan' => 'required|numeric|gt:0',
             'jumlah_bayar' => 'nullable|numeric|min:0',
             'coa_pembayaran_id' => 'nullable|exists:coa,id',
+        ], [
+            'klien_id.required' => 'Pilih offtaker pembeli.',
+            'berat_kg.gt' => 'Berat penjualan harus lebih besar dari 0 kg.',
+            'harga_satuan.gt' => 'Harga satuan harus lebih besar dari Rp 0.',
         ]);
+
+        // Pencegahan Anomali: Klien harus bertipe Offtaker
+        $klien = Klien::find($validated['klien_id']);
+        if (!$klien || $klien->jenis !== 'Offtaker') {
+            return back()->withErrors(['klien_id' => 'Klien pembeli penjualan harus berjenis Offtaker.'])->withInput();
+        }
 
         $stokTersedia = $this->calculateAvailableStock();
         $jenis = $request->jenis_produk;
         $maxStok = $stokTersedia[$jenis] ?? 0;
 
         if ($request->berat_kg > $maxStok) {
-            return back()->withErrors(['berat_kg' => "Stok {$jenis} tidak mencukupi. Maksimal: {$maxStok} kg"])->withInput();
+            return back()->withErrors(['berat_kg' => "Stok {$jenis} tidak mencukupi (Tersedia: {$maxStok} kg). Penjualan tidak boleh membuat stok negatif."])->withInput();
         }
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
         $validated['jumlah_bayar'] = $validated['jumlah_bayar'] ?? 0;
+
+        if ($validated['jumlah_bayar'] > $validated['total_harga']) {
+            return back()->withErrors(['jumlah_bayar' => 'Jumlah bayar / uang muka tidak boleh melebihi total harga (Rp ' . number_format($validated['total_harga'], 0, ',', '.') . ').'])->withInput();
+        }
 
         $tenantId = auth()->user()->getEffectiveTenantId();
         $validated['tenant_id'] = $tenantId;
@@ -150,22 +164,36 @@ class PenjualanController extends Controller
             'klien_id' => 'required|exists:klien,id',
             'tanggal' => 'required|date',
             'jenis_produk' => 'required|string',
-            'berat_kg' => 'required|numeric|min:0',
-            'harga_satuan' => 'required|numeric|min:0',
+            'berat_kg' => 'required|numeric|gt:0',
+            'harga_satuan' => 'required|numeric|gt:0',
             'jumlah_bayar' => 'nullable|numeric|min:0',
             'coa_pembayaran_id' => 'nullable|exists:coa,id',
+        ], [
+            'klien_id.required' => 'Pilih offtaker pembeli.',
+            'berat_kg.gt' => 'Berat penjualan harus lebih besar dari 0 kg.',
+            'harga_satuan.gt' => 'Harga satuan harus lebih besar dari Rp 0.',
         ]);
+
+        // Pencegahan Anomali: Klien harus bertipe Offtaker
+        $klien = Klien::find($validated['klien_id']);
+        if (!$klien || $klien->jenis !== 'Offtaker') {
+            return back()->withErrors(['klien_id' => 'Klien pembeli penjualan harus berjenis Offtaker.'])->withInput();
+        }
 
         $stokTersedia = $this->calculateAvailableStock($penjualan->id);
         $jenis = $request->jenis_produk;
         $maxStok = $stokTersedia[$jenis] ?? 0;
 
         if ($request->berat_kg > $maxStok) {
-            return back()->withErrors(['berat_kg' => "Stok {$jenis} tidak mencukupi. Maksimal: {$maxStok} kg"])->withInput();
+            return back()->withErrors(['berat_kg' => "Stok {$jenis} tidak mencukupi (Tersedia: {$maxStok} kg). Penjualan tidak boleh membuat stok negatif."])->withInput();
         }
 
         $validated['total_harga'] = ($validated['berat_kg'] ?? 0) * ($validated['harga_satuan'] ?? 0);
         $validated['jumlah_bayar'] = $validated['jumlah_bayar'] ?? 0;
+
+        if ($validated['jumlah_bayar'] > $validated['total_harga']) {
+            return back()->withErrors(['jumlah_bayar' => 'Jumlah bayar / uang muka tidak boleh melebihi total harga (Rp ' . number_format($validated['total_harga'], 0, ',', '.') . ').'])->withInput();
+        }
 
         if (empty($penjualan->tenant_id)) {
             $validated['tenant_id'] = auth()->user()->getEffectiveTenantId();

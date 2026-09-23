@@ -701,6 +701,14 @@
             </li>
             @endcan
 
+            @canany(['view_ritase', 'view_pengangkutan_residu', 'view_hasil_pilahan', 'view_penjualan', 'view_laporan_operasional'])
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.anomali-data.*') ? 'active' : '' }}" href="{{ route('admin.anomali-data.index') }}">
+                    <i class="nav-icon cil-warning text-warning"></i> Pemeriksaan Anomali
+                </a>
+            </li>
+            @endcanany
+
             {{-- Laporan --}}
             @canany(['view_laporan_keuangan', 'view_laporan_operasional'])
             <li class="nav-title">Laporan</li>

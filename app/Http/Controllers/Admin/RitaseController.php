@@ -161,7 +161,7 @@ class RitaseController extends Controller
             'waktu_keluar' => 'nullable|date',
             'berat_bruto' => 'required|numeric|min:0',
             'berat_tarra' => 'required|numeric|min:0',
-            'jenis_sampah' => 'required|string',
+            'jenis_sampah' => 'required|string|min:2',
             'biaya_tipping' => 'nullable|numeric|min:0',
             'status' => 'required|in:masuk,timbang,keluar,selesai',
             'tiket' => 'nullable|string',
@@ -169,12 +169,31 @@ class RitaseController extends Controller
             'foto_tiket' => 'nullable|image|max:5120',
             'foto_tiket_bruto' => 'nullable|image|max:5120',
             'foto_tiket_tarra' => 'nullable|image|max:5120',
+        ], [
+            'jenis_sampah.required' => 'Asal sampah / jenis sampah wajib diisi.',
+            'jenis_sampah.min' => 'Asal sampah / jenis sampah minimal 2 karakter.',
         ]);
+
+        // Pencegahan Anomali: Netto tidak boleh <= 0
+        if (($validated['berat_bruto'] - $validated['berat_tarra']) <= 0) {
+            return back()->withErrors(['berat_bruto' => 'Berat bruto harus lebih besar dari berat tarra (Netto tidak boleh negatif atau 0 kg).'])->withInput();
+        }
+
+        // Pencegahan Anomali: Asal sampah tidak boleh simbol kosong/strip
+        $trimmedJenis = trim($validated['jenis_sampah']);
+        if (in_array($trimmedJenis, ['-', '--', '---', 'n/a', 'N/A', 'null', 'NULL', '?'])) {
+            return back()->withErrors(['jenis_sampah' => 'Asal sampah tidak valid. Harap isi nama asal sampah dengan jelas.'])->withInput();
+        }
+
+        // Pencegahan Anomali: Waktu keluar tidak boleh mendahului waktu masuk
+        if (!empty($validated['waktu_keluar']) && strtotime($validated['waktu_keluar']) < strtotime($validated['waktu_masuk'])) {
+            return back()->withErrors(['waktu_keluar' => 'Waktu keluar tidak boleh lebih awal dari waktu masuk.'])->withInput();
+        }
 
         if (empty($validated['driver'])) {
             $validated['driver'] = 'Agus';
         }
-        if (empty($validated['keterangan'])) {
+        if (empty($validated['keterangan']) || trim($validated['keterangan']) === '-') {
             $validated['keterangan'] = 'Diterima di TPST';
         }
 
@@ -230,7 +249,7 @@ class RitaseController extends Controller
             'waktu_keluar' => 'nullable|date',
             'berat_bruto' => 'required|numeric|min:0',
             'berat_tarra' => 'required|numeric|min:0',
-            'jenis_sampah' => 'required|string',
+            'jenis_sampah' => 'required|string|min:2',
             'biaya_tipping' => 'nullable|numeric|min:0',
             'status' => 'required|in:masuk,timbang,keluar,selesai',
             'tiket' => 'nullable|string',
@@ -238,7 +257,30 @@ class RitaseController extends Controller
             'foto_tiket' => 'nullable|image|max:5120',
             'foto_tiket_bruto' => 'nullable|image|max:5120',
             'foto_tiket_tarra' => 'nullable|image|max:5120',
+        ], [
+            'jenis_sampah.required' => 'Asal sampah / jenis sampah wajib diisi.',
+            'jenis_sampah.min' => 'Asal sampah / jenis sampah minimal 2 karakter.',
         ]);
+
+        // Pencegahan Anomali: Netto tidak boleh <= 0
+        if (($validated['berat_bruto'] - $validated['berat_tarra']) <= 0) {
+            return back()->withErrors(['berat_bruto' => 'Berat bruto harus lebih besar dari berat tarra (Netto tidak boleh negatif atau 0 kg).'])->withInput();
+        }
+
+        // Pencegahan Anomali: Asal sampah tidak boleh simbol kosong/strip
+        $trimmedJenis = trim($validated['jenis_sampah']);
+        if (in_array($trimmedJenis, ['-', '--', '---', 'n/a', 'N/A', 'null', 'NULL', '?'])) {
+            return back()->withErrors(['jenis_sampah' => 'Asal sampah tidak valid. Harap isi nama asal sampah dengan jelas.'])->withInput();
+        }
+
+        // Pencegahan Anomali: Waktu keluar tidak boleh mendahului waktu masuk
+        if (!empty($validated['waktu_keluar']) && strtotime($validated['waktu_keluar']) < strtotime($validated['waktu_masuk'])) {
+            return back()->withErrors(['waktu_keluar' => 'Waktu keluar tidak boleh lebih awal dari waktu masuk.'])->withInput();
+        }
+
+        if (empty($validated['keterangan']) || trim($validated['keterangan']) === '-') {
+            $validated['keterangan'] = 'Diterima di TPST';
+        }
 
         if ($request->hasFile('foto_tiket')) {
             // Delete old photo

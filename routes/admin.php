@@ -132,6 +132,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('tracing/audit-check', [\App\Http\Controllers\Admin\TracingController::class, 'auditCheck'])->name('tracing.audit');
     Route::post('tracing/sync', [\App\Http\Controllers\Admin\TracingController::class, 'syncDiscrepancies'])->name('tracing.sync');
 
+    // Pemeriksaan Anomali Data
+    Route::get('anomali-data', [\App\Http\Controllers\Admin\AnomaliDataController::class, 'index'])->name('anomali-data.index');
+    Route::get('anomali-data/export-excel', [\App\Http\Controllers\Admin\AnomaliDataController::class, 'exportExcel'])->name('anomali-data.export-excel');
+    Route::post('anomali-data/autofill-keterangan', [\App\Http\Controllers\Admin\AnomaliDataController::class, 'autoFillKeterangan'])->name('anomali-data.autofill-keterangan');
+
     // PENGATURAN
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class)->except(['show']);

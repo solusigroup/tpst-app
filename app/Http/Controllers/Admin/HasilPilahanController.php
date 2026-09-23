@@ -77,10 +77,14 @@ class HasilPilahanController extends Controller
             'tanggal'            => 'required|date',
             'kategori'           => 'required|in:Organik,Anorganik,B3,Residu',
             'waste_category_id'  => 'required|exists:waste_categories,id',
-            'tonase'             => 'required|numeric|min:0',
-            'jml_bal'            => 'nullable|integer|min:0',
+            'tonase'             => 'required|numeric|gt:0',
+            'jml_bal'            => 'required|integer|min:1',
             'user_id'            => 'required|exists:users,id',
             'keterangan'         => 'nullable|string|max:500',
+        ], [
+            'tonase.gt'          => 'Tonase hasil pilahan harus lebih besar dari 0 kg (tidak boleh 0 atau negatif).',
+            'jml_bal.required'   => 'Jumlah bal wajib diisi.',
+            'jml_bal.min'        => 'Jumlah bal minimal 1 bal (tidak boleh 0 atau negatif).',
         ]);
 
         // Auto-fill string fields from FK relations
@@ -120,10 +124,14 @@ class HasilPilahanController extends Controller
             'tanggal'            => 'required|date',
             'kategori'           => 'required|in:Organik,Anorganik,B3,Residu',
             'waste_category_id'  => 'required|exists:waste_categories,id',
-            'tonase'             => 'required|numeric|min:0',
-            'jml_bal'            => 'nullable|integer|min:0',
+            'tonase'             => 'required|numeric|gt:0',
+            'jml_bal'            => 'required|integer|min:1',
             'user_id'            => 'required|exists:users,id',
             'keterangan'         => 'nullable|string|max:500',
+        ], [
+            'tonase.gt'          => 'Tonase hasil pilahan harus lebih besar dari 0 kg (tidak boleh 0 atau negatif).',
+            'jml_bal.required'   => 'Jumlah bal wajib diisi.',
+            'jml_bal.min'        => 'Jumlah bal minimal 1 bal (tidak boleh 0 atau negatif).',
         ]);
 
         // Auto-fill string fields from FK relations

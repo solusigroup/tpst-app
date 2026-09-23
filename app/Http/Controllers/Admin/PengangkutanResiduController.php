@@ -45,18 +45,26 @@ class PengangkutanResiduController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create_pengangkutan_residu');
-        $request->validate([
+        $validated = $request->validate([
             'armada_id' => 'required|exists:armada,id',
             'tanggal' => 'required|date',
             'waktu_keluar' => 'nullable',
             'waktu_masuk' => 'nullable',
             'berat_bruto' => 'required|numeric|min:0',
             'berat_tarra' => 'required|numeric|min:0',
+            'biaya_retribusi' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status_pembayaran' => 'nullable|in:Sudah,Belum',
         ]);
 
-        PengangkutanResidu::create($request->all());
+        // Pencegahan Anomali: Netto residu tidak boleh <= 0
+        if (($request->berat_bruto - $request->berat_tarra) <= 0) {
+            return back()->withErrors(['berat_bruto' => 'Berat bruto harus lebih besar dari berat tarra (Netto residu tidak boleh negatif atau 0 kg).'])->withInput();
+        }
+
+        $data = $request->all();
+        $data['tenant_id'] = auth()->user()->getEffectiveTenantId();
+        PengangkutanResidu::create($data);
 
         return redirect()->route('admin.pengangkutan-residu.index')
             ->with('success', 'Data pengangkutan residu berhasil dicatat.');
@@ -83,16 +91,22 @@ class PengangkutanResiduController extends Controller
     public function update(Request $request, PengangkutanResidu $pengangkutanResidu)
     {
         Gate::authorize('update_pengangkutan_residu');
-        $request->validate([
+        $validated = $request->validate([
             'armada_id' => 'required|exists:armada,id',
             'tanggal' => 'required|date',
             'waktu_keluar' => 'nullable',
             'waktu_masuk' => 'nullable',
             'berat_bruto' => 'required|numeric|min:0',
             'berat_tarra' => 'required|numeric|min:0',
+            'biaya_retribusi' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status_pembayaran' => 'nullable|in:Sudah,Belum',
         ]);
+
+        // Pencegahan Anomali: Netto residu tidak boleh <= 0
+        if (($request->berat_bruto - $request->berat_tarra) <= 0) {
+            return back()->withErrors(['berat_bruto' => 'Berat bruto harus lebih besar dari berat tarra (Netto residu tidak boleh negatif atau 0 kg).'])->withInput();
+        }
 
         $pengangkutanResidu->update($request->all());
 
