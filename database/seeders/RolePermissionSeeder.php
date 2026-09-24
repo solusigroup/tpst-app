@@ -33,6 +33,7 @@ class RolePermissionSeeder extends Seeder
             // TPST Performance (KPI)
             'view_kpi_dashboard', 'view_kpi_daily_input', 'create_kpi_daily_input',
             'view_kpi_evaluasi', 'approve_kpi_evaluasi',
+            'view_holiday', 'create_holiday', 'update_holiday', 'delete_holiday',
             
             // Keuangan
             'view_coa', 'create_coa', 'update_coa', 'delete_coa',

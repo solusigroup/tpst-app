@@ -233,6 +233,10 @@ class RoleController extends Controller
                     'create_kpi_daily_input'=> 'Mengisi Checklist Kebersihan, Logbook Mesin & Komplain KPI',
                     'view_kpi_evaluasi'     => 'Melihat Daftar Evaluasi & Dokumen Pengesahan KPI',
                     'approve_kpi_evaluasi'  => 'Menyetujui (Approve) Evaluasi KPI & Pengesahan Supervisi PBS',
+                    'view_holiday'          => 'Melihat Daftar Hari Libur (Holiday)',
+                    'create_holiday'        => 'Menambah Hari Libur Baru',
+                    'update_holiday'        => 'Mengubah Data Hari Libur',
+                    'delete_holiday'        => 'Menghapus Hari Libur',
                 ]
             ],
             'operasional_ritase' => [

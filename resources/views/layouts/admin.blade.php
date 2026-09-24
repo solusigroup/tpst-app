@@ -556,7 +556,7 @@
             @endif
 
             {{-- TPST Performance Management System (KPI) --}}
-            @canany(['view_kpi_dashboard', 'view_kpi_daily_input', 'view_kpi_evaluasi'])
+            @canany(['view_kpi_dashboard', 'view_kpi_daily_input', 'view_kpi_evaluasi', 'view_holiday'])
             <li class="nav-title">Performance (KPI)</li>
             @can('view_kpi_dashboard')
             <li class="nav-group {{ request()->is('admin/kpi/dashboard*') ? 'show' : '' }}">
@@ -603,6 +603,13 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.kpi.evaluasi.*') ? 'active' : '' }}" href="{{ route('admin.kpi.evaluasi.index') }}">
                     <i class="nav-icon cil-check-circle"></i> Evaluasi & Supervisi PBS
+                </a>
+            </li>
+            @endcan
+            @can('view_holiday')
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.kpi.holidays.*') ? 'active' : '' }}" href="{{ route('admin.kpi.holidays.index') }}">
+                    <i class="nav-icon cil-calendar"></i> Hari Libur (Holiday)
                 </a>
             </li>
             @endcan

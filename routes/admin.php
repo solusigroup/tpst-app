@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\AiAssistantController;
 use App\Http\Controllers\Admin\KpiDashboardController;
 use App\Http\Controllers\Admin\KpiDailyInputController;
 use App\Http\Controllers\Admin\KpiEvaluationController;
+use App\Http\Controllers\Admin\HolidayController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -260,6 +261,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('evaluasi/{kpiEvaluation}/submit', [KpiEvaluationController::class, 'submit'])->name('evaluasi.submit');
         Route::post('evaluasi/{kpiEvaluation}/approve', [KpiEvaluationController::class, 'approve'])->name('evaluasi.approve');
         Route::get('evaluasi/{kpiEvaluation}/export-pdf', [KpiEvaluationController::class, 'exportPdf'])->name('evaluasi.export-pdf');
+
+        // Master Hari Libur (Holiday)
+        Route::resource('holidays', HolidayController::class);
     });
 });
 

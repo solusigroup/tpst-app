@@ -16,6 +16,8 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\EmployeeOutput;
 use App\Models\WasteCategory;
+use App\Models\JurnalKas;
+use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -185,16 +187,10 @@ class KpiCalculationService
                     ->where('stakeholder_type', 'DLH')->count();
                 $nilaiDlh = max(0.0, 100.0 - ($dlhComplaints * 30.0));
 
-                // Laporan Manajemen Tepat Waktu (Evaluasi KPI Periodik)
-                $evalQuery = KpiEvaluation::where(function($q) use ($start, $end) {
-                    $q->whereBetween('periode_mulai', [$start->toDateString(), $end->toDateString()])
-                      ->orWhereBetween('periode_selesai', [$start->toDateString(), $end->toDateString()]);
-                });
-                if ($tenantId) $evalQuery->where('tenant_id', $tenantId);
-                $evalCount = $evalQuery->count();
-                $hasReport = $evalCount > 0;
-                $nilaiLaporan = $hasReport ? 100.0 : 0.0;
-                $realisasiLaporan = $hasReport ? '100% Tepat Waktu' : '0% Tepat Waktu';
+                // Laporan Manajemen Tepat Waktu (Ketepatan Entry Data Operasional)
+                $laporanResult = $this->calculateLaporanTepatWaktu($start, $end, $tenantId);
+                $nilaiLaporan = $laporanResult['nilai'];
+                $realisasiLaporan = $laporanResult['realisasi'];
 
                 $kpiItems = [
                     [
@@ -527,6 +523,116 @@ class KpiCalculationService
         }
 
         return $leaderboard;
+    }
+
+    /**
+     * Menghitung KPI Laporan Manajemen Tepat Waktu
+     *
+     * Logika: Untuk setiap hari kerja (bukan Minggu & bukan Holiday) dalam periode,
+     * cek apakah ada entry data (Ritase/Penjualan/HasilPilahan/JurnalKas).
+     * Hari yang sudah lewat > 3 hari dari NOW tanpa data = terlambat.
+     * Hari yang masih dalam grace period (≤ 3 hari dari NOW) = skip (belum dihitung).
+     */
+    protected function calculateLaporanTepatWaktu(Carbon $start, Carbon $end, $tenantId = null): array
+    {
+        $today = Carbon::today();
+        $graceDays = 3;
+
+        // Ambil daftar tanggal holiday dalam periode
+        $holidayDates = Holiday::getHolidayDates($start->toDateString(), $end->toDateString(), $tenantId);
+
+        // Kumpulkan tanggal-tanggal yang punya data entry per sumber
+        $ritaseDates = Ritase::whereBetween('waktu_masuk', [$start, $end])
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->selectRaw('DATE(waktu_masuk) as tgl')
+            ->groupBy('tgl')
+            ->pluck('tgl')
+            ->toArray();
+
+        $penjualanDates = Penjualan::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->selectRaw('DATE(tanggal) as tgl')
+            ->groupBy('tgl')
+            ->pluck('tgl')
+            ->toArray();
+
+        $hasilPilahanDates = HasilPilahan::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->selectRaw('DATE(tanggal) as tgl')
+            ->groupBy('tgl')
+            ->pluck('tgl')
+            ->toArray();
+
+        $jurnalKasDates = JurnalKas::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->selectRaw('DATE(tanggal) as tgl')
+            ->groupBy('tgl')
+            ->pluck('tgl')
+            ->toArray();
+
+        // Gabungkan semua tanggal yang punya data (minimal 1 sumber)
+        $allEntryDates = array_unique(array_merge($ritaseDates, $penjualanDates, $hasilPilahanDates, $jurnalKasDates));
+
+        $totalChecked = 0;
+        $totalOnTime = 0;
+
+        // Iterasi setiap hari dalam periode
+        $current = $start->copy()->startOfDay();
+        $periodEnd = $end->copy()->startOfDay();
+
+        while ($current->lte($periodEnd)) {
+            $dateStr = $current->toDateString();
+
+            // Skip hari Minggu
+            if ($current->isSunday()) {
+                $current->addDay();
+                continue;
+            }
+
+            // Skip hari libur (holiday)
+            if (in_array($dateStr, $holidayDates)) {
+                $current->addDay();
+                continue;
+            }
+
+            // Skip hari yang belum lewat (masa depan)
+            if ($current->gt($today)) {
+                $current->addDay();
+                continue;
+            }
+
+            // Skip hari yang masih dalam grace period (≤ 3 hari dari NOW)
+            $daysSinceTransaction = $today->diffInDays($current);
+            if ($daysSinceTransaction <= $graceDays) {
+                $current->addDay();
+                continue;
+            }
+
+            // Hari ini sudah lewat grace period, cek apakah ada data
+            $totalChecked++;
+            if (in_array($dateStr, $allEntryDates)) {
+                $totalOnTime++;
+            }
+
+            $current->addDay();
+        }
+
+        // Jika tidak ada hari yang diperiksa (semua masih grace period / periode di masa depan), default 100%
+        if ($totalChecked === 0) {
+            return [
+                'nilai' => 100.0,
+                'realisasi' => '100% Tepat Waktu',
+                'detail' => 'Belum ada hari yang melewati batas 3 hari',
+            ];
+        }
+
+        $nilaiLaporan = ($totalOnTime / $totalChecked) * 100;
+
+        return [
+            'nilai' => round($nilaiLaporan, 1),
+            'realisasi' => round($nilaiLaporan, 0) . '% Tepat Waktu',
+            'detail' => "{$totalOnTime}/{$totalChecked} hari tepat waktu",
+        ];
     }
 
     /**
