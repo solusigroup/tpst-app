@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CoaController;
 use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\BankReconciliationController;
 use App\Http\Controllers\Admin\JurnalKasController;
+use App\Http\Controllers\Admin\JurnalCommentController;
 use App\Http\Controllers\Admin\InvoiceAdminController;
 use App\Http\Controllers\Admin\InvoiceItemController;
 use App\Http\Controllers\Admin\UserController;
@@ -94,6 +95,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('jurnal/purge-selected', [JurnalController::class, 'purgeSelected'])->name('jurnal.purge-selected');
     Route::post('jurnal/post-selected', [JurnalController::class, 'postSelected'])->name('jurnal.post-selected');
     Route::resource('jurnal', JurnalController::class);
+    Route::get('jurnal/{jurnal}/comments', [JurnalCommentController::class, 'index'])->name('jurnal.comments.index');
+    Route::post('jurnal/{jurnal}/comments', [JurnalCommentController::class, 'store'])->name('jurnal.comments.store');
+    Route::delete('jurnal/comments/{comment}', [JurnalCommentController::class, 'destroy'])->name('jurnal.comments.destroy');
     Route::post('jurnal/{jurnal}/post', [JurnalController::class, 'post'])->name('jurnal.post');
     Route::post('jurnal/{jurnal}/unpost', [JurnalController::class, 'unpost'])->name('jurnal.unpost');
     Route::post('jurnal/{jurnal}/purge', [JurnalController::class, 'purge'])->name('jurnal.purge');

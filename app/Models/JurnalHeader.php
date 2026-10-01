@@ -115,4 +115,12 @@ class JurnalHeader extends Model
         }
         return (float) $this->jurnalDetails()->sum('debit');
     }
+
+    /**
+     * Get all comments for this journal header.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(JurnalComment::class, 'jurnal_header_id')->orderBy('created_at', 'asc');
+    }
 }

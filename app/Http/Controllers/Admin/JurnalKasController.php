@@ -19,6 +19,7 @@ class JurnalKasController extends Controller
         $kasCoas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->pluck('id')->toArray();
 
         $query = \App\Models\JurnalHeader::with(['jurnalDetails.coa', 'referensi'])
+            ->withCount('comments')
             ->where(function($q) use ($kasCoas, $request) {
                 // 1. From Jurnal Kas
                 $q->where('referensi_type', \App\Models\JurnalKas::class);
@@ -79,6 +80,9 @@ class JurnalKasController extends Controller
             if ($header->referensi_type === \App\Models\JurnalKas::class && $header->referensi) {
                 $kas = $header->referensi;
                 $kas->is_jurnal_umum = false;
+                $kas->jurnal_header_id = $header->id;
+                $kas->nomor_referensi = $header->nomor_referensi;
+                $kas->comments_count = $header->comments_count ?? 0;
                 $kas->loadMissing('coaLawan');
                 return $kas;
             } else {
@@ -88,6 +92,9 @@ class JurnalKasController extends Controller
                 
                 $virtualKas = new \App\Models\JurnalKas();
                 $virtualKas->id = $header->id; // ID JurnalHeader!
+                $virtualKas->jurnal_header_id = $header->id;
+                $virtualKas->nomor_referensi = $header->nomor_referensi;
+                $virtualKas->comments_count = $header->comments_count ?? 0;
                 $virtualKas->tanggal = $header->tanggal;
                 $virtualKas->tipe = 'Penerimaan';
                 $virtualKas->nominal = $kasDetail ? $kasDetail->debit : 0;
