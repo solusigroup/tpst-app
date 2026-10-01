@@ -63,8 +63,18 @@
                     <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Terlama</option>
                 </select>
             </div>
+            <div class="col-auto">
+                <label class="form-label small text-muted mb-1">Tampilkan</label>
+                <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()" title="Tampilkan per halaman">
+                    <option value="25" {{ request('per_page', 50) == 25 ? 'selected' : '' }}>25 baris</option>
+                    <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50 baris</option>
+                    <option value="100" {{ request('per_page', 50) == 100 ? 'selected' : '' }}>100 baris</option>
+                    <option value="200" {{ request('per_page', 50) == 200 ? 'selected' : '' }}>200 baris</option>
+                    <option value="500" {{ request('per_page', 50) == 500 ? 'selected' : '' }}>500 baris</option>
+                </select>
+            </div>
             <div class="col-auto"><button class="btn btn-sm btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
-            @if(request()->hasAny(['search','jumlah','jenis','dari','sampai','sort']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','jumlah','jenis','dari','sampai','sort','per_page']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
@@ -117,6 +127,13 @@
             </table>
         </div>
     </div>
-    @if($jurnalKas->hasPages()) <div class="card-footer bg-white">{{ $jurnalKas->links() }}</div> @endif
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="text-body-secondary small">
+            Menampilkan {{ $jurnalKas->firstItem() ?? 0 }} - {{ $jurnalKas->lastItem() ?? 0 }} dari total {{ number_format($jurnalKas->total(), 0, ',', '.') }} data
+        </div>
+        @if($jurnalKas->hasPages())
+            <div>{{ $jurnalKas->links() }}</div>
+        @endif
+    </div>
 </div>
 @endsection

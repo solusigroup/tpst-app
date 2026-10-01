@@ -67,8 +67,13 @@ class JurnalKasController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai);
         }
 
+        $allowedPerPage = [25, 50, 100, 200, 500];
+        $perPage = in_array((int) $request->input('per_page'), $allowedPerPage)
+            ? (int) $request->input('per_page')
+            : 50;
+
         $sortDirection = $request->input('sort') === 'asc' ? 'asc' : 'desc';
-        $paginator = $query->orderBy('tanggal', $sortDirection)->paginate(15)->withQueryString();
+        $paginator = $query->orderBy('tanggal', $sortDirection)->paginate($perPage)->withQueryString();
 
         $paginator->getCollection()->transform(function ($header) use ($kasCoas) {
             if ($header->referensi_type === \App\Models\JurnalKas::class && $header->referensi) {
