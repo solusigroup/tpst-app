@@ -92,6 +92,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('coa', CoaController::class);
     Route::resource('vendor', \App\Http\Controllers\Admin\VendorController::class);
     Route::post('jurnal/purge-selected', [JurnalController::class, 'purgeSelected'])->name('jurnal.purge-selected');
+    Route::post('jurnal/post-selected', [JurnalController::class, 'postSelected'])->name('jurnal.post-selected');
     Route::resource('jurnal', JurnalController::class);
     Route::post('jurnal/{jurnal}/post', [JurnalController::class, 'post'])->name('jurnal.post');
     Route::post('jurnal/{jurnal}/unpost', [JurnalController::class, 'unpost'])->name('jurnal.unpost');

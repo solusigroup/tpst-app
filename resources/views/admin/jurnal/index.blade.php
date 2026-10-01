@@ -14,6 +14,9 @@
                 <i class="cil-sync me-1"></i> Sinkronkan Jurnal Invoice
             </button>
         </form>
+        <button type="button" class="btn btn-success" id="btnPostSelected" style="display:none;" onclick="if(confirm('Post ' + document.querySelectorAll('.purge-checkbox:checked').length + ' jurnal terpilih?')) { document.getElementById('postSelectedForm').submit(); }">
+            <i class="cil-check-circle me-1"></i> Post Terpilih (<span id="postSelectedCount">0</span>)
+        </button>
         <button type="button" class="btn btn-danger" id="btnPurgeSelected" style="display:none;" onclick="document.getElementById('purgeModal').classList.add('show'); document.getElementById('purgeModal').style.display='block';">
             <i class="cil-fire me-1"></i> Purge Terpilih (<span id="selectedCount">0</span>)
         </button>
@@ -183,39 +186,64 @@
     </div>
 </div>
 
+{{-- Post Selected Form --}}
+<form method="POST" action="{{ route('admin.jurnal.post-selected') }}" id="postSelectedForm" style="display:none;">
+    @csrf
+</form>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const selectAll = document.getElementById('selectAll');
     const btnPurge = document.getElementById('btnPurgeSelected');
+    const btnPost = document.getElementById('btnPostSelected');
     const selectedCount = document.getElementById('selectedCount');
+    const postSelectedCount = document.getElementById('postSelectedCount');
     const modalCount = document.getElementById('modalCount');
     const purgeForm = document.getElementById('purgeForm');
+    const postSelectedForm = document.getElementById('postSelectedForm');
 
-    function updatePurgeState() {
+    function updateSelectionState() {
         const checked = document.querySelectorAll('.purge-checkbox:checked');
         const count = checked.length;
-        btnPurge.style.display = count > 0 ? 'inline-block' : 'none';
-        selectedCount.textContent = count;
-        modalCount.textContent = count;
+        if (btnPurge) btnPurge.style.display = count > 0 ? 'inline-block' : 'none';
+        if (btnPost) btnPost.style.display = count > 0 ? 'inline-block' : 'none';
+        if (selectedCount) selectedCount.textContent = count;
+        if (postSelectedCount) postSelectedCount.textContent = count;
+        if (modalCount) modalCount.textContent = count;
 
-        purgeForm.querySelectorAll('input[name="ids[]"]').forEach(el => el.remove());
+        if (purgeForm) {
+            purgeForm.querySelectorAll('input[name="ids[]"]').forEach(el => el.remove());
+        }
+        if (postSelectedForm) {
+            postSelectedForm.querySelectorAll('input[name="ids[]"]').forEach(el => el.remove());
+        }
+
         checked.forEach(cb => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'ids[]';
-            input.value = cb.value;
-            purgeForm.appendChild(input);
+            if (purgeForm) {
+                const input1 = document.createElement('input');
+                input1.type = 'hidden';
+                input1.name = 'ids[]';
+                input1.value = cb.value;
+                purgeForm.appendChild(input1);
+            }
+            if (postSelectedForm) {
+                const input2 = document.createElement('input');
+                input2.type = 'hidden';
+                input2.name = 'ids[]';
+                input2.value = cb.value;
+                postSelectedForm.appendChild(input2);
+            }
         });
     }
 
     selectAll.addEventListener('change', function() {
         document.querySelectorAll('.purge-checkbox').forEach(cb => cb.checked = this.checked);
-        updatePurgeState();
+        updateSelectionState();
     });
 
     document.querySelectorAll('.purge-checkbox').forEach(cb => {
-        cb.addEventListener('change', updatePurgeState);
+        cb.addEventListener('change', updateSelectionState);
     });
 });
 </script>

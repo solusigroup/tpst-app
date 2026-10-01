@@ -642,6 +642,62 @@ class JurnalController extends Controller
     }
 
     /**
+     * Bulk post multiple selected jurnals.
+     */
+    public function postSelected(Request $request)
+    {
+        Gate::authorize('update_jurnal');
+
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:jurnal_header,id',
+        ]);
+
+        $postedCount = 0;
+        $skippedCount = 0;
+
+        DB::transaction(function () use ($request, &$postedCount, &$skippedCount) {
+            $jurnals = JurnalHeader::with(['jurnalDetails', 'referensi'])
+                ->whereIn('id', $request->ids)
+                ->where('status', '!=', 'posted')
+                ->get();
+
+            foreach ($jurnals as $jurnal) {
+                $details = $jurnal->jurnalDetails;
+                if ($details->count() < 2) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $totalDebit = $details->sum(fn($d) => (float) $d->debit);
+                $totalKredit = $details->sum(fn($d) => (float) $d->kredit);
+
+                if (abs($totalDebit - $totalKredit) > 0.01) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $jurnal->update(['status' => 'posted']);
+                if ($jurnal->referensi_type === JurnalKas::class) {
+                    $jurnal->referensi?->update(['status' => 'posted']);
+                }
+                $postedCount++;
+            }
+        });
+
+        if ($postedCount === 0 && $skippedCount > 0) {
+            return back()->with('error', "Gagal melakukan posting. {$skippedCount} jurnal dilewati karena tidak seimbang atau tidak valid.");
+        }
+
+        $message = "{$postedCount} jurnal berhasil di-post.";
+        if ($skippedCount > 0) {
+            $message .= " ({$skippedCount} jurnal dilewati karena tidak seimbang/tidak valid).";
+        }
+
+        return redirect()->route('admin.jurnal.index')->with('success', $message);
+    }
+
+    /**
      * Parse nominal input from string or number into float.
      * Supports formats like "50000", "50.000", "1.500.000", "Rp 50.000", "100.000,50".
      */
