@@ -102,6 +102,7 @@ class RolePermissionSeeder extends Seeder
             'view_machine_log', 'create_machine_log', 'update_machine_log', 'delete_machine_log',
             'view_kpi_dashboard', 'view_kpi_daily_input', 'create_kpi_daily_input',
             'view_kpi_evaluasi', 'approve_kpi_evaluasi',
+            'view_holiday', 'create_holiday', 'update_holiday', 'delete_holiday',
             'view_coa', 'create_coa', 'update_coa', 'delete_coa',
             'view_jurnal', 'create_jurnal', 'update_jurnal', 'delete_jurnal',
             'view_jurnal_kas', 'create_jurnal_kas', 'update_jurnal_kas', 'delete_jurnal_kas',

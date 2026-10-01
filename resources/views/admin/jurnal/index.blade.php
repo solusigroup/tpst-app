@@ -48,8 +48,17 @@
                     <option value="unposted" {{ request('status') == 'unposted' ? 'selected' : '' }}>Unposted</option>
                 </select>
             </div>
+            <div class="col-auto">
+                <select name="per_page" class="form-select" onchange="this.form.submit()" title="Tampilkan per halaman">
+                    <option value="25" {{ request('per_page', 50) == 25 ? 'selected' : '' }}>25 baris</option>
+                    <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50 baris</option>
+                    <option value="100" {{ request('per_page', 50) == 100 ? 'selected' : '' }}>100 baris</option>
+                    <option value="200" {{ request('per_page', 50) == 200 ? 'selected' : '' }}>200 baris</option>
+                    <option value="500" {{ request('per_page', 50) == 500 ? 'selected' : '' }}>500 baris</option>
+                </select>
+            </div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
-            @if(request()->hasAny(['search','nominal','posisi','sisi','status','start_date','end_date']))<div class="col-auto"><a href="{{ route('admin.jurnal.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','nominal','posisi','sisi','status','start_date','end_date','per_page']))<div class="col-auto"><a href="{{ route('admin.jurnal.index') }}" class="btn btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
@@ -134,7 +143,14 @@
             </table>
         </div>
     </div>
-    @if($jurnals->hasPages()) <div class="card-footer bg-white">{{ $jurnals->links() }}</div> @endif
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="text-body-secondary small">
+            Menampilkan {{ $jurnals->firstItem() ?? 0 }} - {{ $jurnals->lastItem() ?? 0 }} dari total {{ number_format($jurnals->total(), 0, ',', '.') }} data
+        </div>
+        @if($jurnals->hasPages())
+            <div>{{ $jurnals->links() }}</div>
+        @endif
+    </div>
 </div>
 
 {{-- Purge Selected Modal --}}

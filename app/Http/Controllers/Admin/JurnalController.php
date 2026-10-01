@@ -66,7 +66,12 @@ class JurnalController extends Controller
             $query->where('tanggal', '<=', $request->end_date);
         }
 
-        $jurnals = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        $allowedPerPage = [25, 50, 100, 200, 500];
+        $perPage = in_array((int) $request->input('per_page'), $allowedPerPage)
+            ? (int) $request->input('per_page')
+            : 50;
+
+        $jurnals = $query->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
 
         return view('admin.jurnal.index', compact('jurnals'));
     }
