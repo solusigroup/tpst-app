@@ -14,6 +14,12 @@
         <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li><li class="breadcrumb-item active">Jurnal Kas</li></ol></nav>
     </div>
     <div class="d-flex gap-2">
+        <a href="{{ route('admin.jurnal-kas.duplikat') }}" class="btn btn-outline-warning position-relative" title="Pemeriksaan Double Jurnal Kas">
+            <i class="cil-copy me-1"></i> Periksa Double Jurnal
+            @if(($duplicateStats['group_count'] ?? 0) > 0)
+                <span class="badge bg-danger rounded-pill ms-1">{{ $duplicateStats['group_count'] }}</span>
+            @endif
+        </a>
         <a href="{{ route('admin.transfer-kas.create') }}" class="btn btn-outline-primary"><i class="cil-transfer me-1"></i> Transfer Kas/Bank</a>
         @if($isNegatif)
             <button class="btn btn-secondary" disabled title="Saldo Kas negatif — transaksi dinonaktifkan"><i class="cil-plus me-1"></i> Tambah</button>
@@ -23,8 +29,23 @@
     </div>
 </div>
 
+@if(($duplicateStats['group_count'] ?? 0) > 0)
+<div class="alert alert-warning border-warning d-flex align-items-center justify-content-between p-3 mb-3 rounded-3 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-3">
+        <i class="cil-warning fs-3 text-warning flex-shrink-0"></i>
+        <div>
+            <strong class="d-block text-dark">Terdeteksi {{ $duplicateStats['group_count'] }} Kelompok Potensi Double Jurnal Kas!</strong>
+            <span class="text-muted small">Terdapat {{ $duplicateStats['total_items_count'] }} transaksi dengan Tanggal, Nominal, dan Deskripsi yang sama persis (Potensi redundansi: Rp {{ number_format($duplicateStats['potensi_redundansi_nominal'], 0, ',', '.') }}).</span>
+        </div>
+    </div>
+    <a href="{{ route('admin.jurnal-kas.duplikat') }}" class="btn btn-warning text-dark fw-bold btn-sm flex-shrink-0">
+        <i class="cil-search me-1"></i> Periksa Sekarang
+    </a>
+</div>
+@endif
+
 @if($isNegatif || session('error_saldo_negatif'))
-<div class="alert alert-danger border-danger d-flex align-items-start gap-3 mb-0 rounded-3 shadow-sm" role="alert">
+<div class="alert alert-danger border-danger d-flex align-items-start gap-3 mb-3 rounded-3 shadow-sm" role="alert">
     <i class="cil-warning fs-4 mt-1 flex-shrink-0"></i>
     <div>
         <strong class="d-block mb-1">Saldo Kas Bernilai Negatif!</strong>
@@ -73,8 +94,18 @@
                     <option value="500" {{ request('per_page', 50) == 500 ? 'selected' : '' }}>500 baris</option>
                 </select>
             </div>
+            @if(($duplicateStats['total_items_count'] ?? 0) > 0)
+            <div class="col-auto">
+                <div class="form-check mb-1">
+                    <input class="form-check-input" type="checkbox" name="duplikat" value="1" id="filterDuplikat" {{ request()->boolean('duplikat') ? 'checked' : '' }} onchange="this.form.submit()">
+                    <label class="form-check-label small text-danger fw-semibold" for="filterDuplikat">
+                        <i class="cil-copy me-1"></i>Hanya Duplikat ({{ $duplicateStats['total_items_count'] }})
+                    </label>
+                </div>
+            </div>
+            @endif
             <div class="col-auto"><button class="btn btn-sm btn-outline-primary" type="submit"><i class="cil-search me-1"></i> Filter</button></div>
-            @if(request()->hasAny(['search','jumlah','jenis','dari','sampai','sort','per_page']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
+            @if(request()->hasAny(['search','jumlah','jenis','dari','sampai','sort','per_page','duplikat']))<div class="col-auto"><a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a></div>@endif
         </form>
     </div>
     <div class="card-body p-0">
@@ -90,6 +121,13 @@
                         <td><strong>Rp {{ number_format($item->nominal, 0, ',', '.') }}</strong></td>
                         <td style="max-width:350px; white-space:normal; word-break:break-word;">
                             {{ $item->deskripsi ?? '-' }}
+                            @if(!$item->is_jurnal_umum && in_array($item->id, $duplicateIds ?? []))
+                                <div class="mt-1">
+                                    <a href="{{ route('admin.jurnal-kas.duplikat', ['search' => $item->deskripsi, 'dari' => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d'), 'sampai' => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d')]) }}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 text-decoration-none small" title="Terindikasi memiliki transaksi kembar (Tanggal, Nominal, dan Deskripsi sama). Klik untuk periksa.">
+                                        <i class="cil-copy me-1"></i> Indikasi Duplikat
+                                    </a>
+                                </div>
+                            @endif
                             @if(($item->comments_count ?? 0) > 0)
                                 <div class="mt-1">
                                     <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 small cursor-pointer" onclick="openCommentModal({{ $item->jurnal_header_id ?? $item->id }}, '{{ addslashes($item->nomor_referensi ?? '-') }}', '{{ addslashes($item->deskripsi ?? '-') }}', 'Rp {{ number_format($item->nominal, 0, ',', '.') }}')">

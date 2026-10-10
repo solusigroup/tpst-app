@@ -87,6 +87,45 @@
                                 </div>
                             @endif
                         </div>
+
+                        {{-- Duplicate Warning Box --}}
+                        <div class="col-12" id="duplicateWarningBox" style="{{ session('error_duplikat') ? '' : 'display: none;' }}">
+                            <div class="alert alert-warning border-warning shadow-sm mb-0">
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="cil-warning fs-4 text-warning flex-shrink-0 mt-1"></i>
+                                    <div class="w-100">
+                                        <strong class="d-block text-dark mb-1">
+                                            <span id="duplicateWarningTitle">Peringatan: Potensi Double Jurnal Kas Terdeteksi!</span>
+                                        </strong>
+                                        <p class="small text-muted mb-2" id="duplicateWarningDesc">
+                                            {{ session('error_duplikat') ?? 'Sudah ada transaksi kas tersimpan dengan Tanggal, Nominal, dan Deskripsi yang sama:' }}
+                                        </p>
+                                        <div class="table-responsive mb-2" id="duplicateTableContainer">
+                                            <table class="table table-sm table-bordered bg-white mb-0 small align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>No. Ref / ID</th>
+                                                        <th>Jenis</th>
+                                                        <th>Akun Lawan</th>
+                                                        <th>Nominal</th>
+                                                        <th>Waktu Dibuat</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="duplicateTableBody">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="konfirmasi_duplikat" value="1" id="konfirmasiDuplikatCheck" {{ old('konfirmasi_duplikat') ? 'checked' : '' }}>
+                                            <label class="form-check-label fw-semibold text-dark small" for="konfirmasiDuplikatCheck">
+                                                Saya mengonfirmasi bahwa transaksi ini valid & bukan duplikasi yang tidak disengaja.
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12 d-flex gap-2">
                             <button type="submit" class="btn btn-primary"><i class="cil-save me-1"></i> {{ isset($jurnalKas) ? 'Perbarui' : 'Simpan' }}</button>
                             <a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-outline-secondary">Kembali</a>
@@ -285,5 +324,110 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endif
+
+<script>
+// Real-time Duplicate Check Script
+(function() {
+    const tanggalInput = document.querySelector('input[name="tanggal"]');
+    const jumlahInput = document.querySelector('input[name="jumlah"]');
+    const deskripsiInput = document.querySelector('textarea[name="deskripsi"]');
+    const warningBox = document.getElementById('duplicateWarningBox');
+    const warningTableBody = document.getElementById('duplicateTableBody');
+    const warningTableContainer = document.getElementById('duplicateTableContainer');
+    const konfirmasiCheck = document.getElementById('konfirmasiDuplikatCheck');
+    const excludeId = '{{ isset($jurnalKas) ? $jurnalKas->id : '' }}';
+    const checkUrl = '{{ route('admin.jurnal-kas.check-duplicate') }}';
+
+    let debounceTimer = null;
+
+    function runDuplicateCheck() {
+        if (!tanggalInput || !jumlahInput || !deskripsiInput) return;
+
+        const tanggal = tanggalInput.value.trim();
+        const jumlah = jumlahInput.value.trim();
+        const deskripsi = deskripsiInput.value.trim();
+
+        if (!tanggal || !jumlah || !deskripsi) {
+            @if(!session('error_duplikat'))
+                if (warningBox) warningBox.style.display = 'none';
+            @endif
+            return;
+        }
+
+        const params = new URLSearchParams({
+            tanggal: tanggal,
+            jumlah: jumlah,
+            deskripsi: deskripsi,
+        });
+        if (excludeId) {
+            params.append('exclude_id', excludeId);
+        }
+
+        fetch(`${checkUrl}?${params.toString()}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.is_duplicate && data.count > 0) {
+                if (warningTableBody) {
+                    warningTableBody.innerHTML = '';
+                    data.items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong class="text-dark">${item.nomor_referensi}</strong></td>
+                            <td><span class="badge bg-${item.tipe === 'Penerimaan' ? 'success' : 'danger'}">${item.jenis_label}</span></td>
+                            <td>${item.coa_lawan}</td>
+                            <td><strong>${item.nominal_formatted}</strong></td>
+                            <td>${item.created_at} <span class="text-muted small">(${item.created_diff})</span></td>
+                        `;
+                        warningTableBody.appendChild(tr);
+                    });
+                }
+                if (warningTableContainer) warningTableContainer.style.display = 'block';
+                if (warningBox) {
+                    warningBox.style.display = 'block';
+                }
+            } else {
+                if (warningBox) warningBox.style.display = 'none';
+                if (konfirmasiCheck) konfirmasiCheck.checked = false;
+            }
+        })
+        .catch(err => {
+            console.error('Error checking duplicate:', err);
+        });
+    }
+
+    function scheduleCheck() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(runDuplicateCheck, 400);
+    }
+
+    if (tanggalInput) tanggalInput.addEventListener('input', scheduleCheck);
+    if (jumlahInput) jumlahInput.addEventListener('input', scheduleCheck);
+    if (deskripsiInput) deskripsiInput.addEventListener('input', scheduleCheck);
+
+    // Initial check if fields are already filled (e.g. edit mode or prefill)
+    if (tanggalInput && jumlahInput && deskripsiInput && tanggalInput.value && jumlahInput.value && deskripsiInput.value) {
+        scheduleCheck();
+    }
+
+    // Submit guard: confirm before accidental submit when duplicate warning is active
+    const formEl = document.querySelector('#formContainer form');
+    if (formEl) {
+        formEl.addEventListener('submit', function(e) {
+            if (warningBox && warningBox.style.display !== 'none') {
+                if (konfirmasiCheck && !konfirmasiCheck.checked) {
+                    e.preventDefault();
+                    alert('PERINGATAN: Terdeteksi transaksi Jurnal Kas yang sudah ada dengan Tanggal, Nominal, dan Deskripsi yang sama persis!\n\nJika ini memang transaksi terpisah yang sah dan disengaja, silakan centang kotak konfirmasi di dalam kotak peringatan sebelum menyimpan.');
+                    konfirmasiCheck.focus();
+                }
+            }
+        });
+    }
+})();
+</script>
 
 @endsection

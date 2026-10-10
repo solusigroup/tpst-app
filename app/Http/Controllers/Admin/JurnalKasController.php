@@ -68,6 +68,17 @@ class JurnalKasController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai);
         }
 
+        // Hitung statistik dan ID transaksi berindikasi double jurnal
+        $duplicateStats = JurnalKas::getDuplicateStats();
+        $duplicateIds = $duplicateStats['total_items_count'] > 0
+            ? JurnalKas::getDuplicatesQuery()->pluck('jurnal_kas.id')->toArray()
+            : [];
+
+        if ($request->boolean('duplikat')) {
+            $query->where('referensi_type', \App\Models\JurnalKas::class)
+                  ->whereIn('referensi_id', $duplicateIds);
+        }
+
         $allowedPerPage = [25, 50, 100, 200, 500];
         $perPage = in_array((int) $request->input('per_page'), $allowedPerPage)
             ? (int) $request->input('per_page')
@@ -122,7 +133,7 @@ class JurnalKasController extends Controller
                 ->value('saldo') ?? 0;
         }
 
-        return view('admin.jurnal-kas.index', compact('jurnalKas', 'saldoKas'));
+        return view('admin.jurnal-kas.index', compact('jurnalKas', 'saldoKas', 'duplicateStats', 'duplicateIds'));
     }
 
     public function create()
@@ -214,6 +225,18 @@ class JurnalKasController extends Controller
         $data['coa_kas_id'] = $kas->id;
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
+
+        // Cek indikasi double jurnal (tgl sama, nominal sama, deskripsi sama)
+        if (!$request->boolean('konfirmasi_duplikat')) {
+            $isDuplicate = JurnalKas::where('tanggal', $data['tanggal'])
+                ->where('nominal', $data['nominal'])
+                ->whereRaw("COALESCE(TRIM(deskripsi), '') = ?", [trim((string)($data['deskripsi'] ?? ''))])
+                ->exists();
+
+            if ($isDuplicate) {
+                return back()->withInput()->with('error_duplikat', 'Peringatan: Terdeteksi transaksi Jurnal Kas yang sudah ada dengan Tanggal, Nominal, dan Deskripsi yang sama persis! Silakan centang konfirmasi jika transaksi ini memang terpisah dan disengaja.');
+            }
+        }
 
         if ($data['tipe'] === 'Pengeluaran') {
             $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
@@ -309,6 +332,19 @@ class JurnalKasController extends Controller
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
+        // Cek indikasi double jurnal (tgl sama, nominal sama, deskripsi sama)
+        if (!$request->boolean('konfirmasi_duplikat')) {
+            $isDuplicate = JurnalKas::where('tanggal', $data['tanggal'])
+                ->where('nominal', $data['nominal'])
+                ->where('id', '!=', $jurnalKas->id)
+                ->whereRaw("COALESCE(TRIM(deskripsi), '') = ?", [trim((string)($data['deskripsi'] ?? ''))])
+                ->exists();
+
+            if ($isDuplicate) {
+                return back()->withInput()->with('error_duplikat', 'Peringatan: Terdeteksi transaksi Jurnal Kas lain dengan Tanggal, Nominal, dan Deskripsi yang sama persis! Silakan centang konfirmasi jika transaksi ini memang terpisah dan disengaja.');
+            }
+        }
+
         if ($data['tipe'] === 'Pengeluaran') {
             $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
                 ->where('jurnal_header.status', 'posted')
@@ -362,6 +398,11 @@ class JurnalKasController extends Controller
             Storage::disk('public')->delete($jurnalKas->bukti_transaksi);
         }
         $jurnalKas->delete();
+
+        if (request()->input('redirect_to') === 'duplikat') {
+            return redirect()->route('admin.jurnal-kas.duplikat')->with('success', 'Transaksi Jurnal Kas berhasil dihapus.' . $warningMsg);
+        }
+
         return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil dihapus.' . $warningMsg);
     }
 
@@ -480,6 +521,100 @@ class JurnalKasController extends Controller
         });
 
         return redirect()->route('admin.jurnal-kas.index')->with('success', 'Transfer berhasil! Jurnal ' . $jurnalHeader->nomor_referensi . ' telah dibuat.');
+    }
+
+    /**
+     * Tampilan pemeriksaan double jurnal kas (Tanggal, Nominal, dan Deskripsi sama).
+     */
+    public function duplikat(Request $request)
+    {
+        Gate::authorize('view_jurnal_kas');
+
+        $filters = [
+            'dari' => $request->dari,
+            'sampai' => $request->sampai,
+            'search' => $request->search,
+            'tipe' => $request->jenis ? ($request->jenis === 'masuk' ? 'Penerimaan' : 'Pengeluaran') : null,
+        ];
+
+        $duplicateStats = JurnalKas::getDuplicateStats($filters);
+        
+        $items = JurnalKas::getDuplicatesQuery($filters)->get();
+
+        // Kelompokkan berdasarkan tanggal, nominal, dan deskripsi
+        $grouped = $items->groupBy(function ($item) {
+            $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
+            $nom = (float) $item->nominal;
+            $desk = trim((string) $item->deskripsi);
+            return "{$tgl}|{$nom}|{$desk}";
+        });
+
+        // Menghitung Saldo Kas saat ini untuk info
+        $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
+        $saldoKas = 0;
+        if ($kas) {
+            $saldoKas = \App\Models\JurnalDetail::join('jurnal_header', 'jurnal_detail.jurnal_header_id', '=', 'jurnal_header.id')
+                ->where('jurnal_header.status', 'posted')
+                ->where('jurnal_detail.coa_id', $kas->id)
+                ->selectRaw('COALESCE(SUM(jurnal_detail.debit), 0) - COALESCE(SUM(jurnal_detail.kredit), 0) as saldo')
+                ->value('saldo') ?? 0;
+        }
+
+        return view('admin.jurnal-kas.duplikat', compact('grouped', 'duplicateStats', 'saldoKas'));
+    }
+
+    /**
+     * Endpoint API JSON untuk pengecekan real-time double jurnal kas saat input form.
+     */
+    public function checkDuplicate(Request $request)
+    {
+        Gate::authorize('view_jurnal_kas');
+
+        $tanggal = $request->query('tanggal');
+        $nominal = $request->query('jumlah') ?? $request->query('nominal');
+        $deskripsi = trim((string) $request->query('deskripsi'));
+        $excludeId = $request->query('exclude_id');
+
+        if (!$tanggal || !$nominal || empty($deskripsi)) {
+            return response()->json([
+                'is_duplicate' => false,
+                'count' => 0,
+                'items' => [],
+            ]);
+        }
+
+        $query = JurnalKas::where('tanggal', $tanggal)
+            ->where('nominal', $nominal)
+            ->whereRaw("COALESCE(TRIM(deskripsi), '') = ?", [$deskripsi]);
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $items = $query->with(['coaLawan', 'coaKas', 'jurnalHeader'])->get();
+
+        $formatted = $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'nomor_referensi' => $item->jurnalHeader?->nomor_referensi ?? "ID #{$item->id}",
+                'tipe' => $item->tipe,
+                'jenis_label' => $item->tipe === 'Penerimaan' ? 'Kas Masuk' : 'Kas Keluar',
+                'nominal' => (float) $item->nominal,
+                'nominal_formatted' => 'Rp ' . number_format($item->nominal, 0, ',', '.'),
+                'tanggal' => $item->tanggal ? $item->tanggal->format('d/m/Y') : '-',
+                'deskripsi' => $item->deskripsi,
+                'coa_lawan' => $item->coaLawan ? ($item->coaLawan->kode_akun . ' - ' . $item->coaLawan->nama_akun) : '-',
+                'status' => $item->status ?? 'unposted',
+                'created_at' => $item->created_at ? $item->created_at->format('d/m/Y H:i:s') : '-',
+                'created_diff' => $item->created_at ? $item->created_at->diffForHumans() : '-',
+            ];
+        });
+
+        return response()->json([
+            'is_duplicate' => $items->isNotEmpty(),
+            'count' => $items->count(),
+            'items' => $formatted,
+        ]);
     }
 
     /**

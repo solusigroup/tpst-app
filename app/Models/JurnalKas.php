@@ -148,4 +148,95 @@ class JurnalKas extends Model
     {
         return $this->belongsTo(Coa::class, 'coa_lawan_id');
     }
+
+    public function jurnalHeader(): \Illuminate\Database\Eloquent\Relations\MorphOne
+    {
+        return $this->morphOne(JurnalHeader::class, 'referensi');
+    }
+
+    /**
+     * Scope query to find all Jurnal Kas records that belong to duplicate groups
+     * (same tanggal, nominal, and deskripsi).
+     */
+    public static function getDuplicatesQuery(array $filters = [])
+    {
+        $groupQuery = static::select(
+                'tanggal',
+                'nominal',
+                DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
+                DB::raw("COUNT(*) as total_count")
+            )
+            ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
+            ->havingRaw("COUNT(*) > 1");
+
+        if (!empty($filters['dari'])) {
+            $groupQuery->whereDate('tanggal', '>=', $filters['dari']);
+        }
+        if (!empty($filters['sampai'])) {
+            $groupQuery->whereDate('tanggal', '<=', $filters['sampai']);
+        }
+        if (!empty($filters['search'])) {
+            $groupQuery->where('deskripsi', 'like', '%' . $filters['search'] . '%');
+        }
+        if (!empty($filters['tipe'])) {
+            $groupQuery->where('tipe', $filters['tipe']);
+        }
+
+        return static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable'])
+            ->joinSub($groupQuery, 'dup_groups', function ($join) {
+                $join->on('jurnal_kas.tanggal', '=', 'dup_groups.tanggal')
+                     ->on('jurnal_kas.nominal', '=', 'dup_groups.nominal')
+                     ->whereRaw("COALESCE(TRIM(jurnal_kas.deskripsi), '') = dup_groups.trimmed_deskripsi");
+            })
+            ->select('jurnal_kas.*')
+            ->orderBy('jurnal_kas.tanggal', 'desc')
+            ->orderBy('jurnal_kas.nominal', 'desc')
+            ->orderBy('jurnal_kas.deskripsi', 'asc')
+            ->orderBy('jurnal_kas.id', 'asc');
+    }
+
+    /**
+     * Get aggregate statistics about duplicate groups.
+     */
+    public static function getDuplicateStats(array $filters = []): array
+    {
+        $groupQuery = static::select(
+                'tanggal',
+                'nominal',
+                DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
+                DB::raw("COUNT(*) as total_count"),
+                DB::raw("SUM(nominal) as total_nominal")
+            )
+            ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
+            ->havingRaw("COUNT(*) > 1");
+
+        if (!empty($filters['dari'])) {
+            $groupQuery->whereDate('tanggal', '>=', $filters['dari']);
+        }
+        if (!empty($filters['sampai'])) {
+            $groupQuery->whereDate('tanggal', '<=', $filters['sampai']);
+        }
+        if (!empty($filters['search'])) {
+            $groupQuery->where('deskripsi', 'like', '%' . $filters['search'] . '%');
+        }
+        if (!empty($filters['tipe'])) {
+            $groupQuery->where('tipe', $filters['tipe']);
+        }
+
+        $groups = $groupQuery->get();
+
+        $groupCount = $groups->count();
+        $totalItemsCount = (int) $groups->sum('total_count');
+        $totalNominal = (float) $groups->sum('total_nominal');
+        $potensiRedundansiNominal = (float) $groups->sum(function ($g) {
+            return ($g->total_count - 1) * $g->nominal;
+        });
+
+        return [
+            'group_count' => $groupCount,
+            'total_items_count' => $totalItemsCount,
+            'total_nominal' => $totalNominal,
+            'potensi_redundansi_nominal' => $potensiRedundansiNominal,
+        ];
+    }
 }
