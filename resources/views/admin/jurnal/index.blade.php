@@ -49,6 +49,7 @@
                     <option value="">Semua Status</option>
                     <option value="posted" {{ request('status') == 'posted' ? 'selected' : '' }}>Posted</option>
                     <option value="unposted" {{ request('status') == 'unposted' ? 'selected' : '' }}>Unposted</option>
+                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -118,7 +119,7 @@
                                 @endif
                             @endif
                         </td>
-                        <td><span class="badge bg-{{ $item->status === 'posted' ? 'success' : 'warning' }}">{{ ucfirst($item->status) }}</span></td>
+                        <td><span class="badge bg-{{ $item->status === 'posted' ? 'success' : ($item->status === 'draft' ? 'secondary' : 'warning') }}">{{ ucfirst($item->status) }}</span></td>
                         <td>
                             @if($item->bukti_transaksi)
                                 <img src="{{ asset('storage/' . $item->bukti_transaksi) }}" class="rounded" style="width:32px;height:32px;object-fit:cover;" alt="bukti">

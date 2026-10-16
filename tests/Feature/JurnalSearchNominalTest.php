@@ -161,4 +161,62 @@ class JurnalSearchNominalTest extends TestCase
         $resKredit100->assertOk();
         $resKredit100->assertDontSee('JV-COMPOUND-01');
     }
+
+    public function test_can_filter_by_status_including_draft(): void
+    {
+        $postedJurnal = JurnalHeader::create([
+            'tenant_id' => $this->tenant->id,
+            'nomor_referensi' => 'JV-POSTED-01',
+            'tanggal' => now()->toDateString(),
+            'deskripsi' => 'Transaksi Posted',
+            'status' => 'posted',
+        ]);
+        JurnalDetail::create(['tenant_id' => $this->tenant->id, 'jurnal_header_id' => $postedJurnal->id, 'coa_id' => $this->coaKas->id, 'debit' => 50000, 'kredit' => 0]);
+        JurnalDetail::create(['tenant_id' => $this->tenant->id, 'jurnal_header_id' => $postedJurnal->id, 'coa_id' => $this->coaPendapatan->id, 'debit' => 0, 'kredit' => 50000]);
+
+        $unpostedJurnal = JurnalHeader::create([
+            'tenant_id' => $this->tenant->id,
+            'nomor_referensi' => 'JV-UNPOSTED-01',
+            'tanggal' => now()->toDateString(),
+            'deskripsi' => 'Transaksi Unposted',
+            'status' => 'unposted',
+        ]);
+        JurnalDetail::create(['tenant_id' => $this->tenant->id, 'jurnal_header_id' => $unpostedJurnal->id, 'coa_id' => $this->coaKas->id, 'debit' => 60000, 'kredit' => 0]);
+        JurnalDetail::create(['tenant_id' => $this->tenant->id, 'jurnal_header_id' => $unpostedJurnal->id, 'coa_id' => $this->coaPendapatan->id, 'debit' => 0, 'kredit' => 60000]);
+
+        $draftJurnal = JurnalHeader::create([
+            'tenant_id' => $this->tenant->id,
+            'nomor_referensi' => 'JV-DRAFT-01',
+            'tanggal' => now()->toDateString(),
+            'deskripsi' => 'Transaksi Draft',
+            'status' => 'draft',
+        ]);
+        JurnalDetail::create(['tenant_id' => $this->tenant->id, 'jurnal_header_id' => $draftJurnal->id, 'coa_id' => $this->coaKas->id, 'debit' => 70000, 'kredit' => 0]);
+        JurnalDetail::create(['tenant_id' => $this->tenant->id, 'jurnal_header_id' => $draftJurnal->id, 'coa_id' => $this->coaPendapatan->id, 'debit' => 0, 'kredit' => 70000]);
+
+        // Filter: draft
+        $resDraft = $this->actingAs($this->user)
+            ->get(route('admin.jurnal.index', ['status' => 'draft']));
+        $resDraft->assertOk();
+        $resDraft->assertSee('JV-DRAFT-01');
+        $resDraft->assertDontSee('JV-POSTED-01');
+        $resDraft->assertDontSee('JV-UNPOSTED-01');
+
+        // Filter: unposted
+        $resUnposted = $this->actingAs($this->user)
+            ->get(route('admin.jurnal.index', ['status' => 'unposted']));
+        $resUnposted->assertOk();
+        $resUnposted->assertSee('JV-UNPOSTED-01');
+        $resUnposted->assertDontSee('JV-POSTED-01');
+        $resUnposted->assertDontSee('JV-DRAFT-01');
+
+        // Filter: posted
+        $resPosted = $this->actingAs($this->user)
+            ->get(route('admin.jurnal.index', ['status' => 'posted']));
+        $resPosted->assertOk();
+        $resPosted->assertSee('JV-POSTED-01');
+        $resPosted->assertDontSee('JV-UNPOSTED-01');
+        $resPosted->assertDontSee('JV-DRAFT-01');
+    }
 }
+

@@ -54,7 +54,7 @@
                     </tr>
                     <tr>
                         <th class="ps-0">Status</th>
-                        <td>: <span class="badge bg-{{ $jurnal->status === 'posted' ? 'success' : 'warning' }}">{{ ucfirst($jurnal->status) }}</span></td>
+                        <td>: <span class="badge bg-{{ $jurnal->status === 'posted' ? 'success' : ($jurnal->status === 'draft' ? 'secondary' : 'warning') }}">{{ ucfirst($jurnal->status) }}</span></td>
                     </tr>
                     <tr>
                         <th class="ps-0">Dibuat Pada</th>
