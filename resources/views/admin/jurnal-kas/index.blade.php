@@ -49,8 +49,8 @@
     <i class="cil-warning fs-4 mt-1 flex-shrink-0"></i>
     <div>
         <strong class="d-block mb-1">Saldo Kas Bernilai Negatif!</strong>
-        Transaksi Kas Kecil (tambah, edit, hapus) dinonaktifkan sementara.<br>
-        Silakan lakukan <a href="{{ route('admin.transfer-kas.create') }}" class="alert-link fw-bold">pengisian kas via Transfer Kas/Bank</a> terlebih dahulu untuk memulihkan saldo.
+        Transaksi Kas Kecil (tambah & edit) dinonaktifkan sementara. Aksi hapus tetap diizinkan untuk mengoreksi data kembar / salah input.<br>
+        Silakan hapus input dobel atau lakukan <a href="{{ route('admin.transfer-kas.create') }}" class="alert-link fw-bold">pengisian kas via Transfer Kas/Bank</a> untuk memulihkan saldo.
     </div>
 </div>
 @endif
@@ -169,12 +169,11 @@
                                     <form method="POST" action="{{ route('admin.jurnal.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus Jurnal Umum ini?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                                 @else
                                     @if($isNegatif)
-                                        <button class="btn btn-outline-secondary" disabled title="Saldo Kas negatif — transaksi dinonaktifkan"><i class="cil-pencil"></i></button>
-                                        <button class="btn btn-outline-secondary" disabled title="Saldo Kas negatif — transaksi dinonaktifkan"><i class="cil-trash"></i></button>
+                                        <button class="btn btn-outline-secondary" disabled title="Saldo Kas negatif — edit dinonaktifkan"><i class="cil-pencil"></i></button>
                                     @else
                                         <a href="{{ route('admin.jurnal-kas.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit Jurnal Kas"><i class="cil-pencil"></i></a>
-                                        <form method="POST" action="{{ route('admin.jurnal-kas.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus?')" class="btn btn-outline-danger"><i class="cil-trash"></i></button></form>
                                     @endif
+                                    <form method="POST" action="{{ route('admin.jurnal-kas.destroy', $item->id) }}" class="d-inline">@csrf @method('DELETE')<button type="submit" onclick="return confirm('Yakin hapus transaksi Jurnal Kas ini?')" class="btn btn-outline-danger" title="Hapus Jurnal Kas"><i class="cil-trash"></i></button></form>
                                 @endif
                             </div>
                         </td>

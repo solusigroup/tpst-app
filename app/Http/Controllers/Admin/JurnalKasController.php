@@ -383,11 +383,6 @@ class JurnalKasController extends Controller
     {
         Gate::authorize('delete_jurnal_kas');
 
-        if ($this->getSaldoKas() < 0) {
-            return redirect()->route('admin.jurnal-kas.index')
-                ->with('error_saldo_negatif', true);
-        }
-
         // Soft warning jika posted
         $warningMsg = '';
         if ($jurnalKas->status === 'posted') {
@@ -403,7 +398,7 @@ class JurnalKasController extends Controller
             return redirect()->route('admin.jurnal-kas.duplikat')->with('success', 'Transaksi Jurnal Kas berhasil dihapus.' . $warningMsg);
         }
 
-        return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil dihapus.' . $warningMsg);
+        return redirect()->back()->with('success', 'Jurnal Kas berhasil dihapus.' . $warningMsg);
     }
 
     public function transfer()
