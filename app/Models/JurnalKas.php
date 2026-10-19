@@ -155,19 +155,34 @@ class JurnalKas extends Model
     }
 
     /**
-     * Scope query to find all Jurnal Kas records that belong to duplicate groups
-     * (same tanggal, nominal, and deskripsi).
+     * Scope query to find all Jurnal Kas records that belong to duplicate groups.
+     * Supports parameter:
+     * - 'tanggal_nominal' (default): same tanggal & nominal
+     * - 'persis' / 'tanggal_nominal_deskripsi': same tanggal, nominal & deskripsi
      */
     public static function getDuplicatesQuery(array $filters = [])
     {
-        $groupQuery = static::select(
-                'tanggal',
-                'nominal',
-                DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
-                DB::raw("COUNT(*) as total_count")
-            )
-            ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
-            ->havingRaw("COUNT(*) > 1");
+        $parameter = $filters['parameter'] ?? 'tanggal_nominal';
+        $isExact = in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true);
+
+        if ($isExact) {
+            $groupQuery = static::select(
+                    'tanggal',
+                    'nominal',
+                    DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
+                    DB::raw("COUNT(*) as total_count")
+                )
+                ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
+                ->havingRaw("COUNT(*) > 1");
+        } else {
+            $groupQuery = static::select(
+                    'tanggal',
+                    'nominal',
+                    DB::raw("COUNT(*) as total_count")
+                )
+                ->groupBy('tanggal', 'nominal')
+                ->havingRaw("COUNT(*) > 1");
+        }
 
         if (!empty($filters['dari'])) {
             $groupQuery->whereDate('tanggal', '>=', $filters['dari']);
@@ -182,13 +197,22 @@ class JurnalKas extends Model
             $groupQuery->where('tipe', $filters['tipe']);
         }
 
-        return static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable'])
-            ->joinSub($groupQuery, 'dup_groups', function ($join) {
+        $query = static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable']);
+
+        if ($isExact) {
+            $query->joinSub($groupQuery, 'dup_groups', function ($join) {
                 $join->on('jurnal_kas.tanggal', '=', 'dup_groups.tanggal')
                      ->on('jurnal_kas.nominal', '=', 'dup_groups.nominal')
                      ->whereRaw("COALESCE(TRIM(jurnal_kas.deskripsi), '') = dup_groups.trimmed_deskripsi");
-            })
-            ->select('jurnal_kas.*')
+            });
+        } else {
+            $query->joinSub($groupQuery, 'dup_groups', function ($join) {
+                $join->on('jurnal_kas.tanggal', '=', 'dup_groups.tanggal')
+                     ->on('jurnal_kas.nominal', '=', 'dup_groups.nominal');
+            });
+        }
+
+        return $query->select('jurnal_kas.*')
             ->orderBy('jurnal_kas.tanggal', 'desc')
             ->orderBy('jurnal_kas.nominal', 'desc')
             ->orderBy('jurnal_kas.deskripsi', 'asc')
@@ -200,15 +224,29 @@ class JurnalKas extends Model
      */
     public static function getDuplicateStats(array $filters = []): array
     {
-        $groupQuery = static::select(
-                'tanggal',
-                'nominal',
-                DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
-                DB::raw("COUNT(*) as total_count"),
-                DB::raw("SUM(nominal) as total_nominal")
-            )
-            ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
-            ->havingRaw("COUNT(*) > 1");
+        $parameter = $filters['parameter'] ?? 'tanggal_nominal';
+        $isExact = in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true);
+
+        if ($isExact) {
+            $groupQuery = static::select(
+                    'tanggal',
+                    'nominal',
+                    DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
+                    DB::raw("COUNT(*) as total_count"),
+                    DB::raw("SUM(nominal) as total_nominal")
+                )
+                ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
+                ->havingRaw("COUNT(*) > 1");
+        } else {
+            $groupQuery = static::select(
+                    'tanggal',
+                    'nominal',
+                    DB::raw("COUNT(*) as total_count"),
+                    DB::raw("SUM(nominal) as total_nominal")
+                )
+                ->groupBy('tanggal', 'nominal')
+                ->havingRaw("COUNT(*) > 1");
+        }
 
         if (!empty($filters['dari'])) {
             $groupQuery->whereDate('tanggal', '>=', $filters['dari']);

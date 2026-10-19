@@ -38,7 +38,7 @@
                 <div class="fs-4 fw-bold {{ ($duplicateStats['group_count'] ?? 0) > 0 ? 'text-warning' : 'text-success' }}">
                     {{ number_format($duplicateStats['group_count'] ?? 0, 0, ',', '.') }} <span class="fs-6 fw-normal text-muted">kelompok</span>
                 </div>
-                <div class="small text-muted mt-1">Kombinasi data persis sama</div>
+                <div class="small text-muted mt-1">{{ ($parameter ?? 'tanggal_nominal') == 'persis' ? 'Tanggal, nominal, & deskripsi persis sama' : 'Tanggal & nominal sama' }}</div>
             </div>
         </div>
     </div>
@@ -81,13 +81,20 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body p-3">
         <form method="GET" action="{{ route('admin.jurnal-kas.duplikat') }}" class="row g-2 align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small text-muted mb-1">Dari Tanggal</label>
                 <input type="date" name="dari" class="form-control form-control-sm" value="{{ request('dari') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small text-muted mb-1">Sampai Tanggal</label>
                 <input type="date" name="sampai" class="form-control form-control-sm" value="{{ request('sampai') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1 fw-semibold">Parameter Pengecekan</label>
+                <select name="parameter" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="tanggal_nominal" {{ request('parameter', 'tanggal_nominal') == 'tanggal_nominal' ? 'selected' : '' }}>Tanggal Sama & Nominal Sama</option>
+                    <option value="persis" {{ request('parameter') == 'persis' ? 'selected' : '' }}>Tanggal, Nominal & Deskripsi Sama</option>
+                </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label small text-muted mb-1">Jenis</label>
@@ -97,15 +104,15 @@
                     <option value="keluar" {{ request('jenis') == 'keluar' ? 'selected' : '' }}>Kas Keluar</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small text-muted mb-1">Cari Deskripsi</label>
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Ketik kata kunci deskripsi..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Ketik kata kunci..." value="{{ request('search') }}">
             </div>
             <div class="col-md-1 d-flex gap-1">
                 <button type="submit" class="btn btn-sm btn-outline-primary w-100" title="Terapkan Filter">
                     <i class="cil-search"></i>
                 </button>
-                @if(request()->hasAny(['dari', 'sampai', 'jenis', 'search']))
+                @if(request()->hasAny(['dari', 'sampai', 'jenis', 'search', 'parameter']))
                     <a href="{{ route('admin.jurnal-kas.duplikat') }}" class="btn btn-sm btn-outline-secondary" title="Reset Filter">
                         <i class="cil-x"></i>
                     </a>
@@ -134,7 +141,9 @@
 <div class="alert alert-info border-info bg-info bg-opacity-10 d-flex align-items-start gap-2 mb-4 rounded-3 shadow-sm">
     <i class="cil-info fs-5 text-info mt-1 flex-shrink-0"></i>
     <div class="small">
-        <strong>Kriteria Indikasi Double Jurnal Kas:</strong> Sistem mengidentifikasi transaksi ganda berdasarkan kesamaan <strong>Tanggal Transaksi</strong>, <strong>Nilai Nominal</strong>, dan <strong>Deskripsi/Keterangan</strong>.
+        <strong>Parameter Deteksi Double Jurnal Kas:</strong> 
+        Saat ini menggunakan parameter <strong>{{ ($parameter ?? 'tanggal_nominal') == 'persis' ? 'Tanggal Transaksi, Nilai Nominal, dan Deskripsi Sama Persis' : 'Tanggal Transaksi Sama & Nilai Nominal Sama' }}</strong>.
+        Anda dapat mengubah parameter deteksi kapan saja melalui filter di atas.
         <br>
         Jika salah satu transaksi merupakan entri ganda yang tidak disengaja (misal: dobel klik submit atau duplikasi import), Anda dapat <strong>menghapus</strong> entri redundan tersebut. Penghapusan akan otomatis membatalkan jurnal akuntansi terkait dan memperbarui saldo kas.
     </div>
@@ -184,9 +193,18 @@
                             Rp {{ number_format($nominal, 0, ',', '.') }}
                         </span>
                         <span class="text-muted">•</span>
-                        <span class="fst-italic text-dark bg-light px-2 py-1 rounded border">
-                            "{{ $firstItem->deskripsi ?: '(Tanpa Deskripsi)' }}"
-                        </span>
+                        @php
+                            $uniqueDesks = $items->pluck('deskripsi')->map(fn($d) => trim((string)$d))->filter()->unique();
+                        @endphp
+                        @if($uniqueDesks->count() <= 1)
+                            <span class="fst-italic text-dark bg-light px-2 py-1 rounded border">
+                                "{{ $firstItem->deskripsi ?: '(Tanpa Deskripsi)' }}"
+                            </span>
+                        @else
+                            <span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary border-opacity-50 px-2 py-1" title="{{ $items->pluck('deskripsi')->filter()->join(' | ') }}">
+                                <i class="cil-text me-1"></i> {{ $uniqueDesks->count() }} Variasi Deskripsi
+                            </span>
+                        @endif
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
@@ -204,6 +222,8 @@
                                 <tr>
                                     <th style="width: 50px;" class="text-center">#</th>
                                     <th>No. Ref / ID</th>
+                                    <th>Jenis</th>
+                                    <th style="min-width: 180px;">Deskripsi</th>
                                     <th>Akun Kas</th>
                                     <th>Akun Lawan</th>
                                     <th>Mitra</th>
@@ -225,6 +245,14 @@
                                         <td>
                                             <span class="fw-bold text-dark">{{ $refNo }}</span>
                                             <div class="small text-muted">Jurnal Kas #{{ $item->id }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $item->tipe === 'Penerimaan' ? 'success' : 'danger' }}">
+                                                {{ $item->tipe === 'Penerimaan' ? 'Kas Masuk' : 'Kas Keluar' }}
+                                            </span>
+                                        </td>
+                                        <td style="max-width: 250px; white-space: normal; word-break: break-word;">
+                                            {{ $item->deskripsi ?: '-' }}
                                         </td>
                                         <td>
                                             <span class="small fw-semibold text-secondary">

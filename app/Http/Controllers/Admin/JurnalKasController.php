@@ -395,7 +395,7 @@ class JurnalKasController extends Controller
         $jurnalKas->delete();
 
         if (request()->input('redirect_to') === 'duplikat') {
-            return redirect()->route('admin.jurnal-kas.duplikat')->with('success', 'Transaksi Jurnal Kas berhasil dihapus.' . $warningMsg);
+            return redirect()->back()->with('success', 'Transaksi Jurnal Kas berhasil dihapus.' . $warningMsg);
         }
 
         return redirect()->back()->with('success', 'Jurnal Kas berhasil dihapus.' . $warningMsg);
@@ -525,24 +525,36 @@ class JurnalKasController extends Controller
     {
         Gate::authorize('view_jurnal_kas');
 
+        $parameter = $request->input('parameter', 'tanggal_nominal');
+
         $filters = [
             'dari' => $request->dari,
             'sampai' => $request->sampai,
             'search' => $request->search,
             'tipe' => $request->jenis ? ($request->jenis === 'masuk' ? 'Penerimaan' : 'Pengeluaran') : null,
+            'parameter' => $parameter,
         ];
 
         $duplicateStats = JurnalKas::getDuplicateStats($filters);
         
         $items = JurnalKas::getDuplicatesQuery($filters)->get();
 
-        // Kelompokkan berdasarkan tanggal, nominal, dan deskripsi
-        $grouped = $items->groupBy(function ($item) {
-            $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
-            $nom = (float) $item->nominal;
-            $desk = trim((string) $item->deskripsi);
-            return "{$tgl}|{$nom}|{$desk}";
-        });
+        // Kelompokkan berdasarkan parameter terpilih
+        $isExact = in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true);
+        if ($isExact) {
+            $grouped = $items->groupBy(function ($item) {
+                $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
+                $nom = (float) $item->nominal;
+                $desk = trim((string) $item->deskripsi);
+                return "{$tgl}|{$nom}|{$desk}";
+            });
+        } else {
+            $grouped = $items->groupBy(function ($item) {
+                $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
+                $nom = (float) $item->nominal;
+                return "{$tgl}|{$nom}";
+            });
+        }
 
         // Menghitung Saldo Kas saat ini untuk info
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
@@ -555,7 +567,7 @@ class JurnalKasController extends Controller
                 ->value('saldo') ?? 0;
         }
 
-        return view('admin.jurnal-kas.duplikat', compact('grouped', 'duplicateStats', 'saldoKas'));
+        return view('admin.jurnal-kas.duplikat', compact('grouped', 'duplicateStats', 'saldoKas', 'parameter'));
     }
 
     /**
