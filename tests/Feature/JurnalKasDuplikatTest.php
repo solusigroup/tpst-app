@@ -233,4 +233,68 @@ class JurnalKasDuplikatTest extends TestCase
         $response->assertSee('Beli Solar Truk B 1234 CD');
         $response->assertDontSee('Biaya Konsumsi Rapat Bulanan');
     }
+
+    public function test_can_mark_and_cancel_transaction_as_non_duplicate()
+    {
+        $this->actingAs($this->user);
+
+        Permission::firstOrCreate(['name' => 'update_jurnal_kas']);
+        $this->user->givePermissionTo('update_jurnal_kas');
+
+        $t1 = JurnalKas::create([
+            'tenant_id' => $this->tenant->id,
+            'tanggal' => '2026-10-22',
+            'tipe' => 'Pengeluaran',
+            'coa_kas_id' => $this->coaKas->id,
+            'coa_lawan_id' => $this->coaBeban->id,
+            'nominal' => 80000,
+            'deskripsi' => 'Beli bensin armada',
+        ]);
+
+        $t2 = JurnalKas::create([
+            'tenant_id' => $this->tenant->id,
+            'tanggal' => '2026-10-22',
+            'tipe' => 'Pengeluaran',
+            'coa_kas_id' => $this->coaKas->id,
+            'coa_lawan_id' => $this->coaBeban->id,
+            'nominal' => 80000,
+            'deskripsi' => 'Beli bensin armada',
+        ]);
+
+        // Awalnya terdeteksi 1 kelompok duplikat
+        $this->assertEquals(1, JurnalKas::getDuplicateStats()['group_count']);
+
+        // User menandai t1 sebagai bukan duplikat (sah)
+        $response = $this->post(route('admin.jurnal-kas.tandai-bukan-duplikat', $t1->id), [
+            'catatan' => 'Beli bensin 2x pagi dan sore',
+        ]);
+        $response->assertSessionHas('success');
+
+        $t1->refresh();
+        $this->assertTrue($t1->is_bukan_duplikat);
+        $this->assertEquals('Beli bensin 2x pagi dan sore', $t1->catatan_duplikat);
+        $this->assertEquals($this->user->id, $t1->verified_duplikat_by);
+        $this->assertNotNull($t1->verified_duplikat_at);
+
+        // Sekarang kelompok duplikat menjadi 0 karena t1 sudah sah dan t2 sendirian
+        $stats = JurnalKas::getDuplicateStats();
+        $this->assertEquals(0, $stats['group_count']);
+        $this->assertEquals(0, $stats['total_items_count']);
+
+        // Masuk ke tab diverifikasi sah
+        $responseVerified = $this->get(route('admin.jurnal-kas.duplikat', ['tab' => 'diverifikasi']));
+        $responseVerified->assertStatus(200);
+        $responseVerified->assertSee('Beli bensin 2x pagi dan sore');
+
+        // Batalkan tanda sah
+        $responseCancel = $this->post(route('admin.jurnal-kas.batalkan-bukan-duplikat', $t1->id));
+        $responseCancel->assertSessionHas('success');
+
+        $t1->refresh();
+        $this->assertFalse($t1->is_bukan_duplikat);
+        $this->assertNull($t1->catatan_duplikat);
+
+        // Kembali terdeteksi sebagai kelompok duplikat
+        $this->assertEquals(1, JurnalKas::getDuplicateStats()['group_count']);
+    }
 }

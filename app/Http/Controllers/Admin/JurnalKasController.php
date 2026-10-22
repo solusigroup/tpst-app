@@ -256,6 +256,13 @@ class JurnalKasController extends Controller
             $data['bukti_transaksi'] = $path;
         }
 
+        if ($request->boolean('konfirmasi_duplikat')) {
+            $data['is_bukan_duplikat'] = true;
+            $data['catatan_duplikat'] = 'Dikonfirmasi sah saat input awal transaksi';
+            $data['verified_duplikat_by'] = auth()->id();
+            $data['verified_duplikat_at'] = now();
+        }
+
         JurnalKas::create($data);
 
         return redirect()->route('admin.jurnal-kas.index')->with('success', 'Jurnal Kas berhasil ditambahkan.');
@@ -376,6 +383,13 @@ class JurnalKasController extends Controller
             }
             $path = \App\Helpers\ImageHelper::compressAndStore($request->file('bukti_transaksi'), 'uploads/jurnal_kas');
             $data['bukti_transaksi'] = $path;
+        }
+
+        if ($request->boolean('konfirmasi_duplikat')) {
+            $data['is_bukan_duplikat'] = true;
+            $data['catatan_duplikat'] = 'Dikonfirmasi sah saat update transaksi';
+            $data['verified_duplikat_by'] = auth()->id();
+            $data['verified_duplikat_at'] = now();
         }
 
         $jurnalKas->update($data);
@@ -529,6 +543,7 @@ class JurnalKasController extends Controller
     {
         Gate::authorize('view_jurnal_kas');
 
+        $tab = $request->input('tab', 'potensi');
         $parameter = $request->input('parameter', 'kemiripan');
 
         $filters = [
@@ -542,6 +557,10 @@ class JurnalKasController extends Controller
         $grouped = JurnalKas::getDuplicateGroups($filters);
         $duplicateStats = JurnalKas::getDuplicateStats($filters);
 
+        $verifiedQuery = JurnalKas::getVerifiedNonDuplicatesQuery($filters);
+        $verifiedCount = (clone $verifiedQuery)->count();
+        $verifiedItems = $tab === 'diverifikasi' ? $verifiedQuery->paginate(25)->withQueryString() : null;
+
         // Menghitung Saldo Kas saat ini untuk info
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
         $saldoKas = 0;
@@ -553,7 +572,47 @@ class JurnalKasController extends Controller
                 ->value('saldo') ?? 0;
         }
 
-        return view('admin.jurnal-kas.duplikat', compact('grouped', 'duplicateStats', 'saldoKas', 'parameter'));
+        return view('admin.jurnal-kas.duplikat', compact('grouped', 'duplicateStats', 'saldoKas', 'parameter', 'tab', 'verifiedItems', 'verifiedCount'));
+    }
+
+    /**
+     * Tandai transaksi sebagai bukan transaksi kembar (transaksi sah/terpisah).
+     */
+    public function tandaiBukanDuplikat(Request $request, JurnalKas $jurnalKas)
+    {
+        Gate::authorize('update_jurnal_kas');
+
+        $validated = $request->validate([
+            'catatan' => 'nullable|string|max:255',
+        ]);
+
+        $jurnalKas->update([
+            'is_bukan_duplikat' => true,
+            'catatan_duplikat' => $validated['catatan'] ?: 'Dikonfirmasi sebagai transaksi sah/terpisah',
+            'verified_duplikat_by' => auth()->id(),
+            'verified_duplikat_at' => now(),
+        ]);
+
+        $refNo = $jurnalKas->jurnalHeader?->nomor_referensi ?? "ID #{$jurnalKas->id}";
+        return redirect()->back()->with('success', "Transaksi {$refNo} berhasil ditandai sebagai transaksi sah (bukan duplikat) dan dikeluarkan dari radar duplikat.");
+    }
+
+    /**
+     * Batalkan tanda transaksi sah (kembalikan ke radar pengecekan duplikat jika memenuhi kriteria).
+     */
+    public function batalkanBukanDuplikat(JurnalKas $jurnalKas)
+    {
+        Gate::authorize('update_jurnal_kas');
+
+        $jurnalKas->update([
+            'is_bukan_duplikat' => false,
+            'catatan_duplikat' => null,
+            'verified_duplikat_by' => null,
+            'verified_duplikat_at' => null,
+        ]);
+
+        $refNo = $jurnalKas->jurnalHeader?->nomor_referensi ?? "ID #{$jurnalKas->id}";
+        return redirect()->back()->with('success', "Status verifikasi transaksi {$refNo} berhasil dibatalkan dan dikembalikan ke radar pemeriksaan duplikat.");
     }
 
     /**

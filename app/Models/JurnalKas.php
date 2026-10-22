@@ -35,6 +35,10 @@ class JurnalKas extends Model
         'status',
         'contactable_type',
         'contactable_id',
+        'is_bukan_duplikat',
+        'catatan_duplikat',
+        'verified_duplikat_by',
+        'verified_duplikat_at',
     ];
 
     /**
@@ -48,6 +52,8 @@ class JurnalKas extends Model
     protected $casts = [
         'tanggal' => 'date',
         'nominal' => 'decimal:2',
+        'is_bukan_duplikat' => 'boolean',
+        'verified_duplikat_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -154,6 +160,11 @@ class JurnalKas extends Model
         return $this->morphOne(JurnalHeader::class, 'referensi');
     }
 
+    public function verifiedDuplikatBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_duplikat_by');
+    }
+
     /**
      * Normalisasi deskripsi untuk perbandingan kesamaan:
      * huruf kecil, hilangkan tanda baca, gabungkan spasi berlebih.
@@ -240,6 +251,7 @@ class JurnalKas extends Model
     /**
      * Mengelompokkan transaksi jurnal kas yang memenuhi kriteria duplikat.
      * Kriteria default ('kemiripan'):
+     * - Belum diverifikasi sebagai bukan duplikat (is_bukan_duplikat = false)
      * - Tanggal sama
      * - Nominal sama
      * - Ada kemiripan deskripsi
@@ -252,8 +264,9 @@ class JurnalKas extends Model
     {
         $parameter = $filters['parameter'] ?? 'kemiripan';
 
-        // Hanya kandidat yang memiliki tanggal dan nominal yang muncul > 1 kali
+        // Hanya kandidat belum diverifikasi yang memiliki tanggal dan nominal muncul > 1 kali
         $candidateGroups = static::select('tanggal', 'nominal')
+            ->where('is_bukan_duplikat', false)
             ->groupBy('tanggal', 'nominal')
             ->havingRaw('COUNT(*) > 1');
 
@@ -270,7 +283,8 @@ class JurnalKas extends Model
             $candidateGroups->where('tipe', $filters['tipe']);
         }
 
-        $candidateQuery = static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable'])
+        $candidateQuery = static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable', 'verifiedDuplikatBy'])
+            ->where('jurnal_kas.is_bukan_duplikat', false)
             ->joinSub($candidateGroups, 'cand_grp', function ($join) {
                 $join->on('jurnal_kas.tanggal', '=', 'cand_grp.tanggal')
                      ->on('jurnal_kas.nominal', '=', 'cand_grp.nominal');
@@ -404,5 +418,30 @@ class JurnalKas extends Model
             'potensi_redundansi_nominal' => $potensiRedundansiNominal,
             'duplicate_ids' => $duplicateIds,
         ];
+    }
+
+    /**
+     * Query transaksi yang telah diverifikasi sebagai transaksi sah (bukan duplikat).
+     */
+    public static function getVerifiedNonDuplicatesQuery(array $filters = [])
+    {
+        $query = static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable', 'verifiedDuplikatBy'])
+            ->where('is_bukan_duplikat', true);
+
+        if (!empty($filters['dari'])) {
+            $query->whereDate('tanggal', '>=', $filters['dari']);
+        }
+        if (!empty($filters['sampai'])) {
+            $query->whereDate('tanggal', '<=', $filters['sampai']);
+        }
+        if (!empty($filters['search'])) {
+            $query->where('deskripsi', 'like', '%' . $filters['search'] . '%');
+        }
+        if (!empty($filters['tipe'])) {
+            $query->where('tipe', $filters['tipe']);
+        }
+
+        return $query->orderBy('verified_duplikat_at', 'desc')
+            ->orderBy('tanggal', 'desc');
     }
 }

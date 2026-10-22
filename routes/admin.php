@@ -105,6 +105,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::delete('jurnal-template/{jurnalTemplate}', [JurnalController::class, 'destroyTemplate'])->name('jurnal-template.destroy');
     Route::get('jurnal-kas/duplikat', [JurnalKasController::class, 'duplikat'])->name('jurnal-kas.duplikat');
     Route::get('jurnal-kas/check-duplicate', [JurnalKasController::class, 'checkDuplicate'])->name('jurnal-kas.check-duplicate');
+    Route::post('jurnal-kas/{jurnalKas}/tandai-bukan-duplikat', [JurnalKasController::class, 'tandaiBukanDuplikat'])->name('jurnal-kas.tandai-bukan-duplikat');
+    Route::post('jurnal-kas/{jurnalKas}/batalkan-bukan-duplikat', [JurnalKasController::class, 'batalkanBukanDuplikat'])->name('jurnal-kas.batalkan-bukan-duplikat');
     Route::resource('jurnal-kas', JurnalKasController::class)->parameters(['jurnal-kas' => 'jurnalKas']);
     Route::get('rekonsiliasi-bank', [BankReconciliationController::class, 'index'])->name('rekonsiliasi-bank.index');
     Route::post('rekonsiliasi-bank/proses', [BankReconciliationController::class, 'proses'])->name('rekonsiliasi-bank.proses');
