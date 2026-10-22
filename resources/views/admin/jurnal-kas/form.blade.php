@@ -98,7 +98,7 @@
                                             <span id="duplicateWarningTitle">Peringatan: Potensi Double Jurnal Kas Terdeteksi!</span>
                                         </strong>
                                         <p class="small text-muted mb-2" id="duplicateWarningDesc">
-                                            {{ session('error_duplikat') ?? 'Sudah ada transaksi kas tersimpan dengan Tanggal, Nominal, dan Deskripsi yang sama:' }}
+                                            {{ session('error_duplikat') ?? 'Sudah ada transaksi kas tersimpan dengan Tanggal, Nominal, dan Kemiripan Deskripsi yang sama:' }}
                                         </p>
                                         <div class="table-responsive mb-2" id="duplicateTableContainer">
                                             <table class="table table-sm table-bordered bg-white mb-0 small align-middle">

@@ -155,68 +155,229 @@ class JurnalKas extends Model
     }
 
     /**
-     * Scope query to find all Jurnal Kas records that belong to duplicate groups.
-     * Supports parameter:
-     * - 'tanggal_nominal' (default): same tanggal & nominal
-     * - 'persis' / 'tanggal_nominal_deskripsi': same tanggal, nominal & deskripsi
+     * Normalisasi deskripsi untuk perbandingan kesamaan:
+     * huruf kecil, hilangkan tanda baca, gabungkan spasi berlebih.
      */
-    public static function getDuplicatesQuery(array $filters = [])
+    public static function normalizeDescription(?string $desc): string
     {
-        $parameter = $filters['parameter'] ?? 'tanggal_nominal';
-        $isExact = in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true);
-
-        if ($isExact) {
-            $groupQuery = static::select(
-                    'tanggal',
-                    'nominal',
-                    DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
-                    DB::raw("COUNT(*) as total_count")
-                )
-                ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
-                ->havingRaw("COUNT(*) > 1");
-        } else {
-            $groupQuery = static::select(
-                    'tanggal',
-                    'nominal',
-                    DB::raw("COUNT(*) as total_count")
-                )
-                ->groupBy('tanggal', 'nominal')
-                ->havingRaw("COUNT(*) > 1");
+        if ($desc === null) {
+            return '';
         }
+        $str = mb_strtolower(trim($desc), 'UTF-8');
+        $str = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $str);
+        $str = preg_replace('/\s+/', ' ', $str);
+        return trim($str);
+    }
+
+    /**
+     * Memeriksa apakah dua deskripsi memiliki kemiripan (similarity).
+     * Memperhitungkan kesamaan eksak ternormalisasi, kemiripan karakter,
+     * substring overlap, dan Jaccard word token similarity.
+     */
+    public static function isDescriptionSimilar(?string $desc1, ?string $desc2, float $threshold = 0.70): bool
+    {
+        $norm1 = static::normalizeDescription($desc1);
+        $norm2 = static::normalizeDescription($desc2);
+
+        // Keduanya kosong -> dianggap duplikat (misal input tanpa deskripsi berkali-kali)
+        if ($norm1 === '' && $norm2 === '') {
+            return true;
+        }
+
+        // Salah satu kosong, lainnya ada isi -> bukan duplikat
+        if ($norm1 === '' || $norm2 === '') {
+            return false;
+        }
+
+        // Sama persis setelah dinormalisasi
+        if ($norm1 === $norm2) {
+            return true;
+        }
+
+        $len1 = strlen($norm1);
+        $len2 = strlen($norm2);
+        $minLen = min($len1, $len2);
+        $maxLen = max($len1, $len2);
+
+        // Substring overlap signifikan
+        if ($minLen >= 4 && $maxLen > 0 && ($minLen / $maxLen) >= 0.65) {
+            if (str_contains($norm1, $norm2) || str_contains($norm2, $norm1)) {
+                return true;
+            }
+        }
+
+        // Similar text percentage
+        similar_text($norm1, $norm2, $percent);
+        if ($percent >= ($threshold * 100)) {
+            return true;
+        }
+
+        // Word token similarity (Jaccard)
+        $words1 = array_filter(explode(' ', $norm1), fn($w) => strlen($w) > 1);
+        $words2 = array_filter(explode(' ', $norm2), fn($w) => strlen($w) > 1);
+        if (!empty($words1) && !empty($words2)) {
+            $intersection = array_intersect($words1, $words2);
+            $union = array_unique(array_merge($words1, $words2));
+            if (!empty($union)) {
+                $jaccard = count($intersection) / count($union);
+                if ($jaccard >= 0.65) {
+                    return true;
+                }
+            }
+        }
+
+        // Levenshtein distance
+        if ($len1 <= 255 && $len2 <= 255 && $maxLen > 0) {
+            $lev = levenshtein($norm1, $norm2);
+            if ($lev >= 0 && (1 - ($lev / $maxLen)) >= $threshold) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Mengelompokkan transaksi jurnal kas yang memenuhi kriteria duplikat.
+     * Kriteria default ('kemiripan'):
+     * - Tanggal sama
+     * - Nominal sama
+     * - Ada kemiripan deskripsi
+     *
+     * Kriteria alternatif:
+     * - 'persis': Tanggal, nominal, dan deskripsi ternormalisasi sama persis
+     * - 'tanggal_nominal': Tanggal & nominal sama (mengabaikan deskripsi)
+     */
+    public static function getDuplicateGroups(array $filters = []): \Illuminate\Support\Collection
+    {
+        $parameter = $filters['parameter'] ?? 'kemiripan';
+
+        // Hanya kandidat yang memiliki tanggal dan nominal yang muncul > 1 kali
+        $candidateGroups = static::select('tanggal', 'nominal')
+            ->groupBy('tanggal', 'nominal')
+            ->havingRaw('COUNT(*) > 1');
 
         if (!empty($filters['dari'])) {
-            $groupQuery->whereDate('tanggal', '>=', $filters['dari']);
+            $candidateGroups->whereDate('tanggal', '>=', $filters['dari']);
         }
         if (!empty($filters['sampai'])) {
-            $groupQuery->whereDate('tanggal', '<=', $filters['sampai']);
+            $candidateGroups->whereDate('tanggal', '<=', $filters['sampai']);
         }
         if (!empty($filters['search'])) {
-            $groupQuery->where('deskripsi', 'like', '%' . $filters['search'] . '%');
+            $candidateGroups->where('deskripsi', 'like', '%' . $filters['search'] . '%');
         }
         if (!empty($filters['tipe'])) {
-            $groupQuery->where('tipe', $filters['tipe']);
+            $candidateGroups->where('tipe', $filters['tipe']);
         }
 
-        $query = static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable']);
+        $candidateQuery = static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable'])
+            ->joinSub($candidateGroups, 'cand_grp', function ($join) {
+                $join->on('jurnal_kas.tanggal', '=', 'cand_grp.tanggal')
+                     ->on('jurnal_kas.nominal', '=', 'cand_grp.nominal');
+            });
 
-        if ($isExact) {
-            $query->joinSub($groupQuery, 'dup_groups', function ($join) {
-                $join->on('jurnal_kas.tanggal', '=', 'dup_groups.tanggal')
-                     ->on('jurnal_kas.nominal', '=', 'dup_groups.nominal')
-                     ->whereRaw("COALESCE(TRIM(jurnal_kas.deskripsi), '') = dup_groups.trimmed_deskripsi");
-            });
-        } else {
-            $query->joinSub($groupQuery, 'dup_groups', function ($join) {
-                $join->on('jurnal_kas.tanggal', '=', 'dup_groups.tanggal')
-                     ->on('jurnal_kas.nominal', '=', 'dup_groups.nominal');
-            });
+        if (!empty($filters['dari'])) {
+            $candidateQuery->whereDate('jurnal_kas.tanggal', '>=', $filters['dari']);
+        }
+        if (!empty($filters['sampai'])) {
+            $candidateQuery->whereDate('jurnal_kas.tanggal', '<=', $filters['sampai']);
+        }
+        if (!empty($filters['search'])) {
+            $candidateQuery->where('jurnal_kas.deskripsi', 'like', '%' . $filters['search'] . '%');
+        }
+        if (!empty($filters['tipe'])) {
+            $candidateQuery->where('jurnal_kas.tipe', $filters['tipe']);
         }
 
-        return $query->select('jurnal_kas.*')
+        $candidates = $candidateQuery->select('jurnal_kas.*')
             ->orderBy('jurnal_kas.tanggal', 'desc')
             ->orderBy('jurnal_kas.nominal', 'desc')
             ->orderBy('jurnal_kas.deskripsi', 'asc')
-            ->orderBy('jurnal_kas.id', 'asc');
+            ->orderBy('jurnal_kas.id', 'asc')
+            ->get();
+
+        if ($candidates->isEmpty()) {
+            return collect();
+        }
+
+        // Kelompokkan per Tanggal & Nominal
+        $byDateAndNominal = $candidates->groupBy(function ($item) {
+            $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
+            $nom = (string) (float) $item->nominal;
+            return "{$tgl}|{$nom}";
+        });
+
+        $resultGroups = collect();
+
+        foreach ($byDateAndNominal as $bucketKey => $itemsInBucket) {
+            if ($parameter === 'tanggal_nominal') {
+                // Mode longgar: tanggal sama & nominal sama tanpa cek deskripsi
+                if ($itemsInBucket->count() > 1) {
+                    $resultGroups->put($bucketKey, $itemsInBucket);
+                }
+            } elseif (in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true)) {
+                // Mode persis: tanggal, nominal, dan deskripsi ternormalisasi sama persis
+                $byNormalizedDesc = $itemsInBucket->groupBy(function ($item) {
+                    return static::normalizeDescription($item->deskripsi);
+                });
+
+                foreach ($byNormalizedDesc as $normKey => $subItems) {
+                    if ($subItems->count() > 1) {
+                        $groupKey = "{$bucketKey}|{$normKey}";
+                        $resultGroups->put($groupKey, $subItems);
+                    }
+                }
+            } else {
+                // Default mode: 'kemiripan' (tanggal sama, nominal sama, dan ADA KEMIRIPAN DESKRIPSI)
+                $clusters = [];
+                foreach ($itemsInBucket as $item) {
+                    $matchedIndex = null;
+                    foreach ($clusters as $idx => $clusterItems) {
+                        if (static::isDescriptionSimilar($item->deskripsi, $clusterItems[0]->deskripsi)) {
+                            $matchedIndex = $idx;
+                            break;
+                        }
+                    }
+
+                    if ($matchedIndex !== null) {
+                        $clusters[$matchedIndex][] = $item;
+                    } else {
+                        $clusters[] = [$item];
+                    }
+                }
+
+                foreach ($clusters as $idx => $clusterItems) {
+                    // Hanya sub-kelompok yang berisi >= 2 transaksi yang dinyatakan DUPLIKAT
+                    if (count($clusterItems) > 1) {
+                        $normRep = static::normalizeDescription($clusterItems[0]->deskripsi);
+                        $groupKey = "{$bucketKey}|{$normRep}|{$idx}";
+                        $resultGroups->put($groupKey, collect($clusterItems));
+                    }
+                }
+            }
+        }
+
+        return $resultGroups;
+    }
+
+    /**
+     * Scope query to find all Jurnal Kas records that belong to duplicate groups.
+     */
+    public static function getDuplicatesQuery(array $filters = [])
+    {
+        $stats = static::getDuplicateStats($filters);
+        $ids = $stats['duplicate_ids'];
+
+        if (empty($ids)) {
+            return static::whereRaw('1 = 0');
+        }
+
+        return static::with(['jurnalHeader', 'coaKas', 'coaLawan', 'contactable'])
+            ->whereIn('id', $ids)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('nominal', 'desc')
+            ->orderBy('deskripsi', 'asc')
+            ->orderBy('id', 'asc');
     }
 
     /**
@@ -224,57 +385,24 @@ class JurnalKas extends Model
      */
     public static function getDuplicateStats(array $filters = []): array
     {
-        $parameter = $filters['parameter'] ?? 'tanggal_nominal';
-        $isExact = in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true);
-
-        if ($isExact) {
-            $groupQuery = static::select(
-                    'tanggal',
-                    'nominal',
-                    DB::raw("COALESCE(TRIM(deskripsi), '') as trimmed_deskripsi"),
-                    DB::raw("COUNT(*) as total_count"),
-                    DB::raw("SUM(nominal) as total_nominal")
-                )
-                ->groupBy('tanggal', 'nominal', DB::raw("COALESCE(TRIM(deskripsi), '')"))
-                ->havingRaw("COUNT(*) > 1");
-        } else {
-            $groupQuery = static::select(
-                    'tanggal',
-                    'nominal',
-                    DB::raw("COUNT(*) as total_count"),
-                    DB::raw("SUM(nominal) as total_nominal")
-                )
-                ->groupBy('tanggal', 'nominal')
-                ->havingRaw("COUNT(*) > 1");
-        }
-
-        if (!empty($filters['dari'])) {
-            $groupQuery->whereDate('tanggal', '>=', $filters['dari']);
-        }
-        if (!empty($filters['sampai'])) {
-            $groupQuery->whereDate('tanggal', '<=', $filters['sampai']);
-        }
-        if (!empty($filters['search'])) {
-            $groupQuery->where('deskripsi', 'like', '%' . $filters['search'] . '%');
-        }
-        if (!empty($filters['tipe'])) {
-            $groupQuery->where('tipe', $filters['tipe']);
-        }
-
-        $groups = $groupQuery->get();
+        $groups = static::getDuplicateGroups($filters);
 
         $groupCount = $groups->count();
-        $totalItemsCount = (int) $groups->sum('total_count');
-        $totalNominal = (float) $groups->sum('total_nominal');
+        $totalItemsCount = (int) $groups->sum(fn($g) => $g->count());
+        $totalNominal = (float) $groups->sum(fn($g) => (float) $g->sum('nominal'));
         $potensiRedundansiNominal = (float) $groups->sum(function ($g) {
-            return ($g->total_count - 1) * $g->nominal;
+            $first = $g->first();
+            return $first ? ($g->count() - 1) * (float) $first->nominal : 0;
         });
+
+        $duplicateIds = $groups->flatMap(fn($g) => $g->pluck('id'))->unique()->values()->toArray();
 
         return [
             'group_count' => $groupCount,
             'total_items_count' => $totalItemsCount,
             'total_nominal' => $totalNominal,
             'potensi_redundansi_nominal' => $potensiRedundansiNominal,
+            'duplicate_ids' => $duplicateIds,
         ];
     }
 }

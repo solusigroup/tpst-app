@@ -35,7 +35,7 @@
         <i class="cil-warning fs-3 text-warning flex-shrink-0"></i>
         <div>
             <strong class="d-block text-dark">Terdeteksi {{ $duplicateStats['group_count'] }} Kelompok Potensi Double Jurnal Kas!</strong>
-            <span class="text-muted small">Terdapat {{ $duplicateStats['total_items_count'] }} transaksi dengan Tanggal dan Nominal yang sama (Potensi redundansi: Rp {{ number_format($duplicateStats['potensi_redundansi_nominal'], 0, ',', '.') }}).</span>
+            <span class="text-muted small">Terdapat {{ $duplicateStats['total_items_count'] }} transaksi dengan Tanggal, Nominal yang sama, dan Kemiripan Deskripsi (Potensi redundansi: Rp {{ number_format($duplicateStats['potensi_redundansi_nominal'], 0, ',', '.') }}).</span>
         </div>
     </div>
     <a href="{{ route('admin.jurnal-kas.duplikat') }}" class="btn btn-warning text-dark fw-bold btn-sm flex-shrink-0">
@@ -123,7 +123,7 @@
                             {{ $item->deskripsi ?? '-' }}
                             @if(!$item->is_jurnal_umum && in_array($item->id, $duplicateIds ?? []))
                                 <div class="mt-1">
-                                    <a href="{{ route('admin.jurnal-kas.duplikat', ['dari' => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d'), 'sampai' => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d')]) }}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 text-decoration-none small" title="Terindikasi memiliki transaksi kembar (Tanggal dan Nominal sama). Klik untuk periksa.">
+                                    <a href="{{ route('admin.jurnal-kas.duplikat', ['dari' => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d'), 'sampai' => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d')]) }}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 text-decoration-none small" title="Terindikasi memiliki transaksi kembar (Tanggal & Nominal sama, Deskripsi mirip). Klik untuk periksa.">
                                         <i class="cil-copy me-1"></i> Indikasi Duplikat
                                     </a>
                                 </div>

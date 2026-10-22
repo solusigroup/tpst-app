@@ -68,11 +68,9 @@ class JurnalKasController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai);
         }
 
-        // Hitung statistik dan ID transaksi berindikasi double jurnal
+        // Hitung statistik dan ID transaksi berindikasi double jurnal (kriteria: tanggal sama, nominal sama, kemiripan deskripsi)
         $duplicateStats = JurnalKas::getDuplicateStats();
-        $duplicateIds = $duplicateStats['total_items_count'] > 0
-            ? JurnalKas::getDuplicatesQuery()->pluck('jurnal_kas.id')->toArray()
-            : [];
+        $duplicateIds = $duplicateStats['duplicate_ids'] ?? [];
 
         if ($request->boolean('duplikat')) {
             $query->where('referensi_type', \App\Models\JurnalKas::class)
@@ -226,15 +224,18 @@ class JurnalKasController extends Controller
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
-        // Cek indikasi double jurnal (tgl sama, nominal sama, deskripsi sama)
+        // Cek indikasi double jurnal (tgl sama, nominal sama, kemiripan deskripsi)
         if (!$request->boolean('konfirmasi_duplikat')) {
-            $isDuplicate = JurnalKas::where('tanggal', $data['tanggal'])
+            $existing = JurnalKas::where('tanggal', $data['tanggal'])
                 ->where('nominal', $data['nominal'])
-                ->whereRaw("COALESCE(TRIM(deskripsi), '') = ?", [trim((string)($data['deskripsi'] ?? ''))])
-                ->exists();
+                ->get();
+
+            $isDuplicate = $existing->contains(function ($item) use ($data) {
+                return JurnalKas::isDescriptionSimilar($item->deskripsi, $data['deskripsi'] ?? '');
+            });
 
             if ($isDuplicate) {
-                return back()->withInput()->with('error_duplikat', 'Peringatan: Terdeteksi transaksi Jurnal Kas yang sudah ada dengan Tanggal, Nominal, dan Deskripsi yang sama persis! Silakan centang konfirmasi jika transaksi ini memang terpisah dan disengaja.');
+                return back()->withInput()->with('error_duplikat', 'Peringatan: Terdeteksi transaksi Jurnal Kas yang sudah ada dengan Tanggal, Nominal, dan Kemiripan Deskripsi yang sama! Silakan centang konfirmasi jika transaksi ini memang terpisah dan disengaja.');
             }
         }
 
@@ -332,16 +333,19 @@ class JurnalKasController extends Controller
         $data['nominal'] = $validated['jumlah'];
         $data['tipe'] = $validated['jenis'] == 'masuk' ? 'Penerimaan' : 'Pengeluaran';
 
-        // Cek indikasi double jurnal (tgl sama, nominal sama, deskripsi sama)
+        // Cek indikasi double jurnal (tgl sama, nominal sama, kemiripan deskripsi)
         if (!$request->boolean('konfirmasi_duplikat')) {
-            $isDuplicate = JurnalKas::where('tanggal', $data['tanggal'])
+            $existing = JurnalKas::where('tanggal', $data['tanggal'])
                 ->where('nominal', $data['nominal'])
                 ->where('id', '!=', $jurnalKas->id)
-                ->whereRaw("COALESCE(TRIM(deskripsi), '') = ?", [trim((string)($data['deskripsi'] ?? ''))])
-                ->exists();
+                ->get();
+
+            $isDuplicate = $existing->contains(function ($item) use ($data) {
+                return JurnalKas::isDescriptionSimilar($item->deskripsi, $data['deskripsi'] ?? '');
+            });
 
             if ($isDuplicate) {
-                return back()->withInput()->with('error_duplikat', 'Peringatan: Terdeteksi transaksi Jurnal Kas lain dengan Tanggal, Nominal, dan Deskripsi yang sama persis! Silakan centang konfirmasi jika transaksi ini memang terpisah dan disengaja.');
+                return back()->withInput()->with('error_duplikat', 'Peringatan: Terdeteksi transaksi Jurnal Kas lain dengan Tanggal, Nominal, dan Kemiripan Deskripsi yang sama! Silakan centang konfirmasi jika transaksi ini memang terpisah dan disengaja.');
             }
         }
 
@@ -519,13 +523,13 @@ class JurnalKasController extends Controller
     }
 
     /**
-     * Tampilan pemeriksaan double jurnal kas (Tanggal, Nominal, dan Deskripsi sama).
+     * Tampilan pemeriksaan double jurnal kas (Tanggal sama, Nominal sama, dan Ada Kemiripan Deskripsi).
      */
     public function duplikat(Request $request)
     {
         Gate::authorize('view_jurnal_kas');
 
-        $parameter = $request->input('parameter', 'tanggal_nominal');
+        $parameter = $request->input('parameter', 'kemiripan');
 
         $filters = [
             'dari' => $request->dari,
@@ -535,26 +539,8 @@ class JurnalKasController extends Controller
             'parameter' => $parameter,
         ];
 
+        $grouped = JurnalKas::getDuplicateGroups($filters);
         $duplicateStats = JurnalKas::getDuplicateStats($filters);
-        
-        $items = JurnalKas::getDuplicatesQuery($filters)->get();
-
-        // Kelompokkan berdasarkan parameter terpilih
-        $isExact = in_array($parameter, ['persis', 'tanggal_nominal_deskripsi'], true);
-        if ($isExact) {
-            $grouped = $items->groupBy(function ($item) {
-                $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
-                $nom = (float) $item->nominal;
-                $desk = trim((string) $item->deskripsi);
-                return "{$tgl}|{$nom}|{$desk}";
-            });
-        } else {
-            $grouped = $items->groupBy(function ($item) {
-                $tgl = $item->tanggal ? $item->tanggal->format('Y-m-d') : '';
-                $nom = (float) $item->nominal;
-                return "{$tgl}|{$nom}";
-            });
-        }
 
         // Menghitung Saldo Kas saat ini untuk info
         $kas = Coa::where('kode_akun', 'like', '11%')->where('nama_akun', 'like', '%Kas%')->first();
@@ -591,14 +577,17 @@ class JurnalKasController extends Controller
         }
 
         $query = JurnalKas::where('tanggal', $tanggal)
-            ->where('nominal', $nominal)
-            ->whereRaw("COALESCE(TRIM(deskripsi), '') = ?", [$deskripsi]);
+            ->where('nominal', $nominal);
 
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
 
-        $items = $query->with(['coaLawan', 'coaKas', 'jurnalHeader'])->get();
+        $candidates = $query->with(['coaLawan', 'coaKas', 'jurnalHeader'])->get();
+
+        $items = $candidates->filter(function ($item) use ($deskripsi) {
+            return JurnalKas::isDescriptionSimilar($item->deskripsi, $deskripsi);
+        })->values();
 
         $formatted = $items->map(function ($item) {
             return [

@@ -38,7 +38,15 @@
                 <div class="fs-4 fw-bold {{ ($duplicateStats['group_count'] ?? 0) > 0 ? 'text-warning' : 'text-success' }}">
                     {{ number_format($duplicateStats['group_count'] ?? 0, 0, ',', '.') }} <span class="fs-6 fw-normal text-muted">kelompok</span>
                 </div>
-                <div class="small text-muted mt-1">{{ ($parameter ?? 'tanggal_nominal') == 'persis' ? 'Tanggal, nominal, & deskripsi persis sama' : 'Tanggal & nominal sama' }}</div>
+                <div class="small text-muted mt-1">
+                    @if(($parameter ?? 'kemiripan') == 'persis')
+                        Tanggal, nominal, & deskripsi persis sama
+                    @elseif(($parameter ?? 'kemiripan') == 'tanggal_nominal')
+                        Tanggal & nominal sama (abaikan deskripsi)
+                    @else
+                        Tanggal & nominal sama, serta deskripsi mirip
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -92,8 +100,9 @@
             <div class="col-md-3">
                 <label class="form-label small text-muted mb-1 fw-semibold">Parameter Pengecekan</label>
                 <select name="parameter" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="tanggal_nominal" {{ request('parameter', 'tanggal_nominal') == 'tanggal_nominal' ? 'selected' : '' }}>Tanggal Sama & Nominal Sama</option>
-                    <option value="persis" {{ request('parameter') == 'persis' ? 'selected' : '' }}>Tanggal, Nominal & Deskripsi Sama</option>
+                    <option value="kemiripan" {{ request('parameter', 'kemiripan') == 'kemiripan' ? 'selected' : '' }}>Tanggal, Nominal & Kemiripan Deskripsi (Standar)</option>
+                    <option value="persis" {{ request('parameter') == 'persis' ? 'selected' : '' }}>Tanggal, Nominal & Deskripsi Sama Persis</option>
+                    <option value="tanggal_nominal" {{ request('parameter') == 'tanggal_nominal' ? 'selected' : '' }}>Tanggal & Nominal Sama (Abaikan Deskripsi)</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -141,11 +150,20 @@
 <div class="alert alert-info border-info bg-info bg-opacity-10 d-flex align-items-start gap-2 mb-4 rounded-3 shadow-sm">
     <i class="cil-info fs-5 text-info mt-1 flex-shrink-0"></i>
     <div class="small">
-        <strong>Parameter Deteksi Double Jurnal Kas:</strong> 
-        Saat ini menggunakan parameter <strong>{{ ($parameter ?? 'tanggal_nominal') == 'persis' ? 'Tanggal Transaksi, Nilai Nominal, dan Deskripsi Sama Persis' : 'Tanggal Transaksi Sama & Nilai Nominal Sama' }}</strong>.
-        Anda dapat mengubah parameter deteksi kapan saja melalui filter di atas.
+        <strong>Ketentuan Deteksi Double Jurnal Kas:</strong> 
+        Transaksi disebut <strong>DUPLIKAT</strong> apabila memiliki <strong>Tanggal Sama</strong>, <strong>Nominal Sama</strong>, dan <strong>Ada Kemiripan Deskripsi</strong>.
+        Transaksi dengan tanggal berbeda atau deskripsi berbeda meskipun nominalnya sama tidak dianggap duplikat.
         <br>
-        Jika salah satu transaksi merupakan entri ganda yang tidak disengaja (misal: dobel klik submit atau duplikasi import), Anda dapat <strong>menghapus</strong> entri redundan tersebut. Penghapusan akan otomatis membatalkan jurnal akuntansi terkait dan memperbarui saldo kas.
+        Parameter aktif: <strong>
+            @if(($parameter ?? 'kemiripan') == 'persis')
+                Tanggal Transaksi, Nilai Nominal, dan Deskripsi Sama Persis
+            @elseif(($parameter ?? 'kemiripan') == 'tanggal_nominal')
+                Tanggal Sama & Nilai Nominal Sama (Abaikan Deskripsi)
+            @else
+                Tanggal Sama, Nominal Sama & Ada Kemiripan Deskripsi (Standar)
+            @endif
+        </strong>.
+        Jika salah satu transaksi merupakan entri ganda yang tidak disengaja (misal: dobel klik submit atau duplikasi input), Anda dapat <strong>menghapus</strong> entri redundan tersebut. Penghapusan akan otomatis membatalkan jurnal akuntansi terkait dan memperbarui saldo kas.
     </div>
 </div>
 
@@ -158,7 +176,7 @@
             </div>
             <h4 class="fw-bold text-dark">Tidak Ditemukan Double Jurnal Kas</h4>
             <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
-                Semua data transaksi jurnal kas Anda rapi dan valid. Tidak ada transaksi yang memiliki kesamaan Tanggal, Nominal, dan Deskripsi secara bersamaan.
+                Semua data transaksi jurnal kas Anda rapi dan valid. Tidak ada transaksi yang memiliki kesamaan Tanggal, Nominal, dan Kemiripan Deskripsi secara bersamaan.
             </p>
             <a href="{{ route('admin.jurnal-kas.index') }}" class="btn btn-outline-primary">
                 <i class="cil-arrow-left me-1"></i> Kembali ke Daftar Jurnal Kas
@@ -202,7 +220,7 @@
                             </span>
                         @else
                             <span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary border-opacity-50 px-2 py-1" title="{{ $items->pluck('deskripsi')->filter()->join(' | ') }}">
-                                <i class="cil-text me-1"></i> {{ $uniqueDesks->count() }} Variasi Deskripsi
+                                <i class="cil-text me-1"></i> {{ $uniqueDesks->count() }} Variasi Deskripsi (Mirip)
                             </span>
                         @endif
                     </div>
