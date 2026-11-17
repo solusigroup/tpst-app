@@ -134,6 +134,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Buku Pembantu
     Route::get('buku-pembantu/piutang', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'piutang'])->name('buku-pembantu.piutang');
     Route::get('buku-pembantu/utang', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'utang'])->name('buku-pembantu.utang');
+    Route::get('buku-pembantu/utang/export-pdf', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'exportUtangPdf'])->name('buku-pembantu.utang.export-pdf');
+    Route::get('buku-pembantu/utang/export-excel', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'exportUtangExcel'])->name('buku-pembantu.utang.export-excel');
     Route::post('buku-pembantu/sync-status', [\App\Http\Controllers\Admin\BukuPembantuController::class, 'syncStatus'])->name('buku-pembantu.sync-status');
 
     // Tracing Transaksi & Audit Trail

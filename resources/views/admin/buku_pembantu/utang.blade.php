@@ -2,15 +2,23 @@
 @section('title', 'Buku Pembantu Utang / Liabilitas')
 
 @section('content')
-<div class="page-header">
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
         <h1>Buku Pembantu Utang / Liabilitas</h1>
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
+            <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Buku Pembantu Utang / Liabilitas</li>
             </ol>
         </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.buku-pembantu.utang', array_merge(request()->all(), ['export' => 'pdf'])) }}" target="_blank" class="btn btn-sm btn-danger text-white shadow-sm" title="Export PDF Berdasarkan Filter">
+            <i class="cil-file me-1"></i> Export PDF
+        </a>
+        <a href="{{ route('admin.buku-pembantu.utang', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-sm btn-success text-white shadow-sm" title="Export Excel Berdasarkan Filter">
+            <i class="cil-spreadsheet me-1"></i> Export Excel
+        </a>
     </div>
 </div>
 
@@ -50,7 +58,7 @@
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-md-3">
                 <label class="form-label small fw-semibold">Pencarian</label>
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari Pemilik Hutang / Keterangan / COA..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari Pemilik Utang / Keterangan / COA..." value="{{ request('search') }}">
             </div>
             <div class="col-md-3">
                 <label class="form-label small fw-semibold">Akun COA Liabilitas</label>
@@ -71,13 +79,31 @@
                     <option value="lunas" {{ request('status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
-                <button class="btn btn-sm btn-primary w-100" type="submit">
-                    <i class="cil-search me-1"></i> Filter
-                </button>
-                @if(request()->hasAny(['search', 'coa_id', 'status']))
-                    <a href="{{ route('admin.buku-pembantu.utang') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
-                @endif
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold">Dari Tanggal</label>
+                <input type="date" name="dari" class="form-control form-control-sm" value="{{ request('dari', $dari ?? '') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold">Sampai Tanggal</label>
+                <input type="date" name="sampai" class="form-control form-control-sm" value="{{ request('sampai', $sampai ?? '') }}">
+            </div>
+            <div class="col-12 d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top gap-2">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" type="submit">
+                        <i class="cil-search me-1"></i> Filter
+                    </button>
+                    @if(request()->hasAny(['search', 'coa_id', 'status', 'dari', 'sampai', 'start_date', 'end_date']))
+                        <a href="{{ route('admin.buku-pembantu.utang') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                    @endif
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.buku-pembantu.utang', array_merge(request()->all(), ['export' => 'pdf'])) }}" target="_blank" class="btn btn-sm btn-danger text-white shadow-sm" title="Export PDF">
+                        <i class="cil-file me-1"></i> Export PDF
+                    </a>
+                    <a href="{{ route('admin.buku-pembantu.utang', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-sm btn-success text-white shadow-sm" title="Export Excel">
+                        <i class="cil-spreadsheet me-1"></i> Export Excel
+                    </a>
+                </div>
             </div>
         </form>
     </div>

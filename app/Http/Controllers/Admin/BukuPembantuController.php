@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BukuPembantu;
+use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanExcelExport;
 
 class BukuPembantuController extends Controller
 {
@@ -92,9 +96,47 @@ class BukuPembantuController extends Controller
                 $query->where('status', $request->status);
             }
 
+            $dari = $request->input('dari', $request->input('start_date'));
+            $sampai = $request->input('sampai', $request->input('end_date'));
+
+            if (!empty($dari)) {
+                $query->whereDate('tanggal', '>=', $dari);
+            }
+            if (!empty($sampai)) {
+                $query->whereDate('tanggal', '<=', $sampai);
+            }
+
             $totalHutangAwal = (clone $query)->sum('jumlah');
             $totalTerbayar = (clone $query)->sum('terbayar');
             $totalJumlah = (clone $query)->where('status', 'pending')->selectRaw('SUM(jumlah - terbayar) as total')->value('total') ?? 0;
+
+            if ($request->export === 'pdf' || $request->export === 'excel') {
+                $entries = $query->orderByDesc('tanggal')->get();
+                $selectedCoa = $request->filled('coa_id') ? Coa::find($request->coa_id) : null;
+                $data = compact(
+                    'entries',
+                    'liabilityCoas',
+                    'selectedCoa',
+                    'totalHutangAwal',
+                    'totalTerbayar',
+                    'totalJumlah',
+                    'dari',
+                    'sampai'
+                );
+
+                $filename = 'buku-pembantu-utang-' . now()->format('YmdHis');
+
+                if ($request->export === 'pdf') {
+                    $pdf = Pdf::loadView('admin.buku_pembantu.exports.utang-export', $data)
+                        ->setPaper('a4', 'landscape');
+                    return $pdf->download($filename . '.pdf');
+                } elseif ($request->export === 'excel') {
+                    return Excel::download(
+                        new LaporanExcelExport('admin.buku_pembantu.exports.utang-export', $data),
+                        $filename . '.xlsx'
+                    );
+                }
+            }
             
             $entries = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
@@ -103,11 +145,31 @@ class BukuPembantuController extends Controller
                 'liabilityCoas', 
                 'totalHutangAwal', 
                 'totalTerbayar', 
-                'totalJumlah'
+                'totalJumlah',
+                'dari',
+                'sampai'
             ));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * Export Buku Pembantu Utang to PDF.
+     */
+    public function exportUtangPdf(Request $request)
+    {
+        $request->merge(['export' => 'pdf']);
+        return $this->utang($request);
+    }
+
+    /**
+     * Export Buku Pembantu Utang to Excel.
+     */
+    public function exportUtangExcel(Request $request)
+    {
+        $request->merge(['export' => 'excel']);
+        return $this->utang($request);
     }
     /**
      * Sync status for all entries.
